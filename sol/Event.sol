@@ -2,13 +2,13 @@ pragma solidity ^0.4.24;
 
 import "./ERC721.sol";
 
-contract Event is ERC721 {
+contract Event /* is ERC721 */  {
     
   struct TicketInfo {
-    uint256 d_orig_price;
+    uint256 d_orig_price; // Prices are denominated in szabo
   }
  
-  uint256 internal d_creator_commission_factor;
+  uint256 internal d_creator_commission_factor = 100; /* 1% commission */
  
   address internal d_admin;
   address internal d_organizer;
@@ -31,13 +31,17 @@ contract Event is ERC721 {
     d_description = _description;
   }
   
-  function issue(uint256 _numTickets,uint256 _price) public {
+  function issue(uint256 _numTickets,uint256 _price_szabo) public {
+    require(msg.sender == d_organizer);
+    // require(_price > d_creator_commission_factor * 1 szabo,
+    //         "Minimum cost is 100 szabo"); // Denominate in szabo
+    
     for(uint256 i=0;i<_numTickets;++i) {
-      d_tickets.push(TicketInfo({d_orig_price:_price}));
+      d_tickets.push(TicketInfo({d_orig_price:(_price_szabo * 1 szabo)}));
     }
   }
   
-  function buy(uint256 _numTickets) public payable {
+  function buy(uint256 _numTickets) public payable returns(uint256) {
     uint256 total_cost=0;
     uint256 bought=0;
     
@@ -55,11 +59,13 @@ contract Event is ERC721 {
   
     }
     
-    require(bought == _numTickets);
-    require(total_cost <= msg.value);
+    require(bought == _numTickets, "Not enough tickets!");
+    require(total_cost <= msg.value, "Cost is more than transaction value.");
     
     // Take admin cut
-    address(d_admin).transfer(msg.value / d_creator_commission_factor);
+    uint256 commission = msg.value / d_creator_commission_factor;
+    address(d_admin).transfer(commission);
+    return commission;
   }
   
   function getBalance() public view returns(uint) {
@@ -105,26 +111,19 @@ contract Event is ERC721 {
   function exists(uint256 _tokenId) public view returns (bool _exists) {
     return _tokenId >= 0 && _tokenId < d_tickets.length;
   }
+  
+  function myTickets() public view returns(uint256[]) {
+      return d_owner_tokens[msg.sender];
+  }
 
+/*
   function approve(address _to, uint256 _tokenId) public;
-  function getApproved(uint256 _tokenId)
-    public view returns (address _operator);
+  function getApproved(uint256 _tokenId) public view returns (address _operator);
 
   function setApprovalForAll(address _operator, bool _approved) public;
-  function isApprovedForAll(address _owner, address _operator)
-    public view returns (bool);
+  function isApprovedForAll(address _owner, address _operator) public view returns (bool);
 
   function transferFrom(address _from, address _to, uint256 _tokenId) public;
   function safeTransferFrom(address _from, address _to, uint256 _tokenId) public;
-
-  function safeTransferFrom(
-    address _from,
-    address _to,
-    uint256 _tokenId,
-    bytes _data
-  ) public;
-
-  
-  
-  
+*/
 }
