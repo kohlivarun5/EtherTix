@@ -1,0 +1,2 @@
+# SmartTix
+Smart Tix Dapp
