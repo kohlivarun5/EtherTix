@@ -4,7 +4,7 @@
   "description": "Smart Tix Dapp",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "remix": "remixd -s sol"
   },
   "repository": {
     "type": "git",
@@ -15,5 +15,11 @@
   "bugs": {
     "url": "https://github.com/kohlivarun5/SmartTix/issues"
   },
-  "homepage": "https://github.com/kohlivarun5/SmartTix#readme"
+  "homepage": "https://github.com/kohlivarun5/SmartTix#readme",
+  "devDependencies": {
+    "remixd": "^0.1.8-alpha.4"
+  },
+  "dependencies": {
+    "openzeppelin-solidity": "1.11.0"
+  }
 }
