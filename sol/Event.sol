@@ -24,6 +24,9 @@ contract Event /* is ERC721 */  {
   // Mapping from token id to owner address
   mapping(uint256 => address) internal d_token_owner;
   
+  // For transfers 
+  mapping(uint256 => uint256) internal d_token_ask;
+  
 
   constructor(string _description, address _organizer) public { 
     d_admin = msg.sender;
@@ -113,7 +116,50 @@ contract Event /* is ERC721 */  {
   }
   
   function myTickets() public view returns(uint256[]) {
-      return d_owner_tokens[msg.sender];
+    return d_owner_tokens[msg.sender];
+  }
+  
+  function proposeSale(uint256 _token,uint256 _price) public {
+    require(d_token_owner[_token] == msg.sender);
+    d_token_ask[_token] = _price;
+  }
+  
+  function retractSale(uint256 _token) public {
+    require(d_token_owner[_token] == msg.sender);
+    delete d_token_ask[_token];
+  }
+  
+  function hitAsk(uint256 _token) public payable {
+    require(d_token_ask[_token] > 0 && msg.value > d_token_ask[_token]);
+      
+    // Value provided, okay to transfer
+    delete d_token_ask[_token]; // No more ask 
+    
+    address prev_owner = d_token_owner[_token];
+    d_token_owner[_token] = msg.sender;
+    d_owner_tokens[msg.sender].push(_token);
+      
+    for (uint256 i = 0;i<d_owner_tokens[prev_owner].length; ++i) {
+      if (d_owner_tokens[prev_owner][i] == _token) {
+        d_owner_tokens[prev_owner][i] = d_owner_tokens[prev_owner][d_owner_tokens[prev_owner].length-1];
+        delete d_owner_tokens[prev_owner][d_owner_tokens[prev_owner].length-1];
+      }
+    }
+    
+    // Take money
+    if (d_tickets[_token].d_orig_price > msg.value) {
+      // Selling for less, all money to seller 
+      address(prev_owner).transfer(msg.value);
+    } else {
+      uint256 premium = msg.value - d_tickets[_token].d_orig_price;
+      uint256 seller_premium = premium / 2;
+      
+      address(prev_owner).transfer(seller_premium + d_tickets[_token].d_orig_price);
+      
+      // Other half premium is for the event, and commission out of it 
+      uint256 commission = seller_premium / d_creator_commission_factor;
+      address(d_admin).transfer(commission);
+    }
   }
 
 /*
