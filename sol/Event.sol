@@ -119,9 +119,9 @@ contract Event /* is ERC721 */  {
     return d_owner_tokens[msg.sender];
   }
   
-  function proposeSale(uint256 _token,uint256 _price) public {
+  function proposeSale(uint256 _token,uint256 _price_szabo) public {
     require(d_token_owner[_token] == msg.sender);
-    d_token_ask[_token] = _price;
+    d_token_ask[_token] = _price_szabo * 1 szabo;
   }
   
   function retractSale(uint256 _token) public {
@@ -136,15 +136,18 @@ contract Event /* is ERC721 */  {
     delete d_token_ask[_token]; // No more ask 
     
     address prev_owner = d_token_owner[_token];
-    d_token_owner[_token] = msg.sender;
-    d_owner_tokens[msg.sender].push(_token);
-      
-    for (uint256 i = 0;i<d_owner_tokens[prev_owner].length; ++i) {
-      if (d_owner_tokens[prev_owner][i] == _token) {
-        d_owner_tokens[prev_owner][i] = d_owner_tokens[prev_owner][d_owner_tokens[prev_owner].length-1];
-        delete d_owner_tokens[prev_owner][d_owner_tokens[prev_owner].length-1];
+    
+    uint256[] storage prev_owner_tokens = d_owner_tokens[prev_owner];
+    for (uint256 i = 0;i<prev_owner_tokens.length; ++i) {
+      if (prev_owner_tokens[i] == _token) {
+        prev_owner_tokens[i] = prev_owner_tokens[prev_owner_tokens.length-1];
+        delete prev_owner_tokens[prev_owner_tokens.length-1];
+        break;
       }
     }
+    
+    d_token_owner[_token] = msg.sender;
+    d_owner_tokens[msg.sender].push(_token);
     
     // Take money
     if (d_tickets[_token].d_prev_price > msg.value) {

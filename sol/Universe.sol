@@ -22,7 +22,7 @@ contract Universe {
     return d_events[msg.sender];
   }
   
-  function getBalance() public constant returns(uint) {
+  function getBalance() public view returns(uint) {
     return address(this).balance;
   }
   
