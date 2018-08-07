@@ -5,7 +5,7 @@ import "./ERC721.sol";
 contract Event /* is ERC721 */  {
     
   struct TicketInfo {
-    uint256 d_orig_price; // Prices are denominated in szabo
+    uint256 d_prev_price; // Prices are denominated in szabo
   }
  
   uint256 internal d_creator_commission_factor = 100; /* 1% commission */
@@ -40,7 +40,7 @@ contract Event /* is ERC721 */  {
     //         "Minimum cost is 100 szabo"); // Denominate in szabo
     
     for(uint256 i=0;i<_numTickets;++i) {
-      d_tickets.push(TicketInfo({d_orig_price:(_price_szabo * 1 szabo)}));
+      d_tickets.push(TicketInfo({d_prev_price:(_price_szabo * 1 szabo)}));
     }
   }
   
@@ -55,7 +55,7 @@ contract Event /* is ERC721 */  {
       if (d_token_owner[i] != address(0)) { continue; }
         
       // Ticket can be bought 
-      total_cost+=d_tickets[i].d_orig_price;
+      total_cost+=d_tickets[i].d_prev_price;
       d_owner_tokens[msg.sender].push(i);
       d_token_owner[i] = msg.sender;
       bought++;
@@ -147,18 +147,20 @@ contract Event /* is ERC721 */  {
     }
     
     // Take money
-    if (d_tickets[_token].d_orig_price > msg.value) {
+    if (d_tickets[_token].d_prev_price > msg.value) {
       // Selling for less, all money to seller 
       address(prev_owner).transfer(msg.value);
     } else {
-      uint256 premium = msg.value - d_tickets[_token].d_orig_price;
+      uint256 premium = msg.value - d_tickets[_token].d_prev_price;
       uint256 seller_premium = premium / 2;
       
-      address(prev_owner).transfer(seller_premium + d_tickets[_token].d_orig_price);
+      address(prev_owner).transfer(seller_premium + d_tickets[_token].d_prev_price);
       
       // Other half premium is for the event, and commission out of it 
       uint256 commission = seller_premium / d_creator_commission_factor;
       address(d_admin).transfer(commission);
+      
+      d_tickets[_token].d_prev_price = msg.value;
     }
   }
 
