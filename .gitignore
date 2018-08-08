@@ -63,3 +63,5 @@ package-lock.json
 *.bs.js
 lib
 .bsb.lock
+build
+.DS_Store
