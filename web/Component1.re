@@ -18,19 +18,19 @@ let make = (~message, _children) => {
   ...component,
   render: self =>
 <div>
-  <nav className="navbar navbar-expand-lg navbar-dark bg-dark">
+  <nav className="navbar navbar-expand-lg navbar-dark bg-success">
     <a className="navbar-brand" href="#">(ReasonReact.string("SmartTix"))</a>
   </nav>
 
   <p/>
 
-  <div className="jumbotron">
+  <div className="jumbotron" style=(ReactDOMRe.Style.make(~margin="10%",()))>
     <h1 className="display-3">(ReasonReact.string("Hello, world!"))</h1>
     <p className="lead">(ReasonReact.string("This is a simple hero unit, a simple jumbotron-style component for calling extra attention to featured content or information."))</p>
     <hr className="my-4"/>
     <p>(ReasonReact.string("It uses utility classes for typography and spacing to space content out within the larger container."))</p>
     <p className="lead">
-      <a className="btn btn-primary btn-lg" href="#" role="button">(ReasonReact.string("Learn more"))</a>
+      <a className="btn btn-success btn-lg" href="#" role="button">(ReasonReact.string("Learn more"))</a>
     </p>
   </div>
 
