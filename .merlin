@@ -1,6 +1,6 @@
 ####{BSB GENERATED: NO EDIT
 B lib/bs
-FLG -open ReactTemplate
+FLG -open Smarttix
 FLG -ppx '/Users/vkohli/Github/SmartTix/node_modules/bs-platform/lib/reactjs_jsx_ppx_2.exe'
 FLG -ppx /Users/vkohli/Github/SmartTix/node_modules/bs-platform/lib/bsppx.exe
 S /Users/vkohli/Github/SmartTix/node_modules/bs-platform/lib/ocaml
