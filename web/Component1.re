@@ -1,25 +1,31 @@
 /* This is the basic component. */
-let component = ReasonReact.statelessComponent("Page");
+
+type state = {
+  description : string,
+};
+
+type action =
+  | Submit
+  | Change(string)
 
 let text = ReasonReact.string;
 
-/* Your familiar handleClick from ReactJS. This mandatorily takes the payload,
-   then the `self` record, which contains state (none here), `handle`, `reduce`
-   and other utilities */
-let onChange (_event, _self) = Js.log(_event);
-let onSubmit (_event, _self) = Js.log(_event);
+let component = ReasonReact.reducerComponent("Page");
 
-/* `make` is the function that mandatorily takes `children` (if you want to use
-   `JSX). `message` is a named argument, which simulates ReactJS props. Usage:
-
-   `<Page message="hello" />`
-
-   Which desugars to
-
-   `ReasonReact.element(Page.make(~message="hello", [||]))` */
 let make = (~message, _children) => {
   ...component,
-  render: self =>
+  initialState: () => {
+    description : "",
+  },
+  reducer: action => {
+    switch (action) {
+    | Submit => (state => { Js.log(state); ReasonReact.NoUpdate } )
+    | Change(text) => (
+        state => ReasonReact.Update({...state, description: text})
+      )
+    }
+  },
+  render: ({state, handle, send}) =>
 <div>
   <nav className="navbar navbar-expand-lg navbar-dark bg-success">
     <a className="navbar-brand" href="#">(ReasonReact.string("SmartTix"))</a>
@@ -35,14 +41,14 @@ let make = (~message, _children) => {
       <div className="row">
         <label className="col col-5 col-form-label text-muted">(text("Description"))</label>
         <input className="col form-control" type_="text" placeholder="" id="inputLarge" 
-               onInput=(event => Js.log(event))
+               onInput=(event => send(Change(ReactEvent.Form.target(event)##value)))
         />
       </div>
     </div>
   </div>
   <div className="card-footer">
     <button type_="submit" className="col btn btn-success" 
-            onClick=(event => Js.log(event)) >
+            onClick=(e => send(Submit))>
       (text("Submit"))
     </button>
   </div>
