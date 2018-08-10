@@ -12,6 +12,8 @@ let text = ReasonReact.string;
 
 let component = ReasonReact.reducerComponent("Page");
 
+let web3 = Web3.make();
+
 let make = (~message, _children) => {
   ...component,
   initialState: () => {

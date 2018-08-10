@@ -27,6 +27,7 @@
     "webpack-cli": "^2.0.10"
   },
   "dependencies": {
+    "bs-web3": "github:fxfactorial/bs-web3",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",
     "reason-react": ">=0.3.4"
