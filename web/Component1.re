@@ -1,31 +1,36 @@
 /* This is the basic component. */
 
 type state = {
+  web3 : option(BsWeb3.Web3.t),
   description : string,
 };
 
 type action =
   | Submit
   | Change(string)
-
+  | InitWeb3
+ 
 let text = ReasonReact.string;
 
 let component = ReasonReact.reducerComponent("Page");
 
-let web3 = BsWeb3.Web3.makeWeb3();
-
-Js.log( BsWeb3.Web3.makeWeb3WithProvider(web3##currentProvider));
-Js.log(web3##version);
-
 let make = (_children) => {
   ...component,
+  didMount: self => { self.send(InitWeb3) },
   initialState: () => {
     description : "",
+    web3:None 
   },
   reducer: action => {
     switch (action) {
     | Submit => (state => { Js.log(state); ReasonReact.NoUpdate } )
-    | Change(text) => ( _ => ReasonReact.Update({description: text}))
+    | Change(text) => (state => ReasonReact.Update({...state,description: text}))
+    | InitWeb3 => (state => 
+        ReasonReact.Update({
+          ...state,
+          web3: Some (BsWeb3.Web3.makeWeb3(BsWeb3.Web3.currentProvider))
+        })
+      )
     }
   },
   render: ({send}) =>
