@@ -1,1 +1,1 @@
-ReactDOMRe.renderToElementWithId(<Component1 message="Hello!" />, "app");
+ReactDOMRe.renderToElementWithId(<Component1 />, "app");

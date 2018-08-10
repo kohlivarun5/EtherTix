@@ -12,9 +12,12 @@ let text = ReasonReact.string;
 
 let component = ReasonReact.reducerComponent("Page");
 
-let web3 = Web3.make();
+let web3 = BsWeb3.Web3.makeWeb3();
 
-let make = (~message, _children) => {
+Js.log( BsWeb3.Web3.makeWeb3WithProvider(web3##currentProvider));
+Js.log(web3##version);
+
+let make = (_children) => {
   ...component,
   initialState: () => {
     description : "",
@@ -22,12 +25,10 @@ let make = (~message, _children) => {
   reducer: action => {
     switch (action) {
     | Submit => (state => { Js.log(state); ReasonReact.NoUpdate } )
-    | Change(text) => (
-        state => ReasonReact.Update({...state, description: text})
-      )
+    | Change(text) => ( _ => ReasonReact.Update({description: text}))
     }
   },
-  render: ({state, handle, send}) =>
+  render: ({send}) =>
 <div>
   <nav className="navbar navbar-expand-lg navbar-dark bg-success">
     <a className="navbar-brand" href="#">(ReasonReact.string("SmartTix"))</a>
@@ -50,7 +51,7 @@ let make = (~message, _children) => {
   </div>
   <div className="card-footer">
     <button type_="submit" className="col btn btn-success" 
-            onClick=(e => send(Submit))>
+            onClick=(_ => send(Submit))>
       (text("Submit"))
     </button>
   </div>
