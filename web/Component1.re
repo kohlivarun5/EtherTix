@@ -28,8 +28,9 @@ let make = (_children) => {
         Js.log(
           switch(state.web3) {
           | Some(web3) => 
-            Js.log(web3);
             let eth = BsWeb3.Web3.eth(web3);
+            Js.log(web3);
+            Js.log(BsWeb3.Eth.coinbase(eth));
             BsWeb3.Eth.getBalance(eth, (BsWeb3.Eth.coinbase(eth)))
           | None => ""
           });
