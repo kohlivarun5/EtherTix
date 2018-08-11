@@ -8,7 +8,7 @@
     "build": "bsb -make-world",
     "start": "bsb -make-world -w",
     "clean": "bsb -clean-world",
-    "webpack": "webpack -w",
+    "webpack": "webpack-dev-server",
     "webpack:production": "NODE_ENV=production webpack"
   },
   "repository": {
@@ -24,7 +24,8 @@
   "devDependencies": {
     "bs-platform": "^4.0.3",
     "webpack": "^4.0.1",
-    "webpack-cli": "^2.0.10"
+    "webpack-cli": "^2.0.10",
+    "webpack-dev-server": "^3.1.5"
   },
   "dependencies": {
     "bs-web3": "github:kohlivarun5/bs-web3",

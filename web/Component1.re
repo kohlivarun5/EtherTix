@@ -23,7 +23,19 @@ let make = (_children) => {
   },
   reducer: action => {
     switch (action) {
-    | Submit => (state => { Js.log(state); ReasonReact.NoUpdate } )
+    | Submit => (state => { 
+        Js.log(state);
+        Js.log(
+          switch(state.web3) {
+          | Some(web3) => 
+            Js.log(web3);
+            let eth = BsWeb3.Web3.eth(web3);
+            BsWeb3.Eth.getBalance(eth, (BsWeb3.Eth.coinbase(eth)))
+          | None => ""
+          });
+        
+        ReasonReact.NoUpdate 
+      })
     | Change(text) => (state => ReasonReact.Update({...state,description: text}))
     | InitWeb3 => (state => 
         ReasonReact.Update({
