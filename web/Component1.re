@@ -4,7 +4,8 @@ module Network = Rinkeby;
 
 type web3_state = {
   web3 : BsWeb3.Web3.t,
-  address : BsWeb3.Eth.address         
+  address : BsWeb3.Eth.address,
+  universe: Universe.t
 }
 
 type state = {
@@ -28,9 +29,19 @@ let make = (_children) => {
     let w3 = BsWeb3.Web3.makeWeb3(BsWeb3.Web3.currentProvider);
     let eth = BsWeb3.Web3.eth(w3);
     Js.Promise.then_((accounts) => {
+
+      /* Don't change code untill universe creation 
+         As Bs does not support send with new 
+         */
+      Js.log(eth);
+      Js.log(Universe.abi);
+      Js.log(Rinkeby.universe);
+      let universe:Universe.t = [%bs.raw{| new eth.Contract(UniverseAbiJson.default,RinkebyAddressesJson.default.universe) |}];
+
       self.send(InitWeb3({
           web3:w3,
-          address:accounts[0]
+          address:accounts[0],
+          universe:universe
       }));
       Js.Promise.resolve(());
     }) (BsWeb3.Eth.getAccounts(eth));
@@ -45,23 +56,19 @@ let make = (_children) => {
     | Submit => (state => {
         Js.log(state);
 
-        /* Don't change code untill universe creation 
-           As Bs does not support send with new 
-           */
-        let {web3,address} = Js.Option.getExn(state.web3);
-        let eth = BsWeb3.Web3.eth(web3);
-        Js.log(eth);
-        Js.log(Universe.abi);
-        Js.log(Rinkeby.universe);
-        let universe:Universe.t = [%bs.raw{| new eth.Contract(UniverseAbiJson.default,RinkebyAddressesJson.default.universe) |}];
-
+        let {address,universe} = Js.Option.getExn(state.web3);
         BsWeb3.Eth.send(Universe.createEvent(universe,state.description),BsWeb3.Eth.make_transaction(~from=address))
         |> Js.Promise.then_ ((value) => Js.log(value) -> Js.Promise.resolve);
 
         ReasonReact.NoUpdate 
       })
     | Change(text) => (state => ReasonReact.Update({...state,description: text}))
-    | InitWeb3(web3_state) => (state => ReasonReact.Update({...state,web3:Some(web3_state)}))
+    | InitWeb3(web3_state) => (state => {
+        BsWeb3.Eth.call_with(Universe.myEvents(web3_state.universe),BsWeb3.Eth.make_transaction(~from=web3_state.address))
+        |> Js.Promise.then_ ((value) => Js.log(value) -> Js.Promise.resolve);
+
+        ReasonReact.Update({...state,web3:Some(web3_state)})
+      })
     }
   },
   render: ({send,state}) =>

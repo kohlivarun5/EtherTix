@@ -7,3 +7,4 @@ type t;
 [@bs.scope "methods"] [@bs.send] external getBalance : t => BsWeb3.Eth.contract_method = "";
 
 [@bs.scope "methods"] [@bs.send] external createEvent : t => string => BsWeb3.Eth.contract_method = "";
+[@bs.scope "methods"] [@bs.send] external myEvents : t => BsWeb3.Eth.contract_method = "";
