@@ -1,14 +1,19 @@
 /* This is the basic component. */
 
+type web3_state = {
+  web3 : BsWeb3.Web3.t,
+  address : BsWeb3.Eth.address         
+}
+
 type state = {
-  web3 : option(BsWeb3.Web3.t),
+  web3 : option(web3_state),
   description : string,
 };
 
 type action =
   | Submit
   | Change(string)
-  | InitWeb3
+  | InitWeb3(web3_state)
  
 let text = ReasonReact.string;
 
@@ -16,34 +21,31 @@ let component = ReasonReact.reducerComponent("Page");
 
 let make = (_children) => {
   ...component,
-  didMount: self => { self.send(InitWeb3) },
+  didMount: self => { 
+
+    let w3 = BsWeb3.Web3.makeWeb3(BsWeb3.Web3.currentProvider);
+    let eth = BsWeb3.Web3.eth(w3);
+    Js.Promise.then_((accounts) => {
+      self.send(InitWeb3({
+          web3:w3,
+          address:accounts[0]
+      }));
+      Js.Promise.resolve(());
+    }) (BsWeb3.Eth.getAccounts(eth));
+    ()
+  },
   initialState: () => {
     description : "",
-    web3:None 
+    web3:None
   },
   reducer: action => {
     switch (action) {
-    | Submit => (state => { 
+    | Submit => (state => {
         Js.log(state);
-        Js.log(
-          switch(state.web3) {
-          | Some(web3) => 
-            let eth = BsWeb3.Web3.eth(web3);
-            Js.log(web3);
-            Js.log(BsWeb3.Eth.coinbase(eth));
-            BsWeb3.Eth.getBalance(eth, (BsWeb3.Eth.coinbase(eth)))
-          | None => ""
-          });
-        
         ReasonReact.NoUpdate 
       })
     | Change(text) => (state => ReasonReact.Update({...state,description: text}))
-    | InitWeb3 => (state => 
-        ReasonReact.Update({
-          ...state,
-          web3: Some (BsWeb3.Web3.makeWeb3(BsWeb3.Web3.currentProvider))
-        })
-      )
+    | InitWeb3(web3_state) => (state => ReasonReact.Update({...state,web3:Some(web3_state)}))
     }
   },
   render: ({send}) =>
