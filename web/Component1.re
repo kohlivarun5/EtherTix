@@ -54,15 +54,10 @@ let make = (_children) => {
         Js.log(Universe.abi);
         Js.log(Rinkeby.universe);
         let universe:Universe.t = [%bs.raw{| new eth.Contract(UniverseAbiJson.default,RinkebyAddressesJson.default.universe) |}];
-        Js.log(universe); 
-        Js.log(BsWeb3.Eth.call(Universe.getBalance(universe))); 
 
-
-        BsWeb3.Eth.call(Universe.getBalance(universe))
+        BsWeb3.Eth.send(Universe.createEvent(universe,state.description),BsWeb3.Eth.make_transaction(~from=address))
         |> Js.Promise.then_ ((value) => Js.log(value) -> Js.Promise.resolve);
 
-        /* 
-         */
         ReasonReact.NoUpdate 
       })
     | Change(text) => (state => ReasonReact.Update({...state,description: text}))
