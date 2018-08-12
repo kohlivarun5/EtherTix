@@ -5,18 +5,23 @@ module Network = Rinkeby;
 type web3_state = {
   web3 : BsWeb3.Web3.t,
   address : BsWeb3.Eth.address,
-  universe: Universe.t
+  universe: Universe.t,
+  
 }
+
+
 
 type state = {
   web3 : option(web3_state),
-  description : string,
+  new_event_description : string,
+  myEvents : Js.Array.t(Event.data)
 };
 
 type action =
   | Submit
   | Change(string)
   | InitWeb3(web3_state)
+  | EventData(Event.data)
  
 let text = ReasonReact.string;
 
@@ -38,6 +43,7 @@ let make = (_children) => {
       Js.log(Rinkeby.universe);
       let universe:Universe.t = [%bs.raw{| new eth.Contract(UniverseAbiJson.default,RinkebyAddressesJson.default.universe) |}];
 
+      Js.log("InitWeb3");
       self.send(InitWeb3({
           web3:w3,
           address:accounts[0],
@@ -48,8 +54,9 @@ let make = (_children) => {
     ()
   },
   initialState: () => {
-    description : "",
-    web3:None
+    new_event_description : "",
+    web3:None,
+    myEvents:[||]
   },
   reducer: action => {
     switch (action) {
@@ -57,17 +64,39 @@ let make = (_children) => {
         Js.log(state);
 
         let {address,universe} = Js.Option.getExn(state.web3);
-        BsWeb3.Eth.send(Universe.createEvent(universe,state.description),BsWeb3.Eth.make_transaction(~from=address))
+        BsWeb3.Eth.send(Universe.createEvent(universe,state.new_event_description),BsWeb3.Eth.make_transaction(~from=address))
         |> Js.Promise.then_ ((value) => Js.log(value) -> Js.Promise.resolve);
 
         ReasonReact.NoUpdate 
       })
-    | Change(text) => (state => ReasonReact.Update({...state,description: text}))
+    | Change(text) => (state => ReasonReact.Update({...state,new_event_description: text}))
+    | EventData(data) => (state => { Js.Array.push(data,state.myEvents); ReasonReact.Update({...state,myEvents:state.myEvents}) })
     | InitWeb3(web3_state) => (state => {
-        BsWeb3.Eth.call_with(Universe.myEvents(web3_state.universe),BsWeb3.Eth.make_transaction(~from=web3_state.address))
-        |> Js.Promise.then_ ((value) => Js.log(value) -> Js.Promise.resolve);
+        Js.log("Returning with side effects");
+        ReasonReact.UpdateWithSideEffects({...state,web3:Some(web3_state)}, (self) => {
 
-        ReasonReact.Update({...state,web3:Some(web3_state)})
+          Js.log("Calling myEvents");
+          BsWeb3.Eth.call_with(Universe.myEvents(web3_state.universe),BsWeb3.Eth.make_transaction(~from=web3_state.address))
+          |> Js.Promise.then_ ((events_addr:Js.Array.t(BsWeb3.Eth.address)) => {
+    
+              Js.log("Got Events");
+              Js.log(events_addr);
+              events_addr |> Js.Array.map((addr) => {
+                let eth = BsWeb3.Web3.eth(web3_state.web3);
+                  
+                Js.log(eth);
+                Js.log(Event.abi);
+                let event:Event.t = [%bs.raw{| new eth.Contract(EventAbiJson.default,addr) |}];
+
+                Event.description(event)
+                |> BsWeb3.Eth.call 
+                |> Js.Promise.then_ ((des) => self.send(EventData({Event.description:des,address:addr})) |> Js.Promise.resolve)
+   
+              })
+              |> Js.Promise.resolve;
+            });
+          ()
+        });
       })
     }
   },
@@ -78,6 +107,31 @@ let make = (_children) => {
   </nav>
 
   <p/>
+
+<div className="card" style=(ReactDOMRe.Style.make(~margin="10%",()))>
+  <h3 className="card-header">(text("My Events"))</h3>
+  <div className="card-body">
+
+    <table className="table table-hover">
+      <thead>
+        <tr>
+          <th scope="col">(text("Description"))</th>
+          <th scope="col">(text("Address"))</th>
+        </tr>
+      </thead>
+      (state.myEvents |> Js.Array.map(({Event.description,address}) => {
+        <tbody>
+          <tr className="table-active">
+            <th scope="row">(text(description))</th>
+            <td>(text(address))</td>
+          </tr>
+        </tbody>
+      })
+      |> ReasonReact.array)
+    </table> 
+
+  </div>
+</div>
 
 <div className="card" style=(ReactDOMRe.Style.make(~margin="10%",()))>
   <h3 className="card-header">(text("Create Event"))</h3>
