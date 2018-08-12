@@ -1,5 +1,7 @@
 /* This is the basic component. */
 
+module Network = Rinkeby;
+
 type web3_state = {
   web3 : BsWeb3.Web3.t,
   address : BsWeb3.Eth.address         
@@ -42,13 +44,32 @@ let make = (_children) => {
     switch (action) {
     | Submit => (state => {
         Js.log(state);
+
+        /* Don't change code untill universe creation 
+           As Bs does not support send with new 
+           */
+        let {web3,address} = Js.Option.getExn(state.web3);
+        let eth = BsWeb3.Web3.eth(web3);
+        Js.log(eth);
+        Js.log(Universe.abi);
+        Js.log(Rinkeby.universe);
+        let universe:Universe.t = [%bs.raw{| new eth.Contract(UniverseAbiJson.default,RinkebyAddressesJson.default.universe) |}];
+        Js.log(universe); 
+        Js.log(BsWeb3.Eth.call(Universe.getBalance(universe))); 
+
+
+        BsWeb3.Eth.call(Universe.getBalance(universe))
+        |> Js.Promise.then_ ((value) => Js.log(value) -> Js.Promise.resolve);
+
+        /* 
+         */
         ReasonReact.NoUpdate 
       })
     | Change(text) => (state => ReasonReact.Update({...state,description: text}))
     | InitWeb3(web3_state) => (state => ReasonReact.Update({...state,web3:Some(web3_state)}))
     }
   },
-  render: ({send}) =>
+  render: ({send,state}) =>
 <div>
   <nav className="navbar navbar-expand-lg navbar-dark bg-success">
     <a className="navbar-brand" href="#">(ReasonReact.string("SmartTix"))</a>
@@ -70,7 +91,7 @@ let make = (_children) => {
     </div>
   </div>
   <div className="card-footer">
-    <button type_="submit" className="col btn btn-success" 
+    <button disabled={state.web3 == None} type_="submit" className="col btn btn-success" 
             onClick=(_ => send(Submit))>
       (text("Submit"))
     </button>

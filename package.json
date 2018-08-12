@@ -24,6 +24,7 @@
   "homepage": "https://github.com/kohlivarun5/SmartTix#readme",
   "devDependencies": {
     "bs-platform": "^4.0.3",
+    "remixd": "^0.1.8-alpha.4",
     "webpack": "^4.0.1",
     "webpack-cli": "^2.0.10",
     "webpack-dev-server": "^3.1.5"
