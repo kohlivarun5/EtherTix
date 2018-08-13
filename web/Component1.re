@@ -9,19 +9,24 @@ type web3_state = {
   
 }
 
-
+type data = {
+  address:BsWeb3.Eth.address,
+  description : string,
+  balance : int
+};
 
 type state = {
   web3 : option(web3_state),
   new_event_description : string,
-  myEvents : Js.Array.t(Event.data)
+  myEvents : Js.Array.t(data)
 };
 
 type action =
   | Submit
   | Change(string)
   | InitWeb3(web3_state)
-  | EventData(Event.data)
+  | AddEvent(BsWeb3.Eth.address)
+  | EventData(data)
  
 let text = ReasonReact.string;
 
@@ -62,39 +67,51 @@ let make = (_children) => {
     switch (action) {
     | Submit => (state => {
         Js.log(state);
-
-        let {address,universe} = Js.Option.getExn(state.web3);
-        BsWeb3.Eth.send(Universe.createEvent(universe,state.new_event_description),BsWeb3.Eth.make_transaction(~from=address))
-        |> Js.Promise.then_ ((value) => Js.log(value) -> Js.Promise.resolve);
-
-        ReasonReact.NoUpdate 
+        ReasonReact.UpdateWithSideEffects(state, (self) => {
+          let {address,universe} = Js.Option.getExn(state.web3);
+          Universe.createEvent(universe,state.new_event_description)
+          |> BsWeb3.Eth.send(BsWeb3.Eth.make_transaction(~from=address))
+          |> Js.Promise.then_ ((addr) => self.send(AddEvent(addr)) |> Js.Promise.resolve);
+          ()
+        })
       })
     | Change(text) => (state => ReasonReact.Update({...state,new_event_description: text}))
     | EventData(data) => (state => { Js.Array.push(data,state.myEvents); ReasonReact.Update({...state,myEvents:state.myEvents}) })
+    | AddEvent(address) => (state => {
+        ReasonReact.UpdateWithSideEffects(state,(self) => {
+          let web3_state = Js.Option.getExn(state.web3);
+          let eth = BsWeb3.Web3.eth(web3_state.web3);
+            
+          Js.log(eth);
+          Js.log(Event.abi);
+          let event:Event.t = [%bs.raw{| new eth.Contract(EventAbiJson.default,address) |}];
+
+          let transaction_data = BsWeb3.Eth.make_transaction(~from=web3_state.address);
+          Js.Promise.all2((
+            (Event.description(event)
+             |> BsWeb3.Eth.call_with(transaction_data)),
+            (Event.getBalance(event)
+             |> BsWeb3.Eth.call_with(transaction_data))))
+          |> Js.Promise.then_ (((description,balance)) => 
+              self.send(EventData({description:description,balance:balance,address:address})) 
+              |> Js.Promise.resolve);
+          ()
+        })
+      })
     | InitWeb3(web3_state) => (state => {
         Js.log("Returning with side effects");
         ReasonReact.UpdateWithSideEffects({...state,web3:Some(web3_state)}, (self) => {
 
           Js.log("Calling myEvents");
-          BsWeb3.Eth.call_with(Universe.myEvents(web3_state.universe),BsWeb3.Eth.make_transaction(~from=web3_state.address))
+          let transaction_data = BsWeb3.Eth.make_transaction(~from=web3_state.address);
+          Universe.myEvents(web3_state.universe)
+          |> BsWeb3.Eth.call_with(transaction_data)
           |> Js.Promise.then_ ((events_addr:Js.Array.t(BsWeb3.Eth.address)) => {
-    
               Js.log("Got Events");
               Js.log(events_addr);
-              events_addr |> Js.Array.map((addr) => {
-                let eth = BsWeb3.Web3.eth(web3_state.web3);
-                  
-                Js.log(eth);
-                Js.log(Event.abi);
-                let event:Event.t = [%bs.raw{| new eth.Contract(EventAbiJson.default,addr) |}];
-
-                Event.description(event)
-                |> BsWeb3.Eth.call 
-                |> Js.Promise.then_ ((des) => self.send(EventData({Event.description:des,address:addr})) |> Js.Promise.resolve)
-   
-              })
-              |> Js.Promise.resolve;
-            });
+              events_addr |> Js.Array.map((addr) => { self.send(AddEvent(addr)) });
+              Js.Promise.resolve();
+          });
           ()
         });
       })
@@ -117,13 +134,15 @@ let make = (_children) => {
         <tr>
           <th scope="col">(text("Description"))</th>
           <th scope="col">(text("Address"))</th>
+          <th scope="col">(text("Balance"))</th>
         </tr>
       </thead>
-      (state.myEvents |> Js.Array.map(({Event.description,address}) => {
+      (state.myEvents |> Js.Array.map(({description,address,balance}) => {
         <tbody>
           <tr className="table-active">
             <th scope="row">(text(description))</th>
-            <td>(text(address))</td>
+            <td><AddressLabel address=address/></td>
+            <td><WeiLabel amount=balance/></td>
           </tr>
         </tbody>
       })
