@@ -126,7 +126,7 @@ let make = (_children) => {
   <p/>
 
 <div className="card" style=(ReactDOMRe.Style.make(~margin="10%",()))>
-  <h3 className="card-header">(text("My Events"))</h3>
+  <h4 className="card-header">(text("My Events"))</h4> 
   <div className="card-body">
 
     <table className="table table-hover">
@@ -153,7 +153,7 @@ let make = (_children) => {
 </div>
 
 <div className="card" style=(ReactDOMRe.Style.make(~margin="10%",()))>
-  <h3 className="card-header">(text("Create Event"))</h3>
+  <h4 className="card-header">(text("Create Event"))</h4>
   <div className="card-body">
 
     <div className="form-group" style=(ReactDOMRe.Style.make(~margin="3%",()))>
