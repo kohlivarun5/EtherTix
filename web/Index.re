@@ -1,1 +1,1 @@
-ReactDOMRe.renderToElementWithId(<Component1 />, "app");
+ReactDOMRe.renderToElementWithId(<OrganizerView />, "app");

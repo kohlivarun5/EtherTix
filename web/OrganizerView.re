@@ -2,35 +2,29 @@
 
 module Network = Rinkeby;
 
-type web3_state = {
-  web3 : BsWeb3.Web3.t,
-  address : BsWeb3.Eth.address,
-  universe: Universe.t,
-  
-}
-
-type data = {
+type event = {
   address:BsWeb3.Eth.address,
   description : string,
-  balance : int
+  balance : int,
+  show:bool
 };
 
 type state = {
-  web3 : option(web3_state),
+  web3 : option(Web3.state),
   new_event_description : string,
-  myEvents : Js.Array.t(data)
+  myEvents : Js.Array.t(event)
 };
 
 type action =
   | Submit
   | Change(string)
-  | InitWeb3(web3_state)
+  | InitWeb3(Web3.state)
   | AddEvent(BsWeb3.Eth.address)
-  | EventData(data)
+  | EventData(event)
  
 let text = ReasonReact.string;
 
-let component = ReasonReact.reducerComponent("Page");
+let component = ReasonReact.reducerComponent("OrganizerView");
 
 let make = (_children) => {
   ...component,
@@ -51,7 +45,7 @@ let make = (_children) => {
       Js.log("InitWeb3");
       self.send(InitWeb3({
           web3:w3,
-          address:accounts[0],
+          account:accounts[0],
           universe:universe
       }));
       Js.Promise.resolve(());
@@ -68,9 +62,9 @@ let make = (_children) => {
     | Submit => (state => {
         Js.log(state);
         ReasonReact.UpdateWithSideEffects(state, (self) => {
-          let {address,universe} = Js.Option.getExn(state.web3);
+          let {Web3.account,universe} = Js.Option.getExn(state.web3);
           Universe.createEvent(universe,state.new_event_description)
-          |> BsWeb3.Eth.send(BsWeb3.Eth.make_transaction(~from=address))
+          |> BsWeb3.Eth.send(BsWeb3.Eth.make_transaction(~from=account))
           |> Js.Promise.then_ ((addr) => self.send(AddEvent(addr)) |> Js.Promise.resolve);
           ()
         })
@@ -86,14 +80,14 @@ let make = (_children) => {
           Js.log(Event.abi);
           let event:Event.t = [%bs.raw{| new eth.Contract(EventAbiJson.default,address) |}];
 
-          let transaction_data = BsWeb3.Eth.make_transaction(~from=web3_state.address);
+          let transaction_data = BsWeb3.Eth.make_transaction(~from=web3_state.account);
           Js.Promise.all2((
             (Event.description(event)
              |> BsWeb3.Eth.call_with(transaction_data)),
             (Event.getBalance(event)
              |> BsWeb3.Eth.call_with(transaction_data))))
           |> Js.Promise.then_ (((description,balance)) => 
-              self.send(EventData({description:description,balance:balance,address:address})) 
+              self.send(EventData({description:description,balance:balance,address:address,show:false})) 
               |> Js.Promise.resolve);
           ()
         })
@@ -103,7 +97,7 @@ let make = (_children) => {
         ReasonReact.UpdateWithSideEffects({...state,web3:Some(web3_state)}, (self) => {
 
           Js.log("Calling myEvents");
-          let transaction_data = BsWeb3.Eth.make_transaction(~from=web3_state.address);
+          let transaction_data = BsWeb3.Eth.make_transaction(~from=web3_state.account);
           Universe.myEvents(web3_state.universe)
           |> BsWeb3.Eth.call_with(transaction_data)
           |> Js.Promise.then_ ((events_addr:Js.Array.t(BsWeb3.Eth.address)) => {
@@ -130,23 +124,29 @@ let make = (_children) => {
   <div className="card-body">
 
     <table className="table table-hover">
-      <thead>
+      <thead className="bg-secondary">
         <tr>
           <th scope="col">(text("Description"))</th>
           <th scope="col">(text("Address"))</th>
           <th scope="col">(text("Balance"))</th>
         </tr>
       </thead>
-      (state.myEvents |> Js.Array.map(({description,address,balance}) => {
-        <tbody>
-          <tr className="table-active">
-            <th scope="row">(text(description))</th>
+      <tbody>
+        (state.myEvents |> Js.Array.map(({description,address,balance,show}) => {
+          [|
+          <tr key=address className="table-active">
+            <td scope="row">(text(description))</td>
             <td><AddressLabel address=address/></td>
             <td><WeiLabel amount=balance/></td>
-          </tr>
-        </tbody>
-      })
+          </tr>,
+          (switch (show) {
+           | true => <EventView address=address web3=Js.Option.getExn(state.web3) />
+           | false => ReasonReact.null 
+           })
+          |] |> ReasonReact.array
+        })
       |> ReasonReact.array)
+      </tbody>
     </table> 
 
   </div>
