@@ -152,7 +152,7 @@ let make = (_children) => {
             <td><WeiLabel amount=balance/></td>
           </tr>,
           (switch (show) {
-           | true => <tr><td colSpan=3><EventView event=event address=address web3=Js.Option.getExn(state.web3) /></td></tr>
+           | true => <tr key=(Js.String.concat(address,"View"))><td colSpan=3 style=(ReactDOMRe.Style.make(~padding="0px",()))><EventView event=event address=address web3=Js.Option.getExn(state.web3) /></td></tr>
            | false => ReasonReact.null 
            })
           |] |> ReasonReact.array
