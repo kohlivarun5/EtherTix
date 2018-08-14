@@ -4,6 +4,7 @@ module Network = Rinkeby;
 
 type event = {
   address:BsWeb3.Eth.address,
+  event:Event.t,
   description : string,
   balance : int,
   show:bool
@@ -21,6 +22,7 @@ type action =
   | InitWeb3(Web3.state)
   | AddEvent(BsWeb3.Eth.address)
   | EventData(event)
+  | ToggleEvent(BsWeb3.Eth.address)
  
 let text = ReasonReact.string;
 
@@ -69,6 +71,16 @@ let make = (_children) => {
           ()
         })
       })
+    | ToggleEvent(address) => (state => {
+        let events = 
+          state.myEvents 
+          |> Js.Array.map((event) => {
+              ...event,
+              show:(switch (event.address == address) { | true => !event.show | false => event.show })
+            });
+        let state = {...state,myEvents:events};
+        ReasonReact.Update(state)
+      })
     | Change(text) => (state => ReasonReact.Update({...state,new_event_description: text}))
     | EventData(data) => (state => { Js.Array.push(data,state.myEvents); ReasonReact.Update({...state,myEvents:state.myEvents}) })
     | AddEvent(address) => (state => {
@@ -87,7 +99,7 @@ let make = (_children) => {
             (Event.getBalance(event)
              |> BsWeb3.Eth.call_with(transaction_data))))
           |> Js.Promise.then_ (((description,balance)) => 
-              self.send(EventData({description:description,balance:balance,address:address,show:false})) 
+              self.send(EventData({event:event,description:description,balance:balance,address:address,show:false})) 
               |> Js.Promise.resolve);
           ()
         })
@@ -132,15 +144,15 @@ let make = (_children) => {
         </tr>
       </thead>
       <tbody>
-        (state.myEvents |> Js.Array.map(({description,address,balance,show}) => {
+        (state.myEvents |> Js.Array.map(({event,description,address,balance,show}) => {
           [|
-          <tr key=address className="table-active">
-            <td scope="row">(text(description))</td>
+          <tr key=address className="table-active" onClick=(_ => send(ToggleEvent(address)))>
+            <td>(text(description))</td>
             <td><AddressLabel address=address/></td>
             <td><WeiLabel amount=balance/></td>
           </tr>,
           (switch (show) {
-           | true => <EventView address=address web3=Js.Option.getExn(state.web3) />
+           | true => <tr><td colSpan=3><EventView event=event address=address web3=Js.Option.getExn(state.web3) /></td></tr>
            | false => ReasonReact.null 
            })
           |] |> ReasonReact.array
