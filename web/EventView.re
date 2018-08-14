@@ -90,14 +90,14 @@ let make = (~web3,~address,~event,_children) => {
       <div className="row">
         <label className="col col-5 col-form-label text-muted">(text("Number of tickets"))</label>
         <input className="col form-control" type_="text" placeholder="" id="inputLarge"
-               onInput=(event => send(IssueNumber(ReactEvent.Form.target(event)##value)))
+               onChange=(event => send(IssueNumber(ReactEvent.Form.target(event)##value)))
                value=(string_of_int(state.issue_data.number))
         />
       </div>
       <div className="row">
         <label className="col col-5 col-form-label text-muted">(text("Price per ticket (szabo)"))</label>
         <input className="col form-control" type_="text" placeholder="" id="inputLarge" 
-               onInput=(event => send(IssuePrice(ReactEvent.Form.target(event)##value)))
+               onChange=(event => send(IssuePrice(ReactEvent.Form.target(event)##value)))
                value=(string_of_int(state.issue_data.price_szabo))
         />
       </div>

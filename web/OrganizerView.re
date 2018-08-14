@@ -126,7 +126,7 @@ let make = (_children) => {
   render: ({send,state}) =>
 <div>
   <nav className="navbar navbar-expand-lg navbar-dark bg-success">
-    <a className="navbar-brand" href="#">(ReasonReact.string("SmartTix"))</a>
+    <a className="navbar-brand" href="#">(ReasonReact.string("BlockTix"))</a>
   </nav>
 
   <p/>
@@ -172,7 +172,8 @@ let make = (_children) => {
       <div className="row">
         <label className="col col-5 col-form-label text-muted">(text("Description"))</label>
         <input className="col form-control" type_="text" placeholder="" id="inputLarge" 
-               onInput=(event => send(Change(ReactEvent.Form.target(event)##value)))
+               value=state.new_event_description
+               onChange=(event => send(Change(ReactEvent.Form.target(event)##value)))
         />
       </div>
     </div>
