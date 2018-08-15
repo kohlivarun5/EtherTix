@@ -31,28 +31,29 @@ let component = ReasonReact.reducerComponent("OrganizerView");
 let make = (_children) => {
   ...component,
   didMount: self => { 
+    if (Js.typeof(BsWeb3.Web3.get) !== "undefined") {
+      let w3 = BsWeb3.Web3.makeWeb3(BsWeb3.Web3.currentProvider(Js.Undefined.getExn(BsWeb3.Web3.get)));
+      let eth = BsWeb3.Web3.eth(w3);
+      Js.Promise.then_((accounts) => {
 
-    let w3 = BsWeb3.Web3.makeWeb3(BsWeb3.Web3.currentProvider);
-    let eth = BsWeb3.Web3.eth(w3);
-    Js.Promise.then_((accounts) => {
+        /* Don't change code untill universe creation 
+           As Bs does not support send with new 
+           */
+        Js.log(eth);
+        Js.log(Universe.abi);
+        Js.log(Rinkeby.universe);
+        let universe:Universe.t = [%bs.raw{| new eth.Contract(UniverseAbiJson.default,RinkebyAddressesJson.default.universe) |}];
 
-      /* Don't change code untill universe creation 
-         As Bs does not support send with new 
-         */
-      Js.log(eth);
-      Js.log(Universe.abi);
-      Js.log(Rinkeby.universe);
-      let universe:Universe.t = [%bs.raw{| new eth.Contract(UniverseAbiJson.default,RinkebyAddressesJson.default.universe) |}];
-
-      Js.log("InitWeb3");
-      self.send(InitWeb3({
-          web3:w3,
-          account:accounts[0],
-          universe:universe
-      }));
-      Js.Promise.resolve(());
-    }) (BsWeb3.Eth.getAccounts(eth));
-    ()
+        Js.log("InitWeb3");
+        self.send(InitWeb3({
+            web3:w3,
+            account:accounts[0],
+            universe:universe
+        }));
+        Js.Promise.resolve(());
+      }) (BsWeb3.Eth.getAccounts(eth));
+      ()
+    }
   },
   initialState: () => {
     new_event_description : "",
