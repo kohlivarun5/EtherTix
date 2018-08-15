@@ -15,6 +15,25 @@
 	},
 	{
 		"constant": true,
+		"inputs": [
+			{
+				"name": "_numTickets",
+				"type": "uint256"
+			}
+		],
+		"name": "getCostFor",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
 		"inputs": [],
 		"name": "getBalance",
 		"outputs": [

@@ -37,14 +37,19 @@ let make = (~web3,_children) => {
           self.send(NumTickets(state.buy_data.numTickets))
         )
     | NumTickets(numTickets) => 
+        Js.log(numTickets);
+        Js.log(state);
         ReasonReact.UpdateWithSideEffects({...state,buy_data:{...state.buy_data,numTickets}},(self) => {
-          Event.getCostFor(Js.Option.getExn(state.event),~numTickets=state.buy_data.numTickets)
+          Event.getCostFor(Js.Option.getExn(state.event),~numTickets)
           |> BsWeb3.Eth.call 
           |> Js.Promise.then_ ((totalCost) => self.send(TotalCost(totalCost)) |> Js.Promise.resolve);
           ()
         })
-    | TotalCost(totalCost) => ReasonReact.Update({...state,buy_data:{...state.buy_data,totalCost}})
+    | TotalCost(totalCost) => 
+        Js.log(state);
+        ReasonReact.Update({...state,buy_data:{...state.buy_data,totalCost}})
     | SubmitBuy => ReasonReact.UpdateWithSideEffects(state,(self) => {
+        Js.log(state);
         Event.buy(Js.Option.getExn(state.event),~numTickets=state.buy_data.numTickets)
         |> BsWeb3.Eth.send(
             BsWeb3.Eth.make_transaction_with_value(
@@ -70,7 +75,7 @@ let make = (~web3,_children) => {
       <div className="row">
         <label className="col col-5 col-form-label text-muted">(text("Number of tickets"))</label>
         <input className="col form-control" type_="text" placeholder="" id="inputLarge"
-               onChange=(event => send(NumTickets(ReactEvent.Form.target(event)##value)))
+               onChange=(event => send(NumTickets(int_of_float(Js.Float.fromString(ReactEvent.Form.target(event)##value)))))
                value=(string_of_int(state.buy_data.numTickets))
         />
       </div>
