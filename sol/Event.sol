@@ -43,6 +43,26 @@ contract Event /* is ERC721 */  {
       d_tickets.push(TicketInfo({d_prev_price:(_price_szabo * 1 szabo)}));
     }
   }
+
+  function costFor(uint256 _numTickets) public view returns(uint256) {
+    uint256 total_cost=0;
+    uint256 bought=0;
+    
+    // We will buy 1 ticket at a time
+    // If while buying, we do not find enough tickets, 
+    // or we did not get enough money, we throw
+    for(uint256 i=0;i<d_tickets.length && i < _numTickets;++i) {
+      if (d_token_owner[i] != address(0)) { continue; }
+        
+      // Ticket can be bought 
+      total_cost+=d_tickets[i].d_prev_price;
+      bought++;
+    }
+    
+    require(bought == _numTickets, "Not enough tickets!");
+
+    return total_cost;
+  }
   
   function buy(uint256 _numTickets) public payable returns(uint256) {
     uint256 total_cost=0;
