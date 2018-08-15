@@ -11,3 +11,14 @@ type t;
 [@bs.scope "methods"] [@bs.send] external numUnSold : t => BsWeb3.Eth.contract_method = "";
 
 [@bs.scope "methods"] [@bs.send] external issue : t => (~number:int) => (~price_szabo:int) => BsWeb3.Eth.contract_method = "";
+
+[@bs.scope "methods"] [@bs.send] external getCostFor : t => (~numTickets:int) => BsWeb3.Eth.contract_method = "";
+[@bs.scope "methods"] [@bs.send] external buy : t => (~numTickets:int) => BsWeb3.Eth.contract_method = "";
+
+
+let ofAddress(web3,address) {
+  let eth = BsWeb3.Web3.eth(web3);
+  Js.log((eth,address,abi));
+  let event:t = [%bs.raw{| new eth.Contract(EventAbiJson.default,address) |}];
+  event 
+}

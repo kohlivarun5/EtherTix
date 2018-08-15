@@ -87,12 +87,7 @@ let make = (_children) => {
     | AddEvent(address) => (state => {
         ReasonReact.UpdateWithSideEffects(state,(self) => {
           let web3_state = Js.Option.getExn(state.web3);
-          let eth = BsWeb3.Web3.eth(web3_state.web3);
-            
-          Js.log(eth);
-          Js.log(Event.abi);
-          let event:Event.t = [%bs.raw{| new eth.Contract(EventAbiJson.default,address) |}];
-
+          let event = Event.ofAddress(web3_state.web3,address);
           let transaction_data = BsWeb3.Eth.make_transaction(~from=web3_state.account);
           Js.Promise.all2((
             (Event.description(event)
@@ -194,6 +189,13 @@ let make = (_children) => {
   </div>
 
 </div>
+
+(state.web3 === None 
+  ? ReasonReact.null 
+  : <div style=(ReactDOMRe.Style.make(~margin="10%",()))>
+      <UserView web3=Js.Option.getExn(state.web3) />
+    </div>
+)
 
 </div>
 

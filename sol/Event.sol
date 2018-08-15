@@ -44,7 +44,7 @@ contract Event /* is ERC721 */  {
     }
   }
 
-  function costFor(uint256 _numTickets) public view returns(uint256) {
+  function getCostFor(uint256 _numTickets) public view returns(uint256) {
     uint256 total_cost=0;
     uint256 bought=0;
     
