@@ -71,21 +71,21 @@ let make = (~web3,~address,~event,_children) => {
     <div className="row">
       <div className="col">
         <div className="row">
-          <div className="col">(text("Sold : "))</div>
-          <div className="col text-muted">(int(state.data.numSold))</div>
+          <div className="col text-muted">(text("Sold : "))</div>
+          <div className="col">(int(state.data.numSold))</div>
         </div>
       </div>
       <div className="col">
         <div className="row">
-          <div className="col">(text("UnSold : "))</div>
-          <div className="col text-muted">(int(state.data.numUnsold))</div>
+          <div className="col text-muted">(text("UnSold : "))</div>
+          <div className="col">(int(state.data.numUnsold))</div>
         </div>
       </div>
     </div>
   </div>
 
   <h6 className="card-header">(text("Issue Tickets"))</h6>
-  <div className="card-body"> 
+  <div className="card-body padding-vertical-less"> 
     <div className="form-group" style=(ReactDOMRe.Style.make(~margin="3%",()))>
       <div className="row">
         <label className="col col-5 col-form-label text-muted">(text("Number of tickets"))</label>

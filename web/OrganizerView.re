@@ -77,7 +77,7 @@ let make = (_children) => {
           state.myEvents 
           |> Js.Array.map((event) => {
               ...event,
-              show:(switch (event.address == address) { | true => !event.show | false => event.show })
+              show:((event.address === address) ? !event.show : false)
             });
         let state = {...state,myEvents:events};
         ReasonReact.Update(state)
@@ -136,7 +136,7 @@ let make = (_children) => {
   <h4 className="card-header">(text("My Events"))</h4> 
   <div className="card-body">
 
-    <table className="table table-hover">
+    <table className="table table-hover border-secondary border-solid">
       <thead className="bg-secondary">
         <tr>
           <th scope="col">(text("Description"))</th>
@@ -147,13 +147,20 @@ let make = (_children) => {
       <tbody>
         (state.myEvents |> Js.Array.map(({event,description,address,balance,show}) => {
           [|
-          <tr key=address className="table-active" onClick=(_ => send(ToggleEvent(address)))>
+          <tr key=address 
+              className=((show) ? "table-active bg-black" : "")
+              onClick=(_ => send(ToggleEvent(address)))>
             <td>(text(description))</td>
             <td><AddressLabel address=address/></td>
             <td><WeiLabel amount=balance/></td>
           </tr>,
           (switch (show) {
-           | true => <tr key=(Js.String.concat(address,"View"))><td colSpan=3 style=(ReactDOMRe.Style.make(~padding="0px",()))><EventView event=event address=address web3=Js.Option.getExn(state.web3) /></td></tr>
+           | true => 
+              <tr className="table-active bg-black" key=(Js.String.concat(address,"View"))>
+                <td colSpan=3>
+                  <EventView event=event address=address web3=Js.Option.getExn(state.web3) />
+                </td>
+              </tr>
            | false => ReasonReact.null 
            })
           |] |> ReasonReact.array

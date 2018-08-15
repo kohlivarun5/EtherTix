@@ -1,0 +1,12 @@
+.bg-black {
+  background:black !important;
+}
+
+.border-solid {
+  border:solid;
+}
+
+.padding-vertical-less {
+  padding-top:5px;
+  padding-bottom:5px;
+}
