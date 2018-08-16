@@ -24,6 +24,7 @@ type action =
 | IssueNumber(int) 
 | IssuePrice(int)
 | SubmitIssue
+| Withdraw 
 
 let component = ReasonReact.reducerComponent("EventView");
 
@@ -63,10 +64,24 @@ let make = (~web3,~address,~event,_children) => {
         |> Js.Promise.then_ (_ => self.send(FetchData) |> Js.Promise.resolve);
         ()
       })
+    | Withdraw => ReasonReact.UpdateWithSideEffects(state,(self) => {
+        Event.withdraw(state.event)
+        |> BsWeb3.Eth.send(BsWeb3.Eth.make_transaction(~from=state.web3.account))
+        |> Js.Promise.then_ (_ => self.send(FetchData) |> Js.Promise.resolve);
+        ()
+      })
     }
   },
   render: ({send,state}) =>
 <div className="card">
+    <div className="card-header">
+      <button className="btn btn-success" onClick=(_ => send(Withdraw))
+              style=(ReactDOMRe.Style.make(~width="100%",())) 
+        >
+
+        (text("Withdraw"))
+      </button>
+    </div>
   <div className="card-body"> 
     <div className="row">
       <div className="col">
