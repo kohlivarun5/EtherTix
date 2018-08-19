@@ -152,7 +152,7 @@ let make = (_children) => {
             </div>
           </div>
           <div className="card-footer">
-            <button disabled={state.web3 == None} type_="submit" className="col btn btn-success" 
+            <button disabled={state.web3 == None} type_="submit" className="col btn btn-success btn-send" 
                     onClick=(_ => send(Submit))>
               (text("Submit"))
             </button>

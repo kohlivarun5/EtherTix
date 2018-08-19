@@ -29,7 +29,8 @@
 }
 
 .bg-header {
-  background: rgba(243,156,18,0.7)
+  background: rgba(243,156,18,0.2);
+  border-bottom: solid #F39C12 1px;
 }
 
 .table-no-bottom {
@@ -38,4 +39,8 @@
 
 body {
   background:black;
+}
+
+.btn-send {
+  background-color: rgba(0,188,140,0.3);
 }

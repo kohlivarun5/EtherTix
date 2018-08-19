@@ -145,7 +145,7 @@ let make = (~web3,_children) => {
                 </label>
               </div>,
               <div key="SubmitBuy" className="row">
-                <button className="btn btn-success" onClick=(_ => send(SubmitBuy))
+                <button className="btn btn-success btn-send" onClick=(_ => send(SubmitBuy))
                         style=(ReactDOMRe.Style.make(~marginLeft="20px",~marginRight="20px",~marginTop="20px",~width="100%",())) >
                   (text("Submit"))
                 </button>

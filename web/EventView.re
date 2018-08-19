@@ -81,7 +81,7 @@ let make = (~web3,~address,~event,_children) => {
   render: ({send,state}) =>
 <div className="card">
     <div className="card-header">
-      <button className="btn btn-success" onClick=(_ => send(Withdraw))
+      <button className="btn btn-success btn-send" onClick=(_ => send(Withdraw))
               style=(ReactDOMRe.Style.make(~width="100%",())) 
         >
 
@@ -123,7 +123,7 @@ let make = (~web3,~address,~event,_children) => {
         />
       </div>
       <div className="row">
-        <button className="btn btn-success" onClick=(_ => send(SubmitIssue))
+        <button className="btn btn-success btn-send" onClick=(_ => send(SubmitIssue))
                 style=(ReactDOMRe.Style.make(~marginLeft="20px",~marginRight="20px",~marginTop="20px",~width="100%",())) >
           (text("Submit"))
         </button>

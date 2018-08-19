@@ -73,7 +73,7 @@ let make = (~web3,_children) => {
     </div>
   </div>
   <div className="card-header">
-    <button className="btn btn-success" onClick=(_ => send(Withdraw))
+    <button className="btn btn-success btn-send" onClick=(_ => send(Withdraw))
             style=(ReactDOMRe.Style.make(~width="100%",())) 
       >
 
