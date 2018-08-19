@@ -127,7 +127,7 @@ let make = (_children) => {
   </nav>
 
 <div className="card" style=(ReactDOMRe.Style.make(~margin="10%",()))>
-  <h5 className="card-header">(text("My Events"))</h5> 
+  <h5 className="card-header">(text("Organized Events"))</h5> 
   <div className="card-body">
 
     <table className="table table-hover border-secondary border-solid">

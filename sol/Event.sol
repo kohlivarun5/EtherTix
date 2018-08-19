@@ -53,7 +53,7 @@ contract Event /* is ERC721 */  {
     // We will buy 1 ticket at a time
     // If while buying, we do not find enough tickets, 
     // or we did not get enough money, we throw
-    for(uint256 i=0;i<d_tickets.length && i < _numTickets;++i) {
+    for(uint256 i=0;i<d_tickets.length && bought < _numTickets;++i) {
       if (d_token_owner[i] != address(0)) { continue; }
         
       // Ticket can be bought 
@@ -73,7 +73,7 @@ contract Event /* is ERC721 */  {
     // We will buy 1 ticket at a time
     // If while buying, we do not find enough tickets, 
     // or we did not get enough money, we throw
-    for(uint256 i=0;i<d_tickets.length && i < _numTickets;++i) {
+    for(uint256 i=0;i<d_tickets.length && bought < _numTickets;++i) {
       if (d_token_owner[i] != address(0)) { continue; }
         
       // Ticket can be bought 
