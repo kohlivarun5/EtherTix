@@ -21,10 +21,9 @@ After you see the webpack compilation succeed (the `npm run webpack` step), open
 ## Build for Production
 
 ```sh
-npm run build
-npm run webpack:production
+npm run release
 ```
 
-This will replace the development artifact `build/Index.js` for an optimized version.
+This will build for production and push the code upstream.
 
 **To enable dead code elimination**, change `bsconfig.json`'s `package-specs` `module` from `"commonjs"` to `"es6"`. Then re-run the above 2 commands. This will allow Webpack to remove unused code.
