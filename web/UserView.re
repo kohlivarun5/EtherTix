@@ -42,7 +42,7 @@ let make = (~web3,_children) => {
         ReasonReact.UpdateWithSideEffects({...state,buy_data:{...state.buy_data,numTickets}},(self) => {
           Event.getCostFor(Js.Option.getExn(state.event),~numTickets)
           |> BsWeb3.Eth.call 
-          |> Js.Promise.then_ ((totalCost) => self.send(TotalCost(totalCost)) |> Js.Promise.resolve);
+          |> Js.Promise.then_ ((totalCost) => { Js.log(totalCost); self.send(TotalCost(totalCost)) |> Js.Promise.resolve});
           ()
         })
     | TotalCost(totalCost) => 
@@ -62,7 +62,7 @@ let make = (~web3,_children) => {
   render: ({send,state}) =>
 <div className="card">
 
-  <h6 className="card-header">(text("Buy Tickets"))</h6>
+  <h5 className="card-header">(text("Buy Tickets"))</h5>
   <div className="card-body padding-vertical-less"> 
     <div className="form-group" style=(ReactDOMRe.Style.make(~margin="3%",()))>
       <div className="row">
@@ -80,7 +80,7 @@ let make = (~web3,_children) => {
         />
       </div>
       <div className="row">
-        <label className="col col-5 col-form-label text-muted">(text("TotalCost"))</label>
+        <label className="col col-5 col-form-label text-muted">(text("Total Cost (wei)"))</label>
         <input className="col form-control" type_="text" placeholder="" id="inputLarge" 
                onChange=(event => send(TotalCost(ReactEvent.Form.target(event)##value)))
                value=(string_of_int(state.buy_data.totalCost))

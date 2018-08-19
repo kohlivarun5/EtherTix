@@ -32,6 +32,7 @@ let make = (_children) => {
   ...component,
   didMount: self => { 
     if (Js.typeof(BsWeb3.Web3.get) !== "undefined") {
+      let universe_address = Js.String.concat("",Network.universe);
       let w3 = BsWeb3.Web3.makeWeb3(BsWeb3.Web3.currentProvider(Js.Undefined.getExn(BsWeb3.Web3.get)));
       let eth = BsWeb3.Web3.eth(w3);
       Js.Promise.then_((accounts) => {
@@ -40,9 +41,9 @@ let make = (_children) => {
            As Bs does not support send with new 
            */
         Js.log(eth);
+        Js.log(universe_address);
         Js.log(Universe.abi);
-        Js.log(Rinkeby.universe);
-        let universe:Universe.t = [%bs.raw{| new eth.Contract(UniverseAbiJson.default,RinkebyAddressesJson.default.universe) |}];
+        let universe:Universe.t = [%bs.raw{| new eth.Contract(UniverseAbiJson.default,universe_address) |}];
 
         Js.log("InitWeb3");
         self.send(InitWeb3({
@@ -125,10 +126,8 @@ let make = (_children) => {
     <a className="navbar-brand" href="#">(ReasonReact.string("BlockTix"))</a>
   </nav>
 
-  <p/>
-
 <div className="card" style=(ReactDOMRe.Style.make(~margin="10%",()))>
-  <h4 className="card-header">(text("My Events"))</h4> 
+  <h5 className="card-header">(text("My Events"))</h5> 
   <div className="card-body">
 
     <table className="table table-hover border-secondary border-solid">
@@ -146,7 +145,7 @@ let make = (_children) => {
               className=((show) ? "table-active bg-black" : "")
               onClick=(_ => send(ToggleEvent(address)))>
             <td>(text(description))</td>
-            <td><AddressLabel address=address/></td>
+            <td><AddressLabel address=address uri=Network.address_uri /></td>
             <td><WeiLabel amount=balance/></td>
           </tr>,
           (switch (show) {
@@ -168,7 +167,7 @@ let make = (_children) => {
 </div>
 
 <div className="card" style=(ReactDOMRe.Style.make(~margin="10%",()))>
-  <h4 className="card-header">(text("Create Event"))</h4>
+  <h5 className="card-header">(text("Create Event"))</h5>
   <div className="card-body">
 
     <div className="form-group" style=(ReactDOMRe.Style.make(~margin="3%",()))>
