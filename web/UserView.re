@@ -116,7 +116,7 @@ let make = (~web3,_children) => {
   render: ({send,state}) =>
 <div>
 
-  <div className="card" style=(ReactDOMRe.Style.make(~margin="10%",()))>
+  <div className="card container-card">
     <h5 className="card-header">(text("Buy Tickets"))</h5>
     <div className="card-body padding-vertical-less"> 
       <div className="form-group" style=(ReactDOMRe.Style.make(~margin="3%",()))>
@@ -154,7 +154,7 @@ let make = (~web3,_children) => {
     </div>
   </div>
 
-  <div className="card" style=(ReactDOMRe.Style.make(~margin="10%",()))>
+  <div className="card container-card">
     <h5 className="card-header">(text("Tickets"))</h5> 
     <div className="card-body">
 

@@ -135,7 +135,7 @@ let make = (_children) => {
     )
 
     <div>
-      <div className="card" style=(ReactDOMRe.Style.make(~margin="10%",()))>
+      <div className="card container-card">
         <h5 className="card-header">(text("Organized Events"))</h5> 
         <div className="card-body">
 
@@ -175,9 +175,9 @@ let make = (_children) => {
         </div>
       </div>
 
-      <div className="card" style=(ReactDOMRe.Style.make(~margin="10%",()))>
+      <div className="card container-card">
         <h5 className="card-header">(text("Create Event"))</h5>
-        <div className="card-body">
+        <div className="card-body padding-vertical-less">
 
           <div className="form-group" style=(ReactDOMRe.Style.make(~margin="3%",()))>
             <div className="row">
