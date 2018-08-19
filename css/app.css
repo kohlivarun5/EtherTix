@@ -35,3 +35,7 @@
 .table-no-bottom {
   margin-bottom:0px;
 }
+
+body {
+  background:black;
+}

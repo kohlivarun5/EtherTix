@@ -136,7 +136,7 @@ let make = (_children) => {
 
     <div className="row">
 
-      <div className="col-lg">
+      <div className="col-md">
         <div className="card container-card">
           <h5 className="card-header bg-header">(text("Create Event"))</h5>
           <div className="card-body padding-vertical-less">
@@ -162,7 +162,7 @@ let make = (_children) => {
       
       </div>
 
-      <div className="col-lg">
+      <div className="col-md">
         <div className="card container-card">
           <h5 className="card-header bg-header">(text("Organized Events"))</h5> 
           <table className="table table-hover border-secondary border-solid table-no-bottom">
