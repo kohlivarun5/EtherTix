@@ -213,12 +213,7 @@
 			}
 		],
 		"name": "buy",
-		"outputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
+		"outputs": [],
 		"payable": true,
 		"stateMutability": "payable",
 		"type": "function"

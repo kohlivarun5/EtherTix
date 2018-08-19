@@ -13,6 +13,11 @@ module.exports = {
     filename: 'Index.js',
   },
   resolve: {
+    modules: [
+      path.resolve(__dirname, './node_modules'),
+      path.resolve(__dirname, './web'),
+      path.resolve(__dirname, './sol')
+    ],
     extensions: ['.js', '.json']
   },
 };
