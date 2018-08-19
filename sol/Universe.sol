@@ -5,28 +5,15 @@ import "./Event.sol";
 contract Universe {
   
   address d_owner;
-  address internal d_userEvents;
   
   mapping(address => address[]) d_organizerEvents;
+  mapping(address => address[]) d_userEvents;
   
-  constructor(address _userEvents) public payable {
+  constructor() public payable {
     d_owner = msg.sender;
-    d_userEvents = _userEvents;
   }
   
   function() public payable {}
-  
-  function userEvents() public view returns(address) { 
-      return d_userEvents;
-  }
-  
-  function createEvent(string _description) public payable returns(address) {
-    d_organizerEvents[msg.sender].push(new Event(_description,msg.sender,d_userEvents));
-  }
-  
-  function myEvents() public view returns(address[]) {
-    return d_organizerEvents[msg.sender];
-  }
   
   function getBalance() public view returns(uint) {
     return address(this).balance;
@@ -35,6 +22,43 @@ contract Universe {
   function withdraw() public {
     require(msg.sender == d_owner);
     address(d_owner).transfer(getBalance());
+  }
+  
+  function createEvent(string _description) public payable returns(address) {
+    d_organizerEvents[msg.sender].push(new Event(_description,msg.sender));
+  }
+  
+  function organizerEvents() public view returns(address[]) {
+    return d_organizerEvents[msg.sender];
+  }
+  
+  function userEvents() public view returns(address[]) {
+    return d_userEvents[msg.sender];
+  }
+  
+  function addUserEvent(address _user,address _event) public {
+      require(_user == msg.sender || _event == msg.sender);
+      for(uint i=0;i>d_userEvents[_user].length;++i) {
+          if (d_userEvents[_user][i] == _event)
+          { return; }
+      }
+      // Reached here, event not in list,
+      // Add it 
+      d_userEvents[_user].push(_event);
+  }
+  
+  function removeUserEvent(address _user,address _event) public {
+      require(_user == msg.sender || _event == msg.sender);
+      for(uint i=0;i>d_userEvents[_user].length;++i) {
+          if (d_userEvents[_user][i] == _event)
+          { 
+              d_userEvents[_user][i] = d_userEvents[_user][d_userEvents[_user].length-1];
+              delete d_userEvents[_user][d_userEvents[_user].length-1];
+              d_userEvents[_user].length = d_userEvents[_user].length-1;
+              return; 
+              
+          }
+      }
   }
   
 }

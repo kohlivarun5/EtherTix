@@ -2,7 +2,7 @@ pragma solidity ^0.4.24;
 
 // import "./ERC721.sol";
 
-import "./UserEvents.sol";
+import "./Universe.sol";
 
 contract Event /* is ERC721 */  {
     
@@ -13,7 +13,6 @@ contract Event /* is ERC721 */  {
   uint256 internal d_creator_commission_factor = 100; /* 1% commission */
  
   address internal d_admin;
-  address internal d_userEvents;
   address internal d_organizer;
   
   string internal d_description;
@@ -31,11 +30,10 @@ contract Event /* is ERC721 */  {
   mapping(uint256 => uint256) internal d_token_ask;
   
 
-  constructor(string _description, address _organizer,address _userEvents) public { 
+  constructor(string _description, address _organizer) public { 
     d_admin = msg.sender;
     d_organizer = _organizer;
     d_description = _description;
-    d_userEvents = _userEvents;
   }
   
   function issue(uint256 _numTickets,uint256 _price_szabo) public {
@@ -93,7 +91,7 @@ contract Event /* is ERC721 */  {
     uint256 commission = msg.value / d_creator_commission_factor;
     address(d_admin).transfer(commission);
     
-    UserEvents u = UserEvents(d_userEvents);
+    Universe u = Universe(d_admin);
     u.addUserEvent(msg.sender,this);
   }
   
