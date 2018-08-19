@@ -3,10 +3,10 @@
   "reason": {
     "react-jsx": 2
   },
-  "sources": {
-    "dir" : "web",
-    "subdirs" : true
-  },
+  "sources": [
+		{ "dir" : "sol", "subdirs" : true},
+		{ "dir" : "web", "subdirs" : true}
+  ],
   "package-specs": [{
     "module": "es6",
     "in-source": true

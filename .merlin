@@ -13,4 +13,6 @@ S /Users/vkohli/Github/SmartTix/node_modules/bs-web3/lib/ocaml
 B /Users/vkohli/Github/SmartTix/node_modules/bs-web3/lib/ocaml
 S web
 B lib/bs/web
+S sol
+B lib/bs/sol
 ####BSB GENERATED: NO EDIT}

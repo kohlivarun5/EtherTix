@@ -107,7 +107,7 @@ let make = (_children) => {
 
           Js.log("Calling myEvents");
           let transaction_data = BsWeb3.Eth.make_transaction(~from=web3_state.account);
-          Universe.myEvents(web3_state.universe)
+          Universe.myOrganizedEvents(web3_state.universe)
           |> BsWeb3.Eth.call_with(transaction_data)
           |> Js.Promise.then_ ((events_addr:Js.Array.t(BsWeb3.Eth.address)) => {
               Js.log("Got Events");

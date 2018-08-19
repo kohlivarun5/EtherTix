@@ -5,21 +5,23 @@ import "./Event.sol";
 contract Universe {
   
   address d_owner;
+  address internal d_userEvents;
   
-  mapping(address => address[]) d_events;
+  mapping(address => address[]) d_organizerEvents;
   
-  constructor() public payable {
+  constructor(address _userEvents) public payable {
     d_owner = msg.sender;
+    d_userEvents = _userEvents;
   }
   
   function() public payable {}
   
   function createEvent(string _description) public payable returns(address) {
-    d_events[msg.sender].push(new Event(_description,msg.sender));
+    d_organizerEvents[msg.sender].push(new Event(_description,msg.sender,d_userEvents));
   }
   
   function myEvents() public view returns(address[]) {
-    return d_events[msg.sender];
+    return d_organizerEvents[msg.sender];
   }
   
   function getBalance() public view returns(uint) {

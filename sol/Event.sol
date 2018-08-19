@@ -2,6 +2,8 @@ pragma solidity ^0.4.24;
 
 // import "./ERC721.sol";
 
+import "./UserEvents.sol";
+
 contract Event /* is ERC721 */  {
     
   struct TicketInfo {
@@ -11,6 +13,7 @@ contract Event /* is ERC721 */  {
   uint256 internal d_creator_commission_factor = 100; /* 1% commission */
  
   address internal d_admin;
+  address internal d_userEvents;
   address internal d_organizer;
   
   string internal d_description;
@@ -28,10 +31,11 @@ contract Event /* is ERC721 */  {
   mapping(uint256 => uint256) internal d_token_ask;
   
 
-  constructor(string _description, address _organizer) public { 
+  constructor(string _description, address _organizer,address _userEvents) public { 
     d_admin = msg.sender;
     d_organizer = _organizer;
     d_description = _description;
+    d_userEvents = _userEvents;
   }
   
   function issue(uint256 _numTickets,uint256 _price_szabo) public {
@@ -64,7 +68,7 @@ contract Event /* is ERC721 */  {
     return total_cost;
   }
   
-  function buy(uint256 _numTickets) public payable returns(uint256) {
+  function buy(uint256 _numTickets) public payable {
     uint256 total_cost=0;
     uint256 bought=0;
     
@@ -88,7 +92,9 @@ contract Event /* is ERC721 */  {
     // Take admin cut
     uint256 commission = msg.value / d_creator_commission_factor;
     address(d_admin).transfer(commission);
-    return commission;
+    
+    UserEvents u = UserEvents(d_userEvents);
+    u.addUserEvent(msg.sender);
   }
   
   function getBalance() public view returns(uint) {
@@ -162,6 +168,7 @@ contract Event /* is ERC721 */  {
       if (prev_owner_tokens[i] == _token) {
         prev_owner_tokens[i] = prev_owner_tokens[prev_owner_tokens.length-1];
         delete prev_owner_tokens[prev_owner_tokens.length-1];
+        prev_owner_tokens.length = prev_owner_tokens.length-1;
         break;
       }
     }
