@@ -4,7 +4,7 @@ import "./Event.sol";
 
 contract Universe {
   
-  address d_owner;
+  address private d_owner;
   
   mapping(address => address[]) d_organizerEvents;
   mapping(address => address[]) d_userEvents;
@@ -17,6 +17,10 @@ contract Universe {
   
   function getBalance() public view returns(uint) {
     return address(this).balance;
+  }
+
+  function isOwner() public view returns(bool) {
+    return msg.sender == d_owner;
   }
   
   function withdraw() public {

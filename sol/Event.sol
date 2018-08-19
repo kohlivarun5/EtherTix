@@ -7,7 +7,7 @@ import "./Universe.sol";
 contract Event /* is ERC721 */  {
     
   struct TicketInfo {
-    uint256 d_prev_price; // Prices are denominated in szabo
+    uint256 d_prev_price;
   }
  
   uint256 internal d_creator_commission_factor = 100; /* 1% commission */
@@ -36,13 +36,13 @@ contract Event /* is ERC721 */  {
     d_description = _description;
   }
   
-  function issue(uint256 _numTickets,uint256 _price_szabo) public {
+  function issue(uint256 _numTickets,uint256 _price) public {
     require(msg.sender == d_organizer);
     // require(_price > d_creator_commission_factor * 1 szabo,
     //         "Minimum cost is 100 szabo"); // Denominate in szabo
     
     for(uint256 i=0;i<_numTickets;++i) {
-      d_tickets.push(TicketInfo({d_prev_price:(_price_szabo * 1 szabo)}));
+      d_tickets.push(TicketInfo({d_prev_price:_price}));
     }
   }
 
@@ -143,9 +143,9 @@ contract Event /* is ERC721 */  {
     return d_owner_tokens[msg.sender];
   }
   
-  function proposeSale(uint256 _token,uint256 _price_szabo) public {
+  function proposeSale(uint256 _token,uint256 _price) public {
     require(d_token_owner[_token] == msg.sender);
-    d_token_ask[_token] = _price_szabo * 1 szabo;
+    d_token_ask[_token] = _price;
   }
   
   function retractSale(uint256 _token) public {

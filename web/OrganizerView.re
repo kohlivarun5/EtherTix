@@ -199,6 +199,12 @@ let make = (_children) => {
       </div>
 
     </div>
+
+    (state.web3 === None 
+      ? ReasonReact.null 
+      : <AdminView web3=Js.Option.getExn(state.web3) />
+    )
+
   
   </div>
 

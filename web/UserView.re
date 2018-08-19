@@ -139,7 +139,9 @@ let make = (~web3,_children) => {
             </div>,
             <div key="TotalCost" className="row">
               <label className="col col-5 col-form-label text-muted">(text("Total Cost"))</label>
-              <WeiLabel amount=totalCost/>
+              <label className="col col-5 col-form-label">
+                <WeiLabel amount=totalCost/>
+              </label>
             </div>,
             <div key="SubmitBuy" className="row">
               <button className="btn btn-success" onClick=(_ => send(SubmitBuy))
