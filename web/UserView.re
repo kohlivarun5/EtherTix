@@ -114,74 +114,78 @@ let make = (~web3,_children) => {
     }
   },
   render: ({send,state}) =>
-<div>
+<div className="row">
 
-  <div className="card container-card">
-    <h5 className="card-header">(text("Buy Tickets"))</h5>
-    <div className="card-body padding-vertical-less"> 
-      <div className="form-group" style=(ReactDOMRe.Style.make(~margin="3%",()))>
-        <div className="row">
-          <label className="col col-5 col-form-label text-muted">(text("Event"))</label>
-          <input className="col form-control" type_="text" placeholder="" id="inputLarge"
-                 onChange=(event => send(BuyEventAddress(ReactEvent.Form.target(event)##value)))
-                 value=state.event_address
-          />
+  <div className="col-lg">
+    <div className="card container-card">
+      <h5 className="card-header">(text("Buy Tickets"))</h5>
+      <div className="card-body padding-vertical-less"> 
+        <div className="form-group" style=(ReactDOMRe.Style.make(~margin="3%",()))>
+          <div className="row">
+            <label className="col col-5 col-form-label text-muted">(text("Event"))</label>
+            <input className="col form-control" type_="text" placeholder="" id="inputLarge"
+                   onChange=(event => send(BuyEventAddress(ReactEvent.Form.target(event)##value)))
+                   value=state.event_address
+            />
+          </div>
+          (switch(state.buy_data) {
+           | None => ReasonReact.null 
+           | Some({numTickets,totalCost}) => [|
+              <div key="NumTickets" className="row">
+                <label className="col col-5 col-form-label text-muted">(text("Number of tickets"))</label>
+                <input className="col form-control" type_="text" placeholder="" id="inputLarge"
+                       onChange=(event => send(NumTickets(int_of_float(Js.Float.fromString(ReactEvent.Form.target(event)##value)))))
+                       value=(string_of_int(numTickets))
+                />
+              </div>,
+              <div key="TotalCost" className="row">
+                <label className="col col-5 col-form-label text-muted">(text("Total Cost"))</label>
+                <label className="col col-5 col-form-label">
+                  <WeiLabel amount=totalCost/>
+                </label>
+              </div>,
+              <div key="SubmitBuy" className="row">
+                <button className="btn btn-success" onClick=(_ => send(SubmitBuy))
+                        style=(ReactDOMRe.Style.make(~marginLeft="20px",~marginRight="20px",~marginTop="20px",~width="100%",())) >
+                  (text("Submit"))
+                </button>
+              </div>
+            |] |> ReasonReact.array
+            }
+          )
         </div>
-        (switch(state.buy_data) {
-         | None => ReasonReact.null 
-         | Some({numTickets,totalCost}) => [|
-            <div key="NumTickets" className="row">
-              <label className="col col-5 col-form-label text-muted">(text("Number of tickets"))</label>
-              <input className="col form-control" type_="text" placeholder="" id="inputLarge"
-                     onChange=(event => send(NumTickets(int_of_float(Js.Float.fromString(ReactEvent.Form.target(event)##value)))))
-                     value=(string_of_int(numTickets))
-              />
-            </div>,
-            <div key="TotalCost" className="row">
-              <label className="col col-5 col-form-label text-muted">(text("Total Cost"))</label>
-              <label className="col col-5 col-form-label">
-                <WeiLabel amount=totalCost/>
-              </label>
-            </div>,
-            <div key="SubmitBuy" className="row">
-              <button className="btn btn-success" onClick=(_ => send(SubmitBuy))
-                      style=(ReactDOMRe.Style.make(~marginLeft="20px",~marginRight="20px",~marginTop="20px",~width="100%",())) >
-                (text("Submit"))
-              </button>
-            </div>
-          |] |> ReasonReact.array
-          }
-        )
       </div>
     </div>
   </div>
 
-  <div className="card container-card">
-    <h5 className="card-header">(text("Tickets"))</h5> 
-    <div className="card-body">
+  <div className="col-lg">
+    <div className="card container-card">
+      <h5 className="card-header">(text("Tickets"))</h5> 
+      <div className="card-body">
 
-      <table className="table table-hover border-secondary border-solid">
-        <thead className="bg-secondary">
-          <tr>
-            <th scope="col">(text("Description"))</th>
-            <th scope="col">(text("Address"))</th>
-            <th scope="col">(text("Tickets"))</th>
-          </tr>
-        </thead>
-        <tbody>
-          (state.myEvents |> Js.Array.map(({event,description,address,tickets}) => {
-            <tr key=address 
-                /* Support toggle */
-                >
-              <td>(text(description))</td>
-              <td><AddressLabel address=address uri=state.web3.address_uri /></td>
-              <td>(int(Js.Array.length(tickets)))</td>
+        <table className="table table-hover border-secondary border-solid">
+          <thead className="bg-secondary">
+            <tr>
+              <th scope="col">(text("Description"))</th>
+              <th scope="col">(text("Address"))</th>
+              <th scope="col">(text("Tickets"))</th>
             </tr>
-          })
-        |> ReasonReact.array)
-        </tbody>
-      </table> 
+          </thead>
+          <tbody>
+            (state.myEvents |> Js.Array.map(({event,description,address,tickets}) => {
+              <tr key=address 
+                  /* Support toggle */
+                  >
+                <td>(text(description))</td>
+                <td><AddressLabel address=address uri=state.web3.address_uri /></td>
+                <td>(int(Js.Array.length(tickets)))</td>
+              </tr>
+            })
+          |> ReasonReact.array)
+          </tbody>
+        </table> 
 
+      </div>
     </div>
   </div>
 
