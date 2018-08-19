@@ -118,7 +118,7 @@ let make = (~web3,_children) => {
 
   <div className="col-lg">
     <div className="card container-card">
-      <h5 className="card-header">(text("Buy Tickets"))</h5>
+      <h5 className="card-header bg-header">(text("Buy Tickets"))</h5>
       <div className="card-body padding-vertical-less"> 
         <div className="form-group" style=(ReactDOMRe.Style.make(~margin="3%",()))>
           <div className="row">
@@ -160,32 +160,28 @@ let make = (~web3,_children) => {
 
   <div className="col-lg">
     <div className="card container-card">
-      <h5 className="card-header">(text("Tickets"))</h5> 
-      <div className="card-body">
-
-        <table className="table table-hover border-secondary border-solid">
-          <thead className="bg-secondary">
-            <tr>
-              <th scope="col">(text("Description"))</th>
-              <th scope="col">(text("Address"))</th>
-              <th scope="col">(text("Tickets"))</th>
+      <h5 className="card-header bg-header">(text("Tickets"))</h5> 
+      <table className="table table-hover border-secondary border-solid table-no-bottom">
+        <thead className="bg-secondary">
+          <tr>
+            <th scope="col">(text("Description"))</th>
+            <th scope="col">(text("Address"))</th>
+            <th scope="col">(text("Tickets"))</th>
+          </tr>
+        </thead>
+        <tbody>
+          (state.myEvents |> Js.Array.map(({event,description,address,tickets}) => {
+            <tr key=address 
+                /* Support toggle */
+                >
+              <td>(text(description))</td>
+              <td><AddressLabel address=address uri=state.web3.address_uri /></td>
+              <td>(int(Js.Array.length(tickets)))</td>
             </tr>
-          </thead>
-          <tbody>
-            (state.myEvents |> Js.Array.map(({event,description,address,tickets}) => {
-              <tr key=address 
-                  /* Support toggle */
-                  >
-                <td>(text(description))</td>
-                <td><AddressLabel address=address uri=state.web3.address_uri /></td>
-                <td>(int(Js.Array.length(tickets)))</td>
-              </tr>
-            })
-          |> ReasonReact.array)
-          </tbody>
-        </table> 
-
-      </div>
+          })
+        |> ReasonReact.array)
+        </tbody>
+      </table> 
     </div>
   </div>
 

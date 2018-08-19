@@ -92,13 +92,13 @@ let make = (~web3,~address,~event,_children) => {
     <div className="row">
       <div className="col col-5">
         <div className="row">
-          <div className="col text-muted">(text("Sold : "))</div>
+          <div className="col text-muted">(text("Sold"))</div>
           <div className="col">(int(state.data.numSold))</div>
         </div>
       </div>
       <div className="col col-7">
         <div className="row">
-          <div className="col text-muted">(text("Not Sold : "))</div>
+          <div className="col text-muted">(text("Not Sold"))</div>
           <div className="col">(int(state.data.numUnsold))</div>
         </div>
       </div>

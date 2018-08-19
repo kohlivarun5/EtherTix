@@ -138,7 +138,7 @@ let make = (_children) => {
 
       <div className="col-lg">
         <div className="card container-card">
-          <h5 className="card-header">(text("Create Event"))</h5>
+          <h5 className="card-header bg-header">(text("Create Event"))</h5>
           <div className="card-body padding-vertical-less">
 
             <div className="form-group" style=(ReactDOMRe.Style.make(~margin="3%",()))>
@@ -164,43 +164,39 @@ let make = (_children) => {
 
       <div className="col-lg">
         <div className="card container-card">
-          <h5 className="card-header">(text("Organized Events"))</h5> 
-          <div className="card-body">
-
-            <table className="table table-hover border-secondary border-solid">
-              <thead className="bg-secondary">
-                <tr>
-                  <th scope="col">(text("Description"))</th>
-                  <th scope="col">(text("Address"))</th>
-                  <th scope="col">(text("Balance"))</th>
-                </tr>
-              </thead>
-              <tbody>
-                (state.myEvents |> Js.Array.map(({event,description,address,balance,show}) => {
-                  [|
-                  <tr key=address 
-                      className=((show) ? "table-active bg-black" : "")
-                      onClick=(_ => send(ToggleEvent(address)))>
-                    <td>(text(description))</td>
-                    <td><AddressLabel address=address uri=Network.address_uri /></td>
-                    <td><WeiLabel amount=balance/></td>
-                  </tr>,
-                  (switch (show) {
-                   | true => 
-                      <tr className="table-active bg-black" key=(Js.String.concat(address,"View"))>
-                        <td colSpan=3>
-                          <EventView event=event address=address web3=Js.Option.getExn(state.web3) />
-                        </td>
-                      </tr>
-                   | false => ReasonReact.null 
-                   })
-                  |] |> ReasonReact.array
-                })
-              |> ReasonReact.array)
-              </tbody>
-            </table> 
-
-          </div>
+          <h5 className="card-header bg-header">(text("Organized Events"))</h5> 
+          <table className="table table-hover border-secondary border-solid table-no-bottom">
+            <thead className="bg-secondary">
+              <tr>
+                <th scope="col">(text("Description"))</th>
+                <th scope="col">(text("Address"))</th>
+                <th scope="col">(text("Balance"))</th>
+              </tr>
+            </thead>
+            <tbody>
+              (state.myEvents |> Js.Array.map(({event,description,address,balance,show}) => {
+                [|
+                <tr key=address 
+                    className=((show) ? "table-active bg-black" : "")
+                    onClick=(_ => send(ToggleEvent(address)))>
+                  <td>(text(description))</td>
+                  <td><AddressLabel address=address uri=Network.address_uri /></td>
+                  <td><WeiLabel amount=balance/></td>
+                </tr>,
+                (switch (show) {
+                 | true => 
+                    <tr className="table-active bg-black" key=(Js.String.concat(address,"View"))>
+                      <td colSpan=3>
+                        <EventView event=event address=address web3=Js.Option.getExn(state.web3) />
+                      </td>
+                    </tr>
+                 | false => ReasonReact.null 
+                 })
+                |] |> ReasonReact.array
+              })
+            |> ReasonReact.array)
+            </tbody>
+          </table> 
         </div>
       </div>
       

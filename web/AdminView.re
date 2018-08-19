@@ -61,7 +61,7 @@ let make = (~web3,_children) => {
   | false => ReasonReact.null
   | true => 
 <div className="card container-card">
-  <h5 className="card-header">(text("Admin Information"))</h5>
+  <h5 className="card-header bg-danger">(text("Admin Information"))</h5>
   <div className="card-body padding-vertical-less"> 
     <div className="form-group" style=(ReactDOMRe.Style.make(~margin="3%",()))>
       <div className="row">
