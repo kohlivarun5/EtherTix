@@ -2,7 +2,7 @@
 
 module Network = Rinkeby;
 
-type event = {
+type event_data = {
   address:BsWeb3.Eth.address,
   event:Event.t,
   description : string,
@@ -13,7 +13,7 @@ type event = {
 type state = {
   web3 : option(Web3.state),
   new_event_description : string,
-  myEvents : Js.Array.t(event)
+  myEvents : Js.Array.t(event_data)
 };
 
 type action =
@@ -21,7 +21,7 @@ type action =
   | Change(string)
   | InitWeb3(Web3.state)
   | AddEvent(BsWeb3.Eth.address)
-  | EventData(event)
+  | EventData(event_data)
   | ToggleEvent(BsWeb3.Eth.address)
  
 let text = ReasonReact.string;
@@ -49,7 +49,8 @@ let make = (_children) => {
         self.send(InitWeb3({
             web3:w3,
             account:accounts[0],
-            universe:universe
+            universe:universe,
+            address_uri:Network.address_uri
         }));
         Js.Promise.resolve(());
       }) (BsWeb3.Eth.getAccounts(eth));
@@ -126,6 +127,13 @@ let make = (_children) => {
     <a className="navbar-brand" href="#">(ReasonReact.string("BlockTix"))</a>
   </nav>
 
+(state.web3 === None 
+  ? ReasonReact.null 
+  : <div>
+      <UserView web3=Js.Option.getExn(state.web3) />
+    </div>
+)
+
 <div className="card" style=(ReactDOMRe.Style.make(~margin="10%",()))>
   <h5 className="card-header">(text("Organized Events"))</h5> 
   <div className="card-body">
@@ -188,13 +196,6 @@ let make = (_children) => {
   </div>
 
 </div>
-
-(state.web3 === None 
-  ? ReasonReact.null 
-  : <div style=(ReactDOMRe.Style.make(~margin="10%",()))>
-      <UserView web3=Js.Option.getExn(state.web3) />
-    </div>
-)
 
 </div>
 
