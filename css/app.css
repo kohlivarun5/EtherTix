@@ -44,3 +44,12 @@ body {
 .btn-send {
   background-color: rgba(0,188,140,0.3);
 }
+
+.navbar {
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.navbar-brand {
+  font-weight: bolder;
+}
