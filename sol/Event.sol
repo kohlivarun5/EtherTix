@@ -94,7 +94,7 @@ contract Event /* is ERC721 */  {
     address(d_admin).transfer(commission);
     
     UserEvents u = UserEvents(d_userEvents);
-    u.addUserEvent(msg.sender);
+    u.addUserEvent(msg.sender,this);
   }
   
   function getBalance() public view returns(uint) {

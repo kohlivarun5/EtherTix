@@ -16,6 +16,10 @@ contract Universe {
   
   function() public payable {}
   
+  function userEvents() public view returns(address) { 
+      return d_userEvents;
+  }
+  
   function createEvent(string _description) public payable returns(address) {
     d_organizerEvents[msg.sender].push(new Event(_description,msg.sender,d_userEvents));
   }

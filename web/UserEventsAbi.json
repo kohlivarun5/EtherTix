@@ -15,6 +15,24 @@
 	},
 	{
 		"constant": false,
+		"inputs": [
+			{
+				"name": "_user",
+				"type": "address"
+			},
+			{
+				"name": "_event",
+				"type": "address"
+			}
+		],
+		"name": "removeUserEvent",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
 		"inputs": [],
 		"name": "withdraw",
 		"outputs": [],
@@ -26,33 +44,18 @@
 		"constant": false,
 		"inputs": [
 			{
-				"name": "_description",
-				"type": "string"
-			}
-		],
-		"name": "createEvent",
-		"outputs": [
+				"name": "_user",
+				"type": "address"
+			},
 			{
-				"name": "",
+				"name": "_event",
 				"type": "address"
 			}
 		],
-		"payable": true,
-		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "userEvents",
-		"outputs": [
-			{
-				"name": "",
-				"type": "address"
-			}
-		],
+		"name": "addUserEvent",
+		"outputs": [],
 		"payable": false,
-		"stateMutability": "view",
+		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -70,12 +73,7 @@
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"name": "_userEvents",
-				"type": "address"
-			}
-		],
+		"inputs": [],
 		"payable": true,
 		"stateMutability": "payable",
 		"type": "constructor"
