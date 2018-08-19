@@ -4,7 +4,7 @@ let int(i) = i |> string_of_int |> ReasonReact.string;
 type buy_data = {
   event:Event.t,
   numTickets:int,
-  totalCost:int
+  totalCost:BsWeb3.Types.big_number
 }
 
 type event_data = {
@@ -27,7 +27,7 @@ type action =
 | MyEventData(event_data)
 | BuyEventAddress(BsWeb3.Eth.address)
 | NumTickets(int)
-| TotalCost(int)
+| TotalCost(BsWeb3.Types.big_number)
 | SubmitBuy
 
 let component = ReasonReact.reducerComponent("UserView");
@@ -76,7 +76,7 @@ let make = (~web3,_children) => {
 
     | BuyEventAddress(address) => 
         let event = Event.ofAddress(state.web3.web3,address);
-        ReasonReact.UpdateWithSideEffects({...state,event_address:address,buy_data:Some({event,numTickets:0,totalCost:0})},(self) => 
+        ReasonReact.UpdateWithSideEffects({...state,event_address:address,buy_data:Some({event,numTickets:0,totalCost:BsWeb3.Utils.toBN(0)})},(self) => 
           switch(state.buy_data) {
           | None => 
             self.send(NumTickets(1))

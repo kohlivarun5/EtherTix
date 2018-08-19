@@ -4,11 +4,11 @@ let make = (~amount,_children) => {
   /* spread the other default fields of component here and override a few */
   ...component,
   render: self => {
+    Js.log(amount);
+    Js.log(BsWeb3.Utils.fromWei(amount,"ether"));
     <div> (
-      switch(amount) {
-        | 0 => "0" 
-        | _ => string_of_float(float_of_int(amount) /. 1000000000000000000.)
-      }
+      BsWeb3.Utils.fromWei(amount,"ether") 
+      |> BsWeb3.Types.toString(10)
       |> Js.String.concat(" ETH")
       |> ReasonReact.string
     )

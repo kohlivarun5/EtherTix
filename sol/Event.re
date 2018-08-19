@@ -11,7 +11,7 @@ type t;
 [@bs.scope "methods"] [@bs.send] external numSold : t => BsWeb3.Eth.contract_method = "";
 [@bs.scope "methods"] [@bs.send] external numUnSold : t => BsWeb3.Eth.contract_method = "";
 
-[@bs.scope "methods"] [@bs.send] external issue : t => (~number:int) => (~price:int) => BsWeb3.Eth.contract_method = "";
+[@bs.scope "methods"] [@bs.send] external issue : t => (~number:int) => (~price:BsWeb3.Types.big_number) => BsWeb3.Eth.contract_method = "";
 
 [@bs.scope "methods"] [@bs.send] external getCostFor : t => (~numTickets:int) => BsWeb3.Eth.contract_method = "";
 [@bs.scope "methods"] [@bs.send] external buy : t => (~numTickets:int) => BsWeb3.Eth.contract_method = "";

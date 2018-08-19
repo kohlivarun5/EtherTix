@@ -6,7 +6,7 @@ type event_data = {
   address:BsWeb3.Eth.address,
   event:Event.t,
   description : string,
-  balance : int,
+  balance : BsWeb3.Types.big_number,
   show:bool
 };
 

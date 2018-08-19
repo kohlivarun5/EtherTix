@@ -8,7 +8,7 @@ type sold_data = {
 
 type issue_data = {
   number:int,
-  price_szabo:int
+  price_milli:int
 }
 
 type state = {
@@ -35,7 +35,7 @@ let make = (~web3,~address,~event,_children) => {
     address:address,
     event:event,
     data:{numSold:0,numUnsold:0},
-    issue_data:{number:100,price_szabo:1000}
+    issue_data:{number:100,price_milli:100}
   },
   didMount: ({send}) => send(FetchData),
   reducer: (action,state:state) => {
@@ -57,9 +57,15 @@ let make = (~web3,~address,~event,_children) => {
 
     | SoldData(data) => ReasonReact.Update({...state,data:data})
     | IssueNumber(number) => ReasonReact.Update({...state,issue_data:{...state.issue_data,number}})
-    | IssuePrice(price_szabo) => ReasonReact.Update({...state,issue_data:{...state.issue_data,price_szabo}})
+    | IssuePrice(price_milli) => ReasonReact.Update({...state,issue_data:{...state.issue_data,price_milli}})
     | SubmitIssue => ReasonReact.UpdateWithSideEffects(state,(self) => {
-        Event.issue(state.event,~number=state.issue_data.number,~price_szabo=state.issue_data.price_szabo)
+        Event.issue(state.event,
+                    ~number=state.issue_data.number,
+                    ~price=(
+                      BsWeb3.Utils.toWei(
+                        BsWeb3.Utils.toBN(state.issue_data.price_milli),
+                        "milliether")
+                    ))
         |> BsWeb3.Eth.send(BsWeb3.Eth.make_transaction(~from=state.web3.account))
         |> Js.Promise.then_ (_ => self.send(FetchData) |> Js.Promise.resolve);
         ()
@@ -110,10 +116,10 @@ let make = (~web3,~address,~event,_children) => {
         />
       </div>
       <div className="row">
-        <label className="col col-5 col-form-label text-muted">(text("Price per ticket (szabo)"))</label>
+        <label className="col col-5 col-form-label text-muted">(text("Price per ticket (milli ETH)"))</label>
         <input className="col form-control" type_="text" placeholder="" id="inputLarge" 
                onChange=(event => send(IssuePrice(ReactEvent.Form.target(event)##value)))
-               value=(string_of_int(state.issue_data.price_szabo))
+               value=(string_of_int(state.issue_data.price_milli))
         />
       </div>
       <div className="row">
