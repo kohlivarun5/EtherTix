@@ -123,79 +123,84 @@ let make = (_children) => {
   },
   render: ({send,state}) =>
 <div>
-  <nav className="navbar navbar-expand-lg navbar-dark bg-success">
+  <nav className="navbar navbar-expand-lg navbar-dark bg-success fixed-top">
     <a className="navbar-brand" href="#">(ReasonReact.string("BlockTix"))</a>
   </nav>
 
-(state.web3 === None 
-  ? ReasonReact.null 
-  : <div>
-      <UserView web3=Js.Option.getExn(state.web3) />
-    </div>
-)
+  <div className="container">
 
-<div className="card" style=(ReactDOMRe.Style.make(~margin="10%",()))>
-  <h5 className="card-header">(text("Organized Events"))</h5> 
-  <div className="card-body">
+    (state.web3 === None 
+      ? ReasonReact.null 
+      : <UserView web3=Js.Option.getExn(state.web3) />
+    )
 
-    <table className="table table-hover border-secondary border-solid">
-      <thead className="bg-secondary">
-        <tr>
-          <th scope="col">(text("Description"))</th>
-          <th scope="col">(text("Address"))</th>
-          <th scope="col">(text("Balance"))</th>
-        </tr>
-      </thead>
-      <tbody>
-        (state.myEvents |> Js.Array.map(({event,description,address,balance,show}) => {
-          [|
-          <tr key=address 
-              className=((show) ? "table-active bg-black" : "")
-              onClick=(_ => send(ToggleEvent(address)))>
-            <td>(text(description))</td>
-            <td><AddressLabel address=address uri=Network.address_uri /></td>
-            <td><WeiLabel amount=balance/></td>
-          </tr>,
-          (switch (show) {
-           | true => 
-              <tr className="table-active bg-black" key=(Js.String.concat(address,"View"))>
-                <td colSpan=3>
-                  <EventView event=event address=address web3=Js.Option.getExn(state.web3) />
-                </td>
+    <div>
+      <div className="card" style=(ReactDOMRe.Style.make(~margin="10%",()))>
+        <h5 className="card-header">(text("Organized Events"))</h5> 
+        <div className="card-body">
+
+          <table className="table table-hover border-secondary border-solid">
+            <thead className="bg-secondary">
+              <tr>
+                <th scope="col">(text("Description"))</th>
+                <th scope="col">(text("Address"))</th>
+                <th scope="col">(text("Balance"))</th>
               </tr>
-           | false => ReasonReact.null 
-           })
-          |] |> ReasonReact.array
-        })
-      |> ReasonReact.array)
-      </tbody>
-    </table> 
+            </thead>
+            <tbody>
+              (state.myEvents |> Js.Array.map(({event,description,address,balance,show}) => {
+                [|
+                <tr key=address 
+                    className=((show) ? "table-active bg-black" : "")
+                    onClick=(_ => send(ToggleEvent(address)))>
+                  <td>(text(description))</td>
+                  <td><AddressLabel address=address uri=Network.address_uri /></td>
+                  <td><WeiLabel amount=balance/></td>
+                </tr>,
+                (switch (show) {
+                 | true => 
+                    <tr className="table-active bg-black" key=(Js.String.concat(address,"View"))>
+                      <td colSpan=3>
+                        <EventView event=event address=address web3=Js.Option.getExn(state.web3) />
+                      </td>
+                    </tr>
+                 | false => ReasonReact.null 
+                 })
+                |] |> ReasonReact.array
+              })
+            |> ReasonReact.array)
+            </tbody>
+          </table> 
 
-  </div>
-</div>
-
-<div className="card" style=(ReactDOMRe.Style.make(~margin="10%",()))>
-  <h5 className="card-header">(text("Create Event"))</h5>
-  <div className="card-body">
-
-    <div className="form-group" style=(ReactDOMRe.Style.make(~margin="3%",()))>
-      <div className="row">
-        <label className="col col-5 col-form-label text-muted">(text("Description"))</label>
-        <input className="col form-control" type_="text" placeholder="" id="inputLarge" 
-               value=state.new_event_description
-               onChange=(event => send(Change(ReactEvent.Form.target(event)##value)))
-        />
+        </div>
       </div>
-    </div>
-  </div>
-  <div className="card-footer">
-    <button disabled={state.web3 == None} type_="submit" className="col btn btn-success" 
-            onClick=(_ => send(Submit))>
-      (text("Submit"))
-    </button>
-  </div>
 
-</div>
+      <div className="card" style=(ReactDOMRe.Style.make(~margin="10%",()))>
+        <h5 className="card-header">(text("Create Event"))</h5>
+        <div className="card-body">
+
+          <div className="form-group" style=(ReactDOMRe.Style.make(~margin="3%",()))>
+            <div className="row">
+              <label className="col col-5 col-form-label text-muted">(text("Description"))</label>
+              <input className="col form-control" type_="text" placeholder="" id="inputLarge" 
+                     value=state.new_event_description
+                     onChange=(event => send(Change(ReactEvent.Form.target(event)##value)))
+              />
+            </div>
+          </div>
+        </div>
+        <div className="card-footer">
+          <button disabled={state.web3 == None} type_="submit" className="col btn btn-success" 
+                  onClick=(_ => send(Submit))>
+            (text("Submit"))
+          </button>
+        </div>
+
+      </div>
+
+    </div>
+  
+  </div>
 
 </div>
 

@@ -138,11 +138,8 @@ let make = (~web3,_children) => {
               />
             </div>,
             <div key="TotalCost" className="row">
-              <label className="col col-5 col-form-label text-muted">(text("Total Cost (wei)"))</label>
-              <input className="col form-control" type_="text" placeholder="" id="inputLarge" 
-                     onChange=(event => send(TotalCost(ReactEvent.Form.target(event)##value)))
-                     value=(string_of_int(totalCost))
-              />
+              <label className="col col-5 col-form-label text-muted">(text("Total Cost"))</label>
+              <WeiLabel amount=totalCost/>
             </div>,
             <div key="SubmitBuy" className="row">
               <button className="btn btn-success" onClick=(_ => send(SubmitBuy))
