@@ -160,7 +160,7 @@ let make = (~web3,_children) => {
 
   <div className="col-md">
     <div className="card container-card">
-      <h5 className="card-header bg-header">(text("Tickets"))</h5> 
+      <h5 className="card-header bg-header">(text("My Tickets"))</h5> 
       <table className="table table-hover border-secondary border-solid table-no-bottom">
         <thead className="bg-secondary">
           <tr>
