@@ -1,6 +1,6 @@
 /* This is the basic component. */
 
-module Network = Rinkeby;
+module Network = Ropsten;
 
 type event_data = {
   address:BsWeb3.Eth.address,
