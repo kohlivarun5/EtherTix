@@ -15,11 +15,11 @@ contract Universe {
   
   function() public payable {}
   
-  function getBalance() public view returns(uint) {
+  function getBalance() public constant returns(uint) {
     return address(this).balance;
   }
 
-  function isOwner() public view returns(bool) {
+  function isOwner() public constant returns(bool) {
     return msg.sender == d_owner;
   }
   
@@ -32,11 +32,11 @@ contract Universe {
     d_organizerEvents[msg.sender].push(new Event(_description,msg.sender));
   }
   
-  function organizerEvents() public view returns(address[]) {
+  function organizerEvents() public constant returns(address[]) {
     return d_organizerEvents[msg.sender];
   }
   
-  function userEvents() public view returns(address[]) {
+  function userEvents() public constant returns(address[]) {
     return d_userEvents[msg.sender];
   }
   

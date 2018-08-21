@@ -46,7 +46,7 @@ contract Event /* is ERC721 */  {
     }
   }
 
-  function getCostFor(uint256 _numTickets) public view returns(uint256) {
+  function getCostFor(uint256 _numTickets) public constant returns(uint256) {
     uint256 total_cost=0;
     uint256 bought=0;
     
@@ -95,7 +95,7 @@ contract Event /* is ERC721 */  {
     u.addUserEvent(msg.sender,this);
   }
   
-  function getBalance() public view returns(uint) {
+  function getBalance() public constant returns(uint) {
     require(msg.sender == d_admin || msg.sender == d_organizer);
     return address(this).balance;
   }
@@ -105,7 +105,7 @@ contract Event /* is ERC721 */  {
     address(d_organizer).transfer(getBalance());
   }
   
-  function numSold() public view returns(uint256) {
+  function numSold() public constant returns(uint256) {
     require(msg.sender == d_admin || msg.sender == d_organizer);
     uint256 numSoldCount=0;
     for(uint256 i=0;i<d_tickets.length;++i) {
@@ -114,7 +114,7 @@ contract Event /* is ERC721 */  {
     return numSoldCount;
   }
   
-  function numUnSold() public view returns(uint256) {
+  function numUnSold() public constant returns(uint256) {
     require(msg.sender == d_admin || msg.sender == d_organizer);
     uint256 numUnSoldCount=0;
     for(uint256 i=0;i<d_tickets.length;++i) {
@@ -123,23 +123,23 @@ contract Event /* is ERC721 */  {
     return numUnSoldCount;
   }
   
-  function description() public view returns(string) {
+  function description() public constant returns(string) {
     return d_description;
   }
   
-  function balanceOf(address _owner) public view returns (uint256 _balance) {
+  function balanceOf(address _owner) public constant returns (uint256 _balance) {
     return d_owner_tokens[_owner].length;    
   }
   
-  function ownerOf(uint256 _tokenId) public view returns (address _owner) {
+  function ownerOf(uint256 _tokenId) public constant returns (address _owner) {
     return d_token_owner[_tokenId];    
   }
   
-  function exists(uint256 _tokenId) public view returns (bool _exists) {
+  function exists(uint256 _tokenId) public constant returns (bool _exists) {
     return _tokenId >= 0 && _tokenId < d_tickets.length;
   }
   
-  function myTickets() public view returns(uint256[]) {
+  function myTickets() public constant returns(uint256[]) {
     return d_owner_tokens[msg.sender];
   }
   
@@ -194,10 +194,10 @@ contract Event /* is ERC721 */  {
 
 /*
   function approve(address _to, uint256 _tokenId) public;
-  function getApproved(uint256 _tokenId) public view returns (address _operator);
+  function getApproved(uint256 _tokenId) public constant returns (address _operator);
 
   function setApprovalForAll(address _operator, bool _approved) public;
-  function isApprovedForAll(address _owner, address _operator) public view returns (bool);
+  function isApprovedForAll(address _owner, address _operator) public constant returns (bool);
 
   function transferFrom(address _from, address _to, uint256 _tokenId) public;
   function safeTransferFrom(address _from, address _to, uint256 _tokenId) public;
