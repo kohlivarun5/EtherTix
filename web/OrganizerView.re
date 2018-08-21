@@ -96,11 +96,12 @@ let make = (_children) => {
              |> BsWeb3.Eth.call_with(transaction_data)),
             (Event.getBalance(event)
              |> BsWeb3.Eth.call_with(transaction_data))))
-          |> Js.Promise.then_ (((description,balance)) => 
+          |> Js.Promise.then_ (((description,balance)) => {
               Js.log(description);
               Js.log(balance);
               self.send(EventData({event:event,description:description,balance:balance,address:address,show:false})) 
-              |> Js.Promise.resolve);
+              |> Js.Promise.resolve
+            });
           ()
         })
       })
