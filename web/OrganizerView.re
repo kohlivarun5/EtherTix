@@ -1,6 +1,6 @@
 /* This is the basic component. */
 
-module Network = Rinkeby;
+module Network = Ropsten;
 
 type event_data = {
   address:BsWeb3.Eth.address,
@@ -91,14 +91,19 @@ let make = (_children) => {
           let web3_state = Js.Option.getExn(state.web3);
           let event = Event.ofAddress(web3_state.web3,address);
           let transaction_data = BsWeb3.Eth.make_transaction(~from=web3_state.account);
-          Js.Promise.all2((
-            (Event.description(event)
-             |> BsWeb3.Eth.call_with(transaction_data)),
-            (Event.getBalance(event)
-             |> BsWeb3.Eth.call_with(transaction_data))))
-          |> Js.Promise.then_ (((description,balance)) => 
-              self.send(EventData({event:event,description:description,balance:balance,address:address,show:false})) 
-              |> Js.Promise.resolve);
+
+          Event.getBalance(event)
+          |> BsWeb3.Eth.call_with(transaction_data)
+          |> Js.Promise.then_ ((balance) => {
+              Event.description(event)
+              |> BsWeb3.Eth.call_with(transaction_data)
+              |> Js.Promise.then_ ((description) => {
+                  Js.log(description);
+                  Js.log(balance);
+                  self.send(EventData({event,description,balance,address,show:false}))
+                  |> Js.Promise.resolve
+              })
+          });
           ()
         })
       })
@@ -164,7 +169,7 @@ let make = (_children) => {
 
       <div className="col-md">
         <div className="card container-card">
-          <h5 className="card-header bg-header">(text("Organized Events"))</h5> 
+          <h5 className="card-header bg-header">(text("My Events"))</h5> 
           <table className="table table-hover border-secondary border-solid table-no-bottom">
             <thead className="bg-secondary">
               <tr>

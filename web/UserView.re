@@ -60,14 +60,18 @@ let make = (~web3,_children) => {
         ReasonReact.UpdateWithSideEffects(state,(self) => {
           let event = Event.ofAddress(state.web3.web3,address);
           let transaction_data = BsWeb3.Eth.make_transaction(~from=state.web3.account);
-          Js.Promise.all2((
-            (Event.description(event)
-             |> BsWeb3.Eth.call_with(transaction_data)),
-            (Event.myTickets(event)
-             |> BsWeb3.Eth.call_with(transaction_data))))
-          |> Js.Promise.then_ (((description,tickets)) => 
-              self.send(MyEventData({event,description,tickets,address})) 
-              |> Js.Promise.resolve);
+          Event.description(event)
+          |> BsWeb3.Eth.call_with(transaction_data)
+          |> Js.Promise.then_ ((description) => {
+              Event.myTickets(event)
+              |> BsWeb3.Eth.call_with(transaction_data)
+              |> Js.Promise.then_ ((tickets) => {
+                  Js.log(description);
+                  Js.log(tickets);
+                  self.send(MyEventData({event,description,tickets,address}))
+                  |> Js.Promise.resolve
+              })
+          });
           ()
         })
       }
@@ -104,6 +108,7 @@ let make = (~web3,_children) => {
         Js.log(state);
         assert(state.buy_data != None);
         let {event,numTickets,totalCost} = Js.Option.getExn(state.buy_data);
+        Js.log(state.buy_data);
         Event.buy(event,~numTickets=numTickets)
         |> BsWeb3.Eth.send(
             BsWeb3.Eth.make_transaction_with_value(
@@ -160,7 +165,7 @@ let make = (~web3,_children) => {
 
   <div className="col-md">
     <div className="card container-card">
-      <h5 className="card-header bg-header">(text("Tickets"))</h5> 
+      <h5 className="card-header bg-header">(text("My Tickets"))</h5> 
       <table className="table table-hover border-secondary border-solid table-no-bottom">
         <thead className="bg-secondary">
           <tr>
@@ -170,8 +175,8 @@ let make = (~web3,_children) => {
           </tr>
         </thead>
         <tbody>
-          (state.myEvents |> Js.Array.map(({event,description,address,tickets}) => {
-            <tr key=address 
+          (state.myEvents |> Js.Array.mapi((({event,description,address,tickets}),i) => {
+            <tr key=(Js.String.concat(string_of_int(i),address ))
                 /* Support toggle */
                 >
               <td>(text(description))</td>
