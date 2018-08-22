@@ -1,7 +1,5 @@
 /* This is the basic component. */
 
-module Network = Ropsten;
-
 type event_data = {
   address:BsWeb3.Eth.address,
   event:Event.t,
@@ -32,28 +30,42 @@ let make = (_children) => {
   ...component,
   didMount: self => { 
     if (Js.typeof(BsWeb3.Web3.get) !== "undefined") {
-      let universe_address = Js.String.concat("",Network.universe);
-      let w3 = BsWeb3.Web3.makeWeb3(BsWeb3.Web3.currentProvider(Js.Undefined.getExn(BsWeb3.Web3.get)));
+      let w3_global = Js.Undefined.getExn(BsWeb3.Web3.get);
+      let w3 = BsWeb3.Web3.makeWeb3(BsWeb3.Web3.currentProvider(w3_global));
       let eth = BsWeb3.Web3.eth(w3);
-      Js.Promise.then_((accounts) => {
+      BsWeb3.Eth.net(eth)
+      |> BsWeb3.Net.getId
+      |> Js.Promise.then_ ((networkId) => {
+          let {NetworkInfo.universe,address_uri} = (
+            switch(networkId) {
+            | 3 => Ropsten.t
+            | 4 => Rinkeby.t
+            | _ => Js.log(networkId);assert(false);
+            }
+          );
 
-        /* Don't change code untill universe creation 
-           As Bs does not support send with new 
-           */
-        Js.log(eth);
-        Js.log(universe_address);
-        Js.log(Universe.abi);
-        let universe:Universe.t = [%bs.raw{| new eth.Contract(UniverseAbiJson.default,universe_address) |}];
+          BsWeb3.Eth.getAccounts(eth)
+          |> Js.Promise.then_((accounts) => {
 
-        Js.log("InitWeb3");
-        self.send(InitWeb3({
-            web3:w3,
-            account:accounts[0],
-            universe:universe,
-            address_uri:Network.address_uri
-        }));
-        Js.Promise.resolve(());
-      }) (BsWeb3.Eth.getAccounts(eth));
+            /* Don't change code untill universe creation 
+               As Bs does not support send with new 
+               */
+            let universe_address = Js.String.concat("",universe);
+            Js.log(eth);
+            Js.log(universe_address);
+            Js.log(Universe.abi);
+            let universe:Universe.t = [%bs.raw{| new eth.Contract(UniverseAbiJson.default,universe_address) |}];
+
+            Js.log("InitWeb3");
+            self.send(InitWeb3({
+                web3:w3,
+                account:accounts[0],
+                universe,
+                address_uri 
+            }))
+            |> Js.Promise.resolve
+          })
+      });
       ()
     }
   },
@@ -185,7 +197,7 @@ let make = (_children) => {
                     className=((show) ? "table-active bg-black" : "")
                     onClick=(_ => send(ToggleEvent(address)))>
                   <td>(text(description))</td>
-                  <td><AddressLabel address=address uri=Network.address_uri /></td>
+                  <td><AddressLabel address=address uri=Js.Option.getExn(state.web3).address_uri /></td>
                   <td><WeiLabel amount=balance/></td>
                 </tr>,
                 (switch (show) {

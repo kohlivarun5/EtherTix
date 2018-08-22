@@ -42,7 +42,7 @@ contract Universe {
   
   function addUserEvent(address _user,address _event) public {
       require(_user == msg.sender || _event == msg.sender);
-      for(uint i=0;i>d_userEvents[_user].length;++i) {
+      for(uint i=0;i<d_userEvents[_user].length;++i) {
           if (d_userEvents[_user][i] == _event)
           { return; }
       }
@@ -53,7 +53,7 @@ contract Universe {
   
   function removeUserEvent(address _user,address _event) public {
       require(_user == msg.sender || _event == msg.sender);
-      for(uint i=0;i>d_userEvents[_user].length;++i) {
+      for(uint i=0;i<d_userEvents[_user].length;++i) {
           if (d_userEvents[_user][i] == _event)
           { 
               d_userEvents[_user][i] = d_userEvents[_user][d_userEvents[_user].length-1];
