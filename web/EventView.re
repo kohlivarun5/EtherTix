@@ -41,17 +41,17 @@ let make = (~web3,~address,~event,_children) => {
   reducer: (action,state:state) => {
     switch (action) {
     | FetchData => ReasonReact.UpdateWithSideEffects(state,(self) => {
-        Js.Promise.all2(
-          (
-            (Event.numSold(state.event)
-            |> BsWeb3.Eth.call_with(BsWeb3.Eth.make_transaction(~from=state.web3.account))),
-            (Event.numUnSold(state.event)
-            |> BsWeb3.Eth.call_with(BsWeb3.Eth.make_transaction(~from=state.web3.account)))
-          )
-        )
-        |> Js.Promise.then_ ( ((numSold,numUnsold)) => 
-            self.send(SoldData({numSold:numSold,numUnsold:numUnsold}))
-            |> Js.Promise.resolve);
+        let tx = BsWeb3.Eth.make_transaction(~from=state.web3.account);
+        Event.numSold(state.event)
+        |> BsWeb3.Eth.call_with(tx)
+        |> Js.Promise.then_ ((numSold) => {
+            Event.numUnSold(state.event)
+            |> BsWeb3.Eth.call_with(tx)
+            |> Js.Promise.then_ ((numUnsold) => {
+                self.send(SoldData({numSold:numSold,numUnsold:numUnsold}))
+                |> Js.Promise.resolve 
+            })
+        });
         ()
       })
 

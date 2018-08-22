@@ -175,8 +175,8 @@ let make = (~web3,_children) => {
           </tr>
         </thead>
         <tbody>
-          (state.myEvents |> Js.Array.map(({event,description,address,tickets}) => {
-            <tr key=address 
+          (state.myEvents |> Js.Array.mapi((({event,description,address,tickets}),i) => {
+            <tr key=(Js.String.concat(string_of_int(i),address ))
                 /* Support toggle */
                 >
               <td>(text(description))</td>

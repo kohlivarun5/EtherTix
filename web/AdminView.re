@@ -32,16 +32,17 @@ let make = (~web3,_children) => {
     | Init => {
         ReasonReact.UpdateWithSideEffects(state, (self) => {
           let transaction_data = BsWeb3.Eth.make_transaction(~from=state.web3.account);
-          Js.Promise.all2((
-            Universe.getBalance(state.web3.universe)
-            |> BsWeb3.Eth.call_with(transaction_data),
-            Universe.isOwner(state.web3.universe)
-            |> BsWeb3.Eth.call_with(transaction_data)
-          ))
-          |> Js.Promise.then_ ( ((balance,isOwner)) => {
-              self.send(UniverseInfo({balance,isOwner}))
-              |> Js.Promise.resolve
-            });
+
+          Universe.getBalance(state.web3.universe)
+          |> BsWeb3.Eth.call_with(transaction_data)
+          |> Js.Promise.then_ ((balance) => {
+              Universe.isOwner(state.web3.universe)
+              |> BsWeb3.Eth.call_with(transaction_data)
+              |> Js.Promise.then_ ((isOwner) => {
+                  self.send(UniverseInfo({balance,isOwner}))
+                  |> Js.Promise.resolve 
+              })
+          });
           ()
         })
       }
