@@ -45,6 +45,12 @@ let make = (~web3,_children) => {
     switch (action) {
     | GetMyEvents => {
         ReasonReact.UpdateWithSideEffects(state, (self) => {
+          let canvas = 
+            QrCode.document 
+            |> QrCode.getElementById("ticketQr");
+          QrCode.toDataURL(canvas,"asdas")
+          |> Js.Promise.then_ ( (url) => Js.log(url) |> Js.Promise.resolve);
+          Js.log("Qr");
           let transaction_data = BsWeb3.Eth.make_transaction(~from=state.web3.account);
           Universe.userEvents(state.web3.universe)
           |> BsWeb3.Eth.call_with(transaction_data)
@@ -185,6 +191,9 @@ let make = (~web3,_children) => {
             </tr>
           })
         |> ReasonReact.array)
+          <tr>
+            <td colSpan=3 ><canvas id="ticketQr" /> </td>
+          </tr>
         </tbody>
       </table> 
     </div>
