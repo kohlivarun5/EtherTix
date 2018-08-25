@@ -2,7 +2,7 @@ let text = ReasonReact.string;
 
 let component = ReasonReact.statelessComponent("QrView");
 
-let make = (~text,_children) => {
+let make = (~text,~style,_children) => {
   ...component,
   didMount: self => { 
     let canvas = 
@@ -11,8 +11,5 @@ let make = (~text,_children) => {
     QrCode.toDataURL(canvas,text);
     ()
   },
-  render: ({send,state}) => 
-    <div style=(ReactDOMRe.Style.make(~textAlign="center",()))>
-      <canvas id=(Js.String.concat(text,"QrView:")) />
-    </div>
+  render: ({send,state}) => <canvas style=style id=(Js.String.concat(text,"QrView:")) />
 }

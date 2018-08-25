@@ -13,6 +13,10 @@ S /Users/vkohli/Github/SmartTix/node_modules/bs-web3/lib/ocaml
 B /Users/vkohli/Github/SmartTix/node_modules/bs-web3/lib/ocaml
 S web
 B lib/bs/web
+S web/qrcode
+B lib/bs/web/qrcode
+S web/react-responsive-carousel
+B lib/bs/web/react-responsive-carousel
 S sol
 B lib/bs/sol
 ####BSB GENERATED: NO EDIT}
