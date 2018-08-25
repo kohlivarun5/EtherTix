@@ -45,12 +45,6 @@ let make = (~web3,_children) => {
     switch (action) {
     | GetMyEvents => {
         ReasonReact.UpdateWithSideEffects(state, (self) => {
-          let canvas = 
-            QrCode.document 
-            |> QrCode.getElementById("ticketQr");
-          QrCode.toDataURL(canvas,"asdas")
-          |> Js.Promise.then_ ( (url) => Js.log(url) |> Js.Promise.resolve);
-          Js.log("Qr");
           let transaction_data = BsWeb3.Eth.make_transaction(~from=state.web3.account);
           Universe.userEvents(state.web3.universe)
           |> BsWeb3.Eth.call_with(transaction_data)
@@ -181,19 +175,20 @@ let make = (~web3,_children) => {
           </tr>
         </thead>
         <tbody>
-          (state.myEvents |> Js.Array.mapi((({event,description,address,tickets}),i) => {
+          (state.myEvents |> Js.Array.mapi((({event,description,address,tickets}),i) => { [|
             <tr key=(Js.String.concat(string_of_int(i),address ))
                 /* Support toggle */
                 >
               <td>(text(description))</td>
               <td><AddressLabel address=address uri=state.web3.address_uri /></td>
               <td>(int(Js.Array.length(tickets)))</td>
+            </tr>,
+            <tr key=(Js.String.concat("Qr",Js.String.concat(string_of_int(i),address)))>
+              <td colSpan=3 > <QrView text=address /> </td>
             </tr>
+          |] |> ReasonReact.array
           })
-        |> ReasonReact.array)
-          <tr>
-            <td colSpan=3 ><canvas id="ticketQr" /> </td>
-          </tr>
+          |> ReasonReact.array)
         </tbody>
       </table> 
     </div>
