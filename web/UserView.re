@@ -11,7 +11,8 @@ type event_data = {
   address:BsWeb3.Eth.address,
   event:Event.t,
   description : string,
-  tickets:Js.Array.t(int)
+  tickets:Js.Array.t(int),
+  ticket_signatures:Js.Array.t(string)
 }
 
 type state = {
@@ -28,7 +29,9 @@ type action =
 | BuyEventAddress(BsWeb3.Eth.address)
 | NumTickets(int)
 | TotalCost(BsWeb3.Types.big_number)
-| SubmitBuy
+| SubmitBuy 
+| SignTickets(int)
+| TicketSignature(string)
 
 let component = ReasonReact.reducerComponent("UserView");
 
@@ -68,7 +71,7 @@ let make = (~web3,_children) => {
               |> Js.Promise.then_ ((tickets) => {
                   Js.log(description);
                   Js.log(tickets);
-                  self.send(MyEventData({event,description,tickets,address}))
+                  self.send(MyEventData({event,description,tickets,address,ticket_signatures:[||]}))
                   |> Js.Promise.resolve
               })
           });
@@ -116,6 +119,16 @@ let make = (~web3,_children) => {
         |> Js.Promise.then_ (_ => Js.Promise.resolve());
         ()
       })
+    | SignTickets(index) => ReasonReact.UpdateWithSideEffects(state,(self) => {
+        state.myEvents[index].tickets
+        |> Js.Array.mapi((id,ticket_idx) => {
+          state.web3.web3 
+          |> BsWeb3.Web3.eth 
+          |> BsWeb3.Eth.sign(string_of_int(id),state.web3.account)
+          |> Js.Promise.then_((sha) => Js.log(sha) |> Js.Promise.resolve)
+        });
+        ()
+      });
     }
   },
   render: ({send,state}) =>
@@ -177,7 +190,7 @@ let make = (~web3,_children) => {
         <tbody>
           (state.myEvents |> Js.Array.mapi((({event,description,address,tickets}),i) => {
             <tr key=(Js.String.concat(string_of_int(i),address ))
-                /* Support toggle */
+                onClick=(_ => send(SignTickets(i)))
                 >
               <td>(text(description))</td>
               <td><AddressLabel address=address uri=state.web3.address_uri /></td>
