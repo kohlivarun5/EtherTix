@@ -176,15 +176,29 @@ let make = (~web3,_children) => {
         </thead>
         <tbody>
           (state.myEvents |> Js.Array.mapi((({event,description,address,tickets}),i) => {
+            [|
             <tr key=(Js.String.concat(string_of_int(i),address ))
                 /* Support toggle */
                 >
               <td>(text(description))</td>
               <td><AddressLabel address=address uri=state.web3.address_uri /></td>
               <td>(int(Js.Array.length(tickets)))</td>
+            </tr>,
+            <tr key=(Js.String.concat("Qr",Js.String.concat(string_of_int(i),address)))>
+              <td colSpan=3 style=(ReactDOMRe.Style.make(~maxWidth="170px",()))> 
+                <Carousel> 
+                  (tickets |> Js.Array.map ( (id) => 
+                    <QrView 
+                      style=(ReactDOMRe.Style.make(~marginTop="15px",~marginBottom="10px",()))
+                      key=string_of_int(id) text=Js.String.concat(string_of_int(id),address) 
+                    />
+                  ))
+                </Carousel>
+              </td>
             </tr>
+          |] |> ReasonReact.array
           })
-        |> ReasonReact.array)
+          |> ReasonReact.array)
         </tbody>
       </table> 
     </div>
