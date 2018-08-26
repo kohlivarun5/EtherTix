@@ -124,14 +124,34 @@ let make = (~web3,_children) => {
         let event_address = state.myEvents[index].address;
         state.myEvents[index].tickets
         |> Js.Array.map((id) => {
-          state.web3.web3 
-          |> BsWeb3.Web3.eth 
-          |> BsWeb3.Eth.sign(
-              BsWeb3.Utils.soliditySha3__2(event_address,id),
-              state.web3.account)
-          |> Js.Promise.then_((sha) => {
-              Js.log(sha);
-              Js.Promise.resolve((id,sha))
+          let msg_params = [|
+            BsWeb3.Web3.msg_params(
+              ~name="Event Address",
+              ~type__="address",
+              ~value=event_address),
+            BsWeb3.Web3.msg_params(
+              ~name="Event Description",
+              ~type__="string",
+              ~value=state.myEvents[index].description),
+            BsWeb3.Web3.msg_params(
+              ~name="Ticket Id",
+              ~type__="uint256",
+              ~value=id)
+          |];
+          let send_params = 
+            BsWeb3.Web3.send_async_params(
+              ~method__="eth_signTypedData",
+              ~params=(msg_params,state.web3.account),
+              ~from=state.web3.account);
+
+          Js.Promise.make((~resolve,~reject) => {
+            state.web3.web3 
+            |> BsWeb3.Web3.currentProvider__fromWeb3 
+            |> BsWeb3.Web3.sendAsync(send_params,((error,result) => 
+                resolve(.
+                  (id,BsWeb3.Web3.async_result_sha(result))
+                )
+            ))
           })
         })
         |> Js.Promise.all 
