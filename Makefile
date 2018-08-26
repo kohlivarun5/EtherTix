@@ -2,6 +2,7 @@ release:
 	-git branch -D gh-pages 
 	git checkout -b gh-pages 
 	npm install
+	npm -f install react-responsive-carousel
 	npm run clean
 	npm run build
 	npm run webpack:production
