@@ -4,7 +4,9 @@ let int(i) = i |> string_of_int |> ReasonReact.string;
 type buy_data = {
   event:Event.t,
   numTickets:int,
-  totalCost:BsWeb3.Types.big_number
+  totalCost:BsWeb3.Types.big_number,
+  numSold:int,
+  numUnSold:int
 }
 
 type ticket_id_sig = (int,string)
@@ -33,6 +35,7 @@ type action =
 | SubmitBuy 
 | SignTickets(int)
 | TicketSignatures(int,Js.Array.t(ticket_id_sig))
+| NumSoldUnsold(int,int)
 
 let component = ReasonReact.reducerComponent("UserView");
 
@@ -82,15 +85,34 @@ let make = (~web3,_children) => {
 
     | MyEventData(data) => { Js.Array.push(data,state.myEvents); ReasonReact.Update({...state,myEvents:state.myEvents}) }
 
-    | BuyEventAddress(address) => 
-        let event = Event.ofAddress(state.web3.web3,address);
-        ReasonReact.UpdateWithSideEffects({...state,event_address:address,buy_data:Some({event,numTickets:0,totalCost:BsWeb3.Utils.toBN(0)})},(self) => 
+    | BuyEventAddress(event_address) => 
+        let event = Event.ofAddress(state.web3.web3,event_address);
+        ReasonReact.UpdateWithSideEffects({
+          ...state,
+          event_address,buy_data:Some({
+            event,numTickets:0,
+            totalCost:BsWeb3.Utils.toBN(0),
+            numSold:0, numUnSold:0 
+        })},(self) => {
           switch(state.buy_data) {
           | None => 
             self.send(NumTickets(1))
           | Some({numTickets}) => 
             self.send(NumTickets(numTickets))
-          }
+          };
+          let tx = BsWeb3.Eth.make_transaction(~from=state.web3.account);
+          Event.numSold(event)
+          |> BsWeb3.Eth.call_with(tx)
+          |> Js.Promise.then_ ((numSold) => {
+              Event.numUnSold(event)
+              |> BsWeb3.Eth.call_with(tx)
+              |> Js.Promise.then_ ((numUnSold) => {
+                  self.send(NumSoldUnsold(numSold,numUnSold))
+                  |> Js.Promise.resolve 
+              })
+          });
+          ()
+        }
         )
     | NumTickets(numTickets) => 
         Js.log(numTickets);
@@ -108,6 +130,11 @@ let make = (~web3,_children) => {
         assert(state.buy_data != None);
         let buy_data = Js.Option.getExn(state.buy_data);
         ReasonReact.Update({...state,buy_data:Some({...buy_data,totalCost})})
+    | NumSoldUnsold(numSold,numUnSold) => 
+        Js.log(state);
+        assert(state.buy_data != None);
+        let buy_data = Js.Option.getExn(state.buy_data);
+        ReasonReact.Update({...state,buy_data:Some({...buy_data,numSold,numUnSold})})
     | SubmitBuy => ReasonReact.UpdateWithSideEffects(state,(self) => {
         Js.log(state);
         assert(state.buy_data != None);
@@ -199,7 +226,13 @@ let make = (~web3,_children) => {
           </div>
           (switch(state.buy_data) {
            | None => ReasonReact.null 
-           | Some({numTickets,totalCost}) => [|
+           | Some({numTickets,totalCost,numSold,numUnSold}) => [|
+              <div key="Sold" className="row">
+                <label className="col col-form-label text-muted">(text("Sold"))</label>
+                <label className="col col-form-label"> (int(numSold)) </label>
+                <label className="col col-form-label text-muted">(text("Not Sold"))</label>
+                <label className="col col-form-label"> (int(numUnSold)) </label>
+              </div>,
               <div key="NumTickets" className="row">
                 <label className="col col-5 col-form-label text-muted">(text("Number of tickets"))</label>
                 <input className="col form-control" type_="text" placeholder="" id="inputLarge"
