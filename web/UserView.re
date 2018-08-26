@@ -31,7 +31,7 @@ type action =
 | TotalCost(BsWeb3.Types.big_number)
 | SubmitBuy 
 | SignTickets(int)
-| TicketSignature(string)
+| TicketSignatures(int,Js.Array.t(string))
 
 let component = ReasonReact.reducerComponent("UserView");
 
@@ -120,18 +120,29 @@ let make = (~web3,_children) => {
         ()
       })
     | SignTickets(index) => ReasonReact.UpdateWithSideEffects(state,(self) => {
+        let event_address = state.myEvents[index].address;
         state.myEvents[index].tickets
         |> Js.Array.mapi((id,ticket_idx) => {
           state.web3.web3 
           |> BsWeb3.Web3.eth 
-          |> BsWeb3.Eth.sign(string_of_int(id),state.web3.account)
+          |> BsWeb3.Eth.sign(
+              BsWeb3.Utils.soliditySha3__2(event_address,id),
+              state.web3.account)
           |> Js.Promise.then_((sha) => {
               Js.log(sha);
-              Js.Promise.resolve ()
+              Js.Promise.resolve(sha)
           })
-        });
+        })
+        |> Js.Promise.all 
+        |> Js.Promise.then_((sigs) => { self.send(TicketSignatures(index,sigs)) |> Js.Promise.resolve });
         ()
       });
+    | TicketSignatures(index,ticket_signatures) => {
+        let event = state.myEvents[index];
+        let event = {...event,ticket_signatures};
+        state.myEvents[index] = event;
+        ReasonReact.Update(state)
+      }
     }
   },
   render: ({send,state}) =>
