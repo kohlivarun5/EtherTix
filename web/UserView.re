@@ -123,16 +123,20 @@ let make = (~web3,_children) => {
     | SignTickets(index) => ReasonReact.UpdateWithSideEffects(state,(self) => {
         let event_address = state.myEvents[index].address;
         state.myEvents[index].tickets
-        |> Js.Array.map((id) => {
+        |> Js.Array.reduce((sigs,id) => {
 
-            state.web3.web3 
-            |> BsWeb3.Web3.eth 
-            |> BsWeb3.Eth.sign(
-                BsWeb3.Utils.soliditySha3__2(event_address,id),
-                state.web3.account)
-            |> Js.Promise.then_((sha) => {
-                Js.log(sha);
-                Js.Promise.resolve((id,sha))
+            sigs
+            |> Js.Promise.then_ ((sigs) => {
+                Js.log("Asking for sign");
+                state.web3.web3 
+                |> BsWeb3.Web3.eth 
+                |> BsWeb3.Eth.sign(
+                    BsWeb3.Utils.soliditySha3__2(event_address,id),
+                    state.web3.account)
+                |> Js.Promise.then_((sha) => {
+                    Js.log(sha);
+                    Js.Promise.resolve(Array.append([|(id,sha)|],sigs))
+                })
             })
 
             /* Cannot use eth_signTypedData on Toshi
@@ -166,8 +170,7 @@ let make = (~web3,_children) => {
               ))
             })
             */
-        })
-        |> Js.Promise.all 
+        },Js.Promise.resolve([||]))
         |> Js.Promise.then_((sigs) => { self.send(TicketSignatures(index,sigs)) |> Js.Promise.resolve });
         ()
       });
