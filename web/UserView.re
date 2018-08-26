@@ -125,7 +125,10 @@ let make = (~web3,_children) => {
           state.web3.web3 
           |> BsWeb3.Web3.eth 
           |> BsWeb3.Eth.sign(string_of_int(id),state.web3.account)
-          |> Js.Promise.then_((sha) => Js.log(sha) |> Js.Promise.resolve)
+          |> Js.Promise.then_((sha) => {
+              Js.log(sha);
+              Js.Promise.resolve ()
+          })
         });
         ()
       });
