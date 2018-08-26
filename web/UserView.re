@@ -7,12 +7,13 @@ type buy_data = {
   totalCost:BsWeb3.Types.big_number
 }
 
+type ticket_id_sig = (int,string)
 type event_data = {
   address:BsWeb3.Eth.address,
   event:Event.t,
   description : string,
   tickets:Js.Array.t(int),
-  ticket_signatures:Js.Array.t(string)
+  ticket_signatures:Js.Array.t(ticket_id_sig)
 }
 
 type state = {
@@ -31,7 +32,7 @@ type action =
 | TotalCost(BsWeb3.Types.big_number)
 | SubmitBuy 
 | SignTickets(int)
-| TicketSignatures(int,Js.Array.t(string))
+| TicketSignatures(int,Js.Array.t(ticket_id_sig))
 
 let component = ReasonReact.reducerComponent("UserView");
 
@@ -122,7 +123,7 @@ let make = (~web3,_children) => {
     | SignTickets(index) => ReasonReact.UpdateWithSideEffects(state,(self) => {
         let event_address = state.myEvents[index].address;
         state.myEvents[index].tickets
-        |> Js.Array.mapi((id,ticket_idx) => {
+        |> Js.Array.map((id) => {
           state.web3.web3 
           |> BsWeb3.Web3.eth 
           |> BsWeb3.Eth.sign(
@@ -130,7 +131,7 @@ let make = (~web3,_children) => {
               state.web3.account)
           |> Js.Promise.then_((sha) => {
               Js.log(sha);
-              Js.Promise.resolve(sha)
+              Js.Promise.resolve((id,sha))
           })
         })
         |> Js.Promise.all 
@@ -202,7 +203,7 @@ let make = (~web3,_children) => {
           </tr>
         </thead>
         <tbody>
-          (state.myEvents |> Js.Array.mapi((({event,description,address,tickets}),i) => {
+          (state.myEvents |> Js.Array.mapi((({event,description,address,tickets,ticket_signatures}),i) => {
             [|
             <tr key=(Js.String.concat(string_of_int(i),address ))
                 onClick=(_ => send(SignTickets(i)))
@@ -211,18 +212,21 @@ let make = (~web3,_children) => {
               <td><AddressLabel address=address uri=state.web3.address_uri /></td>
               <td>(int(Js.Array.length(tickets)))</td>
             </tr>,
-            <tr key=(Js.String.concat("Qr",Js.String.concat(string_of_int(i),address)))>
-              <td colSpan=3 style=(ReactDOMRe.Style.make(~maxWidth="170px",()))> 
-                <Carousel> 
-                  (tickets |> Js.Array.map ( (id) => 
-                    <QrView 
-                      style=(ReactDOMRe.Style.make(~marginTop="15px",~marginBottom="10px",()))
-                      key=string_of_int(id) text=Js.String.concat(string_of_int(id),address) 
-                    />
-                  ))
-                </Carousel>
-              </td>
-            </tr>
+            (Js.Array.length(ticket_signatures) <= 0 
+              ? ReasonReact.null
+              : <tr key=(Js.String.concat("Qr",Js.String.concat(string_of_int(i),address)))>
+                  <td colSpan=3 style=(ReactDOMRe.Style.make(~maxWidth="170px",()))> 
+                    <Carousel> 
+                      (ticket_signatures |> Js.Array.map( ((id,sha)) =>
+                        <QrView 
+                          style=(ReactDOMRe.Style.make(~marginTop="15px",~marginBottom="10px",()))
+                          key=sha text=Js.String.concatMany([|"|",string_of_int(id)|],sha )
+                        />
+                      ))
+                    </Carousel>
+                  </td>
+                </tr> 
+            )
           |] |> ReasonReact.array
           })
           |> ReasonReact.array)
