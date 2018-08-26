@@ -124,6 +124,7 @@ let make = (~web3,_children) => {
         let event_address = state.myEvents[index].address;
         state.myEvents[index].tickets
         |> Js.Array.map((id) => {
+
             state.web3.web3 
             |> BsWeb3.Web3.eth 
             |> BsWeb3.Eth.sign(
