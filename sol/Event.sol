@@ -106,7 +106,6 @@ contract Event /* is ERC721 */  {
   }
   
   function numSold() public constant returns(uint256) {
-    require(msg.sender == d_admin || msg.sender == d_organizer);
     uint256 numSoldCount=0;
     for(uint256 i=0;i<d_tickets.length;++i) {
       if (d_token_owner[i] != address(0)) { numSoldCount++;}
@@ -115,7 +114,6 @@ contract Event /* is ERC721 */  {
   }
   
   function numUnSold() public constant returns(uint256) {
-    require(msg.sender == d_admin || msg.sender == d_organizer);
     uint256 numUnSoldCount=0;
     for(uint256 i=0;i<d_tickets.length;++i) {
       if (d_token_owner[i] == address(0)) { numUnSoldCount++; }
