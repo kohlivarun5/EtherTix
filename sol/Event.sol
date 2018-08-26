@@ -30,15 +30,6 @@ contract Event /* is ERC721 */  {
   // For transfers 
   mapping(uint256 => uint256) internal d_token_ask;
   
-  // For Activation
-  enum ActivationStatus { Unset, Activated, Used }
-  struct ActivationData {
-    ActivationStatus    d_activated;
-    bytes32 d_activation_hash;
-  }
-  mapping(uint256 => ActivationData) internal d_activated_tokens;
-  
-
   constructor(string _description, address _organizer) public { 
     description = _description;
     d_admin = msg.sender;
@@ -146,20 +137,6 @@ contract Event /* is ERC721 */  {
   
   function myTickets() public constant returns(uint256[]) {
     return d_owner_tokens[msg.sender];
-  }
-  
-  function activateTickets(uint256[] tickets) public {
-      for(uint256 i=0;i<tickets.length;++i) {
-        require(d_token_owner[i] == msg.sender,"Only owner can activate tickets!");
-        require(ActivationStatus.Unset == d_activated_tokens[i].d_activated, "Ticket already activated!");
-        d_activated_tokens[i] = ActivationData({d_activated:ActivationStatus.Activated,d_activation_hash:sha256(block.coinbase,block.timestamp)});
-      }
-  }
-  
-  function activationKey(uint256 i) public constant returns(bytes32) {
-      require(ActivationStatus.Activated == d_activated_tokens[i].d_activated, "Ticket not activated!");
-      require(msg.sender == d_token_owner[i] || msg.sender == d_organizer || msg.sender == d_admin);
-      return sha256(d_activated_tokens[i].d_activation_hash,d_token_owner[i]);
   }
   
   function proposeSale(uint256 _token,uint256 _price) public {
