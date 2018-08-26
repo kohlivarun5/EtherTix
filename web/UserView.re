@@ -4,14 +4,18 @@ let int(i) = i |> string_of_int |> ReasonReact.string;
 type buy_data = {
   event:Event.t,
   numTickets:int,
-  totalCost:BsWeb3.Types.big_number
+  totalCost:BsWeb3.Types.big_number,
+  numSold:int,
+  numUnSold:int
 }
 
+type ticket_id_sig = (int,string)
 type event_data = {
   address:BsWeb3.Eth.address,
   event:Event.t,
   description : string,
-  tickets:Js.Array.t(int)
+  tickets:Js.Array.t(int),
+  ticket_signatures:Js.Array.t(ticket_id_sig)
 }
 
 type state = {
@@ -28,7 +32,10 @@ type action =
 | BuyEventAddress(BsWeb3.Eth.address)
 | NumTickets(int)
 | TotalCost(BsWeb3.Types.big_number)
-| SubmitBuy
+| SubmitBuy 
+| SignTickets(int)
+| TicketSignatures(int,Js.Array.t(ticket_id_sig))
+| NumSoldUnsold(int,int)
 
 let component = ReasonReact.reducerComponent("UserView");
 
@@ -68,7 +75,7 @@ let make = (~web3,_children) => {
               |> Js.Promise.then_ ((tickets) => {
                   Js.log(description);
                   Js.log(tickets);
-                  self.send(MyEventData({event,description,tickets,address}))
+                  self.send(MyEventData({event,description,tickets,address,ticket_signatures:[||]}))
                   |> Js.Promise.resolve
               })
           });
@@ -78,15 +85,34 @@ let make = (~web3,_children) => {
 
     | MyEventData(data) => { Js.Array.push(data,state.myEvents); ReasonReact.Update({...state,myEvents:state.myEvents}) }
 
-    | BuyEventAddress(address) => 
-        let event = Event.ofAddress(state.web3.web3,address);
-        ReasonReact.UpdateWithSideEffects({...state,event_address:address,buy_data:Some({event,numTickets:0,totalCost:BsWeb3.Utils.toBN(0)})},(self) => 
+    | BuyEventAddress(event_address) => 
+        let event = Event.ofAddress(state.web3.web3,event_address);
+        ReasonReact.UpdateWithSideEffects({
+          ...state,
+          event_address,buy_data:Some({
+            event,numTickets:0,
+            totalCost:BsWeb3.Utils.toBN(0),
+            numSold:0, numUnSold:0 
+        })},(self) => {
           switch(state.buy_data) {
           | None => 
             self.send(NumTickets(1))
           | Some({numTickets}) => 
             self.send(NumTickets(numTickets))
-          }
+          };
+          let tx = BsWeb3.Eth.make_transaction(~from=state.web3.account);
+          Event.numSold(event)
+          |> BsWeb3.Eth.call_with(tx)
+          |> Js.Promise.then_ ((numSold) => {
+              Event.numUnSold(event)
+              |> BsWeb3.Eth.call_with(tx)
+              |> Js.Promise.then_ ((numUnSold) => {
+                  self.send(NumSoldUnsold(numSold,numUnSold))
+                  |> Js.Promise.resolve 
+              })
+          });
+          ()
+        }
         )
     | NumTickets(numTickets) => 
         Js.log(numTickets);
@@ -104,6 +130,11 @@ let make = (~web3,_children) => {
         assert(state.buy_data != None);
         let buy_data = Js.Option.getExn(state.buy_data);
         ReasonReact.Update({...state,buy_data:Some({...buy_data,totalCost})})
+    | NumSoldUnsold(numSold,numUnSold) => 
+        Js.log(state);
+        assert(state.buy_data != None);
+        let buy_data = Js.Option.getExn(state.buy_data);
+        ReasonReact.Update({...state,buy_data:Some({...buy_data,numSold,numUnSold})})
     | SubmitBuy => ReasonReact.UpdateWithSideEffects(state,(self) => {
         Js.log(state);
         assert(state.buy_data != None);
@@ -116,6 +147,66 @@ let make = (~web3,_children) => {
         |> Js.Promise.then_ (_ => Js.Promise.resolve());
         ()
       })
+    | SignTickets(index) => ReasonReact.UpdateWithSideEffects(state,(self) => {
+        let event_address = state.myEvents[index].address;
+        state.myEvents[index].tickets
+        |> Js.Array.reduce((sigs,id) => {
+
+            sigs
+            |> Js.Promise.then_ ((sigs) => {
+                Js.log("Asking for sign");
+                state.web3.web3 
+                |> BsWeb3.Web3.eth 
+                |> BsWeb3.Eth.sign(
+                    BsWeb3.Utils.soliditySha3__2(event_address,id),
+                    state.web3.account)
+                |> Js.Promise.then_((sha) => {
+                    Js.log(sha);
+                    Js.Promise.resolve(Array.append([|(id,sha)|],sigs))
+                })
+            })
+
+            /* Cannot use eth_signTypedData on Toshi
+            let msg_params = [|
+              BsWeb3.Web3.msg_params(
+                ~name="Event Address",
+                ~type__="address",
+                ~value=event_address),
+              BsWeb3.Web3.msg_params(
+                ~name="Event Description",
+                ~type__="string",
+                ~value=state.myEvents[index].description),
+              BsWeb3.Web3.msg_params(
+                ~name="Ticket Id",
+                ~type__="uint256",
+                ~value=id)
+            |];
+            let send_params = 
+              BsWeb3.Web3.send_async_params(
+                ~method__="eth_signTypedData",
+                ~params=(msg_params,state.web3.account),
+                ~from=state.web3.account);
+
+            Js.Promise.make((~resolve,~reject) => {
+              state.web3.web3 
+              |> BsWeb3.Web3.currentProvider__fromWeb3 
+              |> BsWeb3.Web3.sendAsync(send_params,((error,result) => 
+                  resolve(.
+                    (id,BsWeb3.Web3.async_result_sha(result))
+                  )
+              ))
+            })
+            */
+        },Js.Promise.resolve([||]))
+        |> Js.Promise.then_((sigs) => { self.send(TicketSignatures(index,sigs)) |> Js.Promise.resolve });
+        ()
+      });
+    | TicketSignatures(index,ticket_signatures) => {
+        let event = state.myEvents[index];
+        let event = {...event,ticket_signatures};
+        state.myEvents[index] = event;
+        ReasonReact.Update(state)
+      }
     }
   },
   render: ({send,state}) =>
@@ -135,7 +226,13 @@ let make = (~web3,_children) => {
           </div>
           (switch(state.buy_data) {
            | None => ReasonReact.null 
-           | Some({numTickets,totalCost}) => [|
+           | Some({numTickets,totalCost,numSold,numUnSold}) => [|
+              <div key="Sold" className="row">
+                <label className="col col-form-label text-muted">(text("Sold"))</label>
+                <label className="col col-form-label"> (int(numSold)) </label>
+                <label className="col col-form-label text-muted">(text("Not Sold"))</label>
+                <label className="col col-form-label"> (int(numUnSold)) </label>
+              </div>,
               <div key="NumTickets" className="row">
                 <label className="col col-5 col-form-label text-muted">(text("Number of tickets"))</label>
                 <input className="col form-control" type_="text" placeholder="" id="inputLarge"
@@ -175,16 +272,33 @@ let make = (~web3,_children) => {
           </tr>
         </thead>
         <tbody>
-          (state.myEvents |> Js.Array.mapi((({event,description,address,tickets}),i) => {
+          (state.myEvents |> Js.Array.mapi((({event,description,address,tickets,ticket_signatures}),i) => {
+            [|
             <tr key=(Js.String.concat(string_of_int(i),address ))
-                /* Support toggle */
+                onClick=(_ => send(SignTickets(i)))
                 >
               <td>(text(description))</td>
               <td><AddressLabel address=address uri=state.web3.address_uri /></td>
               <td>(int(Js.Array.length(tickets)))</td>
-            </tr>
+            </tr>,
+            (Js.Array.length(ticket_signatures) <= 0 
+              ? ReasonReact.null
+              : <tr key=(Js.String.concat("Qr",Js.String.concat(string_of_int(i),address)))>
+                  <td colSpan=3 style=(ReactDOMRe.Style.make(~maxWidth="170px",()))> 
+                    <Carousel> 
+                      (ticket_signatures |> Js.Array.map( ((id,sha)) =>
+                        <QrView 
+                          style=(ReactDOMRe.Style.make(~marginTop="15px",~marginBottom="10px",()))
+                          key=sha text=Js.String.concatMany([|"|",string_of_int(id)|],sha )
+                        />
+                      ))
+                    </Carousel>
+                  </td>
+                </tr> 
+            )
+          |] |> ReasonReact.array
           })
-        |> ReasonReact.array)
+          |> ReasonReact.array)
         </tbody>
       </table> 
     </div>

@@ -53,3 +53,5 @@ body {
 .navbar-brand {
   font-weight: bolder;
 }
+
+input[type='text'],textarea {font-size:1em;}
