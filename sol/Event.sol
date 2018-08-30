@@ -29,7 +29,7 @@ contract Event /* is ERC721 */  {
   
   // For transfers 
   mapping(uint256 => uint256) internal d_token_ask;
-  
+
   constructor(string _description, address _organizer) public { 
     description = _description;
     d_admin = msg.sender;
@@ -185,6 +185,24 @@ contract Event /* is ERC721 */  {
       d_tickets[_token].d_prev_price = msg.value;
     }
   }
+
+  // https://medium.com/@libertylocked/ec-signatures-and-recovery-in-ethereum-smart-contracts-560b6dd8876
+  function ticketVerificationCode(uint256 _tokenId) public constant returns(bytes32) {
+    return keccak256(_tokenId,address(this));
+  }
+
+  function verifyTicketCode(uint256 _tokenId, uint8 _v, bytes32 _r, bytes32 _s) public constant returns(bool) {
+    return d_token_owner[_tokenId] == 
+            recover(ticketVerificationSha(_tokenId),
+                    _v,_r,_s);
+  }
+
+  function recover(bytes32 message, uint8 v, bytes32 r, bytes32 s) internal pure returns (address) {
+      bytes memory prefix = "\x19Ethereum Signed Message:\n32";
+      bytes32 prefixedHash = keccak256(prefix, message);
+      return ecrecover(prefixedHash, v, r, s);
+  }
+
 
 /*
   function approve(address _to, uint256 _tokenId) public;
