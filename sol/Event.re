@@ -17,6 +17,8 @@ type t;
 [@bs.scope "methods"] [@bs.send] external buy : t => (~numTickets:int) => BsWeb3.Eth.contract_method = "";
 [@bs.scope "methods"] [@bs.send] external myTickets : t => BsWeb3.Eth.contract_method = "";
 
+[@bs.scope "methods"] [@bs.send] external ticketVerificationCode : t => int => BsWeb3.Eth.contract_method = "";
+[@bs.scope "methods"] [@bs.send] external isOwnerSig : t => int => string => BsWeb3.Eth.contract_method = "";
 
 
 let ofAddress(web3,address) {

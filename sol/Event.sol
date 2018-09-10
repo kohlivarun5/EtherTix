@@ -188,19 +188,31 @@ contract Event /* is ERC721 */  {
 
   // https://medium.com/@libertylocked/ec-signatures-and-recovery-in-ethereum-smart-contracts-560b6dd8876
   function ticketVerificationCode(uint256 _tokenId) public constant returns(bytes32) {
-    return keccak256(_tokenId,address(this));
+    return keccak256(abi.encodePacked(_tokenId,address(this)));
   }
 
-  function verifyTicketCode(uint256 _tokenId, uint8 _v, bytes32 _r, bytes32 _s) public constant returns(bool) {
+  function isOwnerSig(uint256 _tokenId, bytes memory signature) public constant returns(bool) {
     return d_token_owner[_tokenId] == 
-            recover(ticketVerificationSha(_tokenId),
-                    _v,_r,_s);
+            recover(ticketVerificationCode(_tokenId),signature);
   }
 
-  function recover(bytes32 message, uint8 v, bytes32 r, bytes32 s) internal pure returns (address) {
-      bytes memory prefix = "\x19Ethereum Signed Message:\n32";
-      bytes32 prefixedHash = keccak256(prefix, message);
-      return ecrecover(prefixedHash, v, r, s);
+  function recover(bytes32 message, bytes memory signature) internal pure returns (address) {
+      (uint8 v, bytes32 r, bytes32 s) = splitSignature(signature);
+      return ecrecover(message,v, r, s);
+  }
+  
+  function splitSignature(bytes memory sig) internal pure returns (uint8 v, bytes32 r, bytes32 s)
+  {
+    require(sig.length == 65);
+    assembly {
+      // first 32 bytes, after the length prefix
+      r := mload(add(sig, 32))
+      // second 32 bytes
+      s := mload(add(sig, 64))
+      // final byte (first byte of the next 32 bytes)
+      v := byte(0, mload(add(sig, 96)))
+    }
+    return (v, r, s);
   }
 
 
