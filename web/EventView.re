@@ -16,7 +16,8 @@ type state = {
   address : BsWeb3.Eth.address,
   event: Event.t,
   data:sold_data,
-  issue_data:issue_data
+  issue_data:issue_data,
+  show_scanner:bool
 };
 type action = 
 | FetchData
@@ -25,6 +26,7 @@ type action =
 | IssuePrice(int)
 | SubmitIssue
 | Withdraw 
+| ToggleScanner
 
 let component = ReasonReact.reducerComponent("EventView");
 
@@ -35,7 +37,8 @@ let make = (~web3,~address,~event,_children) => {
     address:address,
     event:event,
     data:{numSold:0,numUnsold:0},
-    issue_data:{number:100,price_milli:100}
+    issue_data:{number:100,price_milli:100},
+    show_scanner:false
   },
   didMount: ({send}) => send(FetchData),
   reducer: (action,state:state) => {
@@ -76,18 +79,22 @@ let make = (~web3,~address,~event,_children) => {
         |> Js.Promise.then_ (_ => self.send(FetchData) |> Js.Promise.resolve);
         ()
       })
+    | ToggleScanner => ReasonReact.Update({...state,show_scanner:!state.show_scanner})
     }
   },
   render: ({send,state}) =>
 <div className="card">
-    <div className="card-header">
-      <button className="btn btn-success btn-send" onClick=(_ => send(Withdraw))
-              style=(ReactDOMRe.Style.make(~width="100%",())) 
-        >
+  
 
-        (text("Withdraw"))
-      </button>
-    </div>
+  <div className="card-header">
+    <button className="btn btn-success btn-send" onClick=(_ => send(Withdraw))
+            style=(ReactDOMRe.Style.make(~width="100%",())) 
+      >
+
+      (text("Withdraw"))
+    </button>
+  </div>
+    
   <div className="card-body"> 
     <div className="row">
       <div className="col col-5">
@@ -103,6 +110,23 @@ let make = (~web3,~address,~event,_children) => {
         </div>
       </div>
     </div>
+
+    (!state.show_scanner 
+     ? ReasonReact.null
+     : <QrReader 
+        style=(ReactDOMRe.Style.make(~marginTop="20px",()))
+        onScan=((result) => Js.log(result))
+        onError=((error) => Js.log(error)) />
+    )
+
+    <div className="padding-vertical-less">
+      <button className="btn btn-success btn-send" onClick=(_ => send(ToggleScanner))
+              style=(ReactDOMRe.Style.make(~marginTop="20px",~width="100%",())) 
+        >
+        (text(state.show_scanner ? "Hide Scanner" : "Scan Tickets"))
+      </button>
+    </div>
+
   </div>
 
   <h6 className="card-header">(text("Issue Tickets"))</h6>

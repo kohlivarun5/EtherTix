@@ -148,21 +148,27 @@ let make = (~web3,_children) => {
         ()
       })
     | SignTickets(index) => ReasonReact.UpdateWithSideEffects(state,(self) => {
-        let event_address = state.myEvents[index].address;
+        let event = state.myEvents[index].event;
         state.myEvents[index].tickets
         |> Js.Array.reduce((sigs,id) => {
 
             sigs
             |> Js.Promise.then_ ((sigs) => {
                 Js.log("Asking for sign");
-                state.web3.web3 
-                |> BsWeb3.Web3.eth 
-                |> BsWeb3.Eth.sign(
-                    BsWeb3.Utils.soliditySha3__2(event_address,id),
-                    state.web3.account)
-                |> Js.Promise.then_((sha) => {
-                    Js.log(sha);
-                    Js.Promise.resolve(Array.append([|(id,sha)|],sigs))
+                Event.ticketVerificationCode(event,id)
+                |> BsWeb3.Eth.call 
+                |> Js.Promise.then_((code) =>
+                  state.web3.web3 
+                  |> BsWeb3.Web3.eth 
+                  |> BsWeb3.Eth.sign(code,state.web3.account))
+                |> Js.Promise.then_((signature) => {
+                    Js.log(signature);
+                    Event.isOwnerSig(event,id,signature)
+                    |> BsWeb3.Eth.call 
+                    |> Js.Promise.then_((isOwner) => {
+                        assert(isOwner);
+                        Js.Promise.resolve(Array.append([|(id,signature)|],sigs))
+                      })
                 })
             })
 
