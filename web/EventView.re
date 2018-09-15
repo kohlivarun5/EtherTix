@@ -119,13 +119,18 @@ let make = (~web3,~address,~event,_children) => {
         onError=((error) => Js.log(error)) />
     )
 
-    <div className="padding-vertical-less">
-      <button className="btn btn-success btn-send" onClick=(_ => send(ToggleScanner))
-              style=(ReactDOMRe.Style.make(~marginTop="20px",~width="100%",())) 
-        >
-        (text(state.show_scanner ? "Hide Scanner" : "Scan Tickets"))
-      </button>
-    </div>
+    (Js.Re.test(
+      (Navigator.userAgent(Navigator.get)),
+      [%bs.re "/iPad|iPhone|iPod/"])
+     ? ReasonReact.null 
+     : <div className="padding-vertical-less">
+         <button className="btn btn-success btn-send" onClick=(_ => send(ToggleScanner))
+                 style=(ReactDOMRe.Style.make(~marginTop="20px",~width="100%",())) 
+           >
+           (text(state.show_scanner ? "Hide Scanner" : "Scan Tickets"))
+         </button>
+       </div>
+    )
 
   </div>
 
