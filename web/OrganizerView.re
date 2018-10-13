@@ -67,6 +67,8 @@ let make = (_children) => {
           })
       });
       ()
+    } else {
+      Js.log("Web3 is undefined!");
     }
   },
   initialState: () => {

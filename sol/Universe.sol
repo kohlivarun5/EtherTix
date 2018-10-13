@@ -30,6 +30,7 @@ contract Universe {
   
   function createEvent(string _description) public payable returns(address) {
     d_organizerEvents[msg.sender].push(new Event(_description,msg.sender));
+    return d_organizerEvents[msg.sender][d_organizerEvents[msg.sender].length-1];
   }
   
   function organizerEvents() public constant returns(address[]) {
