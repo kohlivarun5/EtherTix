@@ -1,6 +1,8 @@
 let text = ReasonReact.string;
 let int(i) = i |> string_of_int |> ReasonReact.string;
 
+[@bs.val] external alert: string => unit = "";
+
 type sold_data = {
   numSold:int,
   numUnsold:int
@@ -33,6 +35,7 @@ type action =
 | IssuePrice(int)
 | SubmitIssue
 | Withdraw 
+| UseTicket(string)
 | ToggleScanner
 
 let component = ReasonReact.reducerComponent("EventView");
@@ -98,6 +101,27 @@ let make = (~web3,~address,~event,_children) => {
         ()
       })
     | ToggleScanner => ReasonReact.Update({...state,show_scanner:!state.show_scanner})
+    | UseTicket(code) => ReasonReact.UpdateWithSideEffects(state,(self) => {
+        self.send(ToggleScanner);
+        let [|signature,token|] = Js.String.split("|",code);
+        Js.log(signature);
+        Js.log(token);
+        Event.ticketUsed(state.event,int_of_string(token))
+        |> BsWeb3.Eth.call 
+        |> Js.Promise.then_ ((res) => {
+            if (res) { 
+              alert("Ticket already used!") |> Js.Promise.resolve;
+            } else {
+              Event.useTicket(state.event,int_of_string(token),signature)
+              |> BsWeb3.Eth.send(BsWeb3.Eth.make_transaction(~from=state.web3.account))
+              |> Js.Promise.then_ ((res) => {
+                  Js.log(res);
+                  self.send(FetchData) |> Js.Promise.resolve
+                });
+            }
+          });
+        ()
+      })
     }
   },
   render: ({send,state}) =>
@@ -149,7 +173,18 @@ let make = (~web3,~address,~event,_children) => {
      ? ReasonReact.null
      : <QrReader 
         style=(ReactDOMRe.Style.make(~marginTop="20px",()))
-        onScan=((result) => Js.log(result))
+        onScan=((result) => {
+          switch (Js.Nullable.toOption(result)) { 
+            | Some(code) => {
+                if (Js.String.length(code) > 3) {
+                  send(UseTicket(code)) 
+                } else {
+                  Js.log(code);
+                }
+            }
+            | None => Js.log("No code")
+          }
+        })
         onError=((error) => Js.log(error)) />
     )
 

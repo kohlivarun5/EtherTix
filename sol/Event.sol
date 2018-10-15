@@ -205,12 +205,17 @@ contract Event /* is ERC721 */  {
       d_tickets[_token].d_prev_price = msg.value;
     }
   }
+  
+  function ticketUsed(uint256 _tokenId) public constant returns(bool) {
+      return d_tickets[_tokenId].d_used;
+  }
 
   // https://medium.com/@libertylocked/ec-signatures-and-recovery-in-ethereum-smart-contracts-560b6dd8876
   function ticketVerificationCode(uint256 _tokenId) public constant returns(bytes32) {
+    require(!ticketUsed(_tokenId), "Ticket already used!");
     return keccak256(abi.encodePacked(_tokenId,address(this)));
   }
-
+  
   function isOwnerSig(uint256 _tokenId, bytes memory signature) public constant returns(bool) {
     return d_token_owner[_tokenId] == 
             recover(ticketVerificationCode(_tokenId),signature);
@@ -218,6 +223,7 @@ contract Event /* is ERC721 */  {
 
   function useTicket(uint256 _tokenId, bytes memory signature) public returns(bool) {
     require(isOwnerSig(_tokenId,signature), "Incorrect usage signature!");
+    require(!ticketUsed(_tokenId), "Ticket already used!");
     d_tickets[_tokenId].d_used = true;
     delete d_token_ask[_tokenId]; // Just in case
     return true;
