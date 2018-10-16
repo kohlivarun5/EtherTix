@@ -322,7 +322,7 @@ let make = (~web3,_children) => {
                       (ticket_signatures |> Js.Array.map( ((signature,id)) => {
                         switch(signature) {
                           | Used => 
-                            <img src="Ticket.svg" 
+                            <img src="img/Ticket.svg" 
                               key=string_of_int(id)
                               style=(ReactDOMRe.Style.make(~marginTop="15px",~height="228px",()))
                             />
