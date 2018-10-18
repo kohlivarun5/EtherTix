@@ -318,44 +318,63 @@ let make = (~web3,_children) => {
             [|
             <tr key=(Js.String.concat(string_of_int(i),address ))
                 onClick=(_ => send(ToggleDetails(i)))
+                className=((show_details) ? "table-active bg-black" : "")
                 >
               <td>(text(description))</td>
               <td><AddressLabel address=address uri=state.web3.address_uri /></td>
               <td>(int(Js.Array.length(tickets)))</td>
             </tr>,
             (show_details 
-             ?  <tr key=(Js.String.concat(string_of_int(i),"details"))>
-                  <td colSpan=3>
-                    (Js.Array.length(ticket_signatures) <= 0 
-                     ? <button className="btn btn-success btn-send" onClick=(_ => send(SignTickets(i)))
-                            style=(ReactDOMRe.Style.make(~width="100%",())) >
-                          (text("Get Tickets"))
-                        </button>
-                     : <div className="card-body padding-vertical-less" > 
-                         <Carousel> 
-                           (ticket_signatures |> Js.Array.map( ((signature,id)) => {
-                             switch(signature) {
-                               | Used => 
-                                 <img src="img/Ticket.svg" 
-                                   key=string_of_int(id)
-                                   style=(ReactDOMRe.Style.make(~marginTop="15px",~height="228px",()))
-                                 />
-                               | UnUsed(sha) => {
-                                 <QrView 
-                                   style=(ReactDOMRe.Style.make(~marginTop="15px",~marginBottom="10px",()))
-                                   key=string_of_int(id) text=Js.String.concatMany([|"|",string_of_int(id)|],sha )
-                                 />
+             ?  <tr key=(Js.String.concat(string_of_int(i),"details"))
+                    className=((show_details) ? "table-active bg-black" : "")>
+                  <td colSpan=3 style=(ReactDOMRe.Style.make(~maxWidth="170px",())) >
+                    <div className="card">
+                      (Js.Array.length(ticket_signatures) <= 0 
+                       ?  <div className="card-header">
+                            <button className="btn btn-success btn-send" onClick=(_ => send(SignTickets(i)))
+                              style=(ReactDOMRe.Style.make(~width="100%",())) >
+                              (text("Get Tickets"))
+                            </button>
+                          </div>
+                       : <div className="card-body padding-vertical-less padding-horizontal-less" > 
+                           <Carousel> 
+                             (ticket_signatures |> Js.Array.map( ((signature,id)) => {
+                               switch(signature) {
+                                 | Used => 
+                                   <img src="img/Ticket.svg" 
+                                     key=string_of_int(id)
+                                     style=(ReactDOMRe.Style.make(~marginTop="15px",~height="228px",()))
+                                   />
+                                 | UnUsed(sha) => {
+                                   <QrView 
+                                     style=(ReactDOMRe.Style.make(~marginTop="15px",~marginBottom="10px",()))
+                                     key=string_of_int(id) text=Js.String.concatMany([|"|",string_of_int(id)|],sha )
+                                   />
+                                 }
                                }
                              }
-                           }
-                           ))
-                         </Carousel>
-                       </div>
-                    )
-                    <button className="btn btn-success btn-send" onClick=(_ => send(SignTickets(i)))
-                            style=(ReactDOMRe.Style.make(~width="100%",~marginTop="15px",())) >
-                      (text("Sell Tickets"))
-                    </button>
+                             ))
+                           </Carousel>
+                         </div>
+                      )
+                      <div className="card-body padding-vertical-less"> 
+                        <div className="form-group" style=(ReactDOMRe.Style.make(~margin="3%",()))>
+                          <div className="row">
+                            <label className="col col-form-label text-muted">(text("Price per ticket (ETH)"))</label>
+                            <input className="col form-control" type_="text" placeholder="" id="inputLarge"
+                                   onChange=(event => send(BuyEventAddress(ReactEvent.Form.target(event)##value)))
+                                   value=state.event_address
+                            />
+                          </div>
+                        </div>
+                      </div>
+                      <div className="card-header">
+                        <button className="btn btn-success btn-send" onClick=(_ => send(SignTickets(i)))
+                                style=(ReactDOMRe.Style.make(~width="100%",())) >
+                          (text("Sell All Tickets"))
+                        </button>
+                      </div>
+                    </div>
                   </td>
                 </tr>
                 : ReasonReact.null)

@@ -48,6 +48,38 @@
 	},
 	{
 		"constant": false,
+		"inputs": [
+			{
+				"name": "_externalLink",
+				"type": "string"
+			}
+		],
+		"name": "setExternalLink",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_tokens",
+				"type": "uint256[]"
+			},
+			{
+				"name": "_price",
+				"type": "uint256"
+			}
+		],
+		"name": "proposeSale",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
 		"inputs": [],
 		"name": "withdraw",
 		"outputs": [],
@@ -75,6 +107,20 @@
 	},
 	{
 		"constant": true,
+		"inputs": [],
+		"name": "forSale",
+		"outputs": [
+			{
+				"name": "token_asks",
+				"type": "uint256[]"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
 		"inputs": [
 			{
 				"name": "_tokenId",
@@ -86,6 +132,34 @@
 			{
 				"name": "_exists",
 				"type": "bool"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "imgSrc",
+		"outputs": [
+			{
+				"name": "",
+				"type": "string"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "externalLink",
+		"outputs": [
+			{
+				"name": "",
+				"type": "string"
 			}
 		],
 		"payable": false,
@@ -134,15 +208,11 @@
 		"constant": false,
 		"inputs": [
 			{
-				"name": "_token",
-				"type": "uint256"
-			},
-			{
-				"name": "_price",
-				"type": "uint256"
+				"name": "_imgSrc",
+				"type": "string"
 			}
 		],
-		"name": "proposeSale",
+		"name": "setImg",
 		"outputs": [],
 		"payable": false,
 		"stateMutability": "nonpayable",
@@ -204,8 +274,8 @@
 		"constant": false,
 		"inputs": [
 			{
-				"name": "_token",
-				"type": "uint256"
+				"name": "_tokens",
+				"type": "uint256[]"
 			}
 		],
 		"name": "retractSale",
