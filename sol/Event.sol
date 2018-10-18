@@ -8,6 +8,7 @@ contract Event /* is ERC721 */  {
     
   struct TicketInfo {
     uint256 d_prev_price;
+    bool    d_used;
   }
  
   string public description;
@@ -42,7 +43,7 @@ contract Event /* is ERC721 */  {
     //         "Minimum cost is 100 szabo"); // Denominate in szabo
     
     for(uint256 i=0;i<_numTickets;++i) {
-      d_tickets.push(TicketInfo({d_prev_price:_price}));
+      d_tickets.push(TicketInfo({d_prev_price:_price,d_used:false}));
     }
   }
 
@@ -120,6 +121,22 @@ contract Event /* is ERC721 */  {
     }
     return numUnSoldCount;
   }
+
+  function numUsed() public constant returns(uint256) {
+    uint256 numUsedCount=0;
+    for(uint256 i=0;i<d_tickets.length;++i) {
+      if (d_tickets[i].d_used) { numUsedCount++; } 
+    }
+    return numUsedCount;
+  }
+
+  function numToBeUsed() public constant returns(uint256) {
+    uint256 numToBeUsedCount=0;
+    for(uint256 i=0;i<d_tickets.length;++i) {
+      if (!d_tickets[i].d_used && d_token_owner[i] != address(0)) { numToBeUsedCount++; } 
+    }
+    return numToBeUsedCount;
+  }
   
   function balanceOf(address _owner) public constant returns (uint256 _balance) {
     return d_owner_tokens[_owner].length;    
@@ -138,6 +155,7 @@ contract Event /* is ERC721 */  {
   }
   
   function proposeSale(uint256 _token,uint256 _price) public {
+    require(d_tickets[_token].d_used == false, "Ticket already used!");
     require(d_token_owner[_token] == msg.sender);
     d_token_ask[_token] = _price;
   }
@@ -148,6 +166,7 @@ contract Event /* is ERC721 */  {
   }
   
   function hitAsk(uint256 _token) public payable {
+    require(!d_tickets[_token].d_used, "Ticket already used!");
     require(d_token_ask[_token] > 0 && msg.value > d_token_ask[_token]);
       
     // Value provided, okay to transfer
@@ -176,6 +195,7 @@ contract Event /* is ERC721 */  {
       uint256 premium = msg.value - d_tickets[_token].d_prev_price;
       uint256 seller_premium = premium / 2;
       
+      // TODO Review
       address(prev_owner).transfer(seller_premium + d_tickets[_token].d_prev_price);
       
       // Other half premium is for the event, and commission out of it 
@@ -185,16 +205,39 @@ contract Event /* is ERC721 */  {
       d_tickets[_token].d_prev_price = msg.value;
     }
   }
+  
+  function ticketUsed(uint256 _tokenId) public constant returns(bool) {
+      return d_tickets[_tokenId].d_used;
+  }
 
   // https://medium.com/@libertylocked/ec-signatures-and-recovery-in-ethereum-smart-contracts-560b6dd8876
   function ticketVerificationCode(uint256 _tokenId) public constant returns(bytes32) {
+    require(!ticketUsed(_tokenId), "Ticket already used!");
     return keccak256(abi.encodePacked(_tokenId,address(this)));
   }
-
+  
   function isOwnerSig(uint256 _tokenId, bytes memory signature) public constant returns(bool) {
     return d_token_owner[_tokenId] == 
             recover(ticketVerificationCode(_tokenId),signature);
   }
+
+  function useTicket(uint256 _tokenId, bytes memory signature) public returns(bool) {
+    require(isOwnerSig(_tokenId,signature), "Incorrect usage signature!");
+    require(!ticketUsed(_tokenId), "Ticket already used!");
+    d_tickets[_tokenId].d_used = true;
+    delete d_token_ask[_tokenId]; // Just in case
+    return true;
+  }
+
+/* TODO Cannot use since we cannot pass in bytes[] as an argument
+  function useTickets(uint256[10] _tokenIds, bytes signatures) public returns(bool) {
+    require(_tokenIds.length == signatures.length);
+    for(uint256 i=0;i<_tokenIds.length && i < signatures.length; ++i) {
+      useTicket(_tokenIds[i],signatures[i]);
+    }
+    return true;
+  }
+*/
 
   function recover(bytes32 message, bytes memory signature) internal pure returns (address) {
       (uint8 v, bytes32 r, bytes32 s) = splitSignature(signature);

@@ -7,9 +7,13 @@ type buy_data = {
   totalCost:BsWeb3.Types.big_number,
   numSold:int,
   numUnSold:int
-}
+};
 
-type ticket_id_sig = (int,string)
+type ticket_sig = 
+| Used 
+| UnUsed(string)
+
+type ticket_id_sig = (ticket_sig,int)
 type event_data = {
   address:BsWeb3.Eth.address,
   event:Event.t,
@@ -155,21 +159,33 @@ let make = (~web3,_children) => {
             sigs
             |> Js.Promise.then_ ((sigs) => {
                 Js.log("Asking for sign");
-                Event.ticketVerificationCode(event,id)
+
+                Event.ticketUsed(event,id)
                 |> BsWeb3.Eth.call 
-                |> Js.Promise.then_((code) =>
-                  state.web3.web3 
-                  |> BsWeb3.Web3.eth 
-                  |> BsWeb3.Eth.sign(code,state.web3.account))
-                |> Js.Promise.then_((signature) => {
-                    Js.log(signature);
-                    Event.isOwnerSig(event,id,signature)
-                    |> BsWeb3.Eth.call 
-                    |> Js.Promise.then_((isOwner) => {
-                        assert(isOwner);
-                        Js.Promise.resolve(Array.append([|(id,signature)|],sigs))
+                |> Js.Promise.then_((isUsed) => {
+                    if (isUsed) {
+                      Js.Promise.resolve(Array.append([|(Used,id)|],sigs))
+                    } else {
+                      Event.ticketVerificationCode(event,id)
+                      |> BsWeb3.Eth.call 
+                      |> Js.Promise.then_((code) =>
+                        state.web3.web3 
+                        |> BsWeb3.Web3.eth 
+                        |> BsWeb3.Eth.sign(code,state.web3.account))
+                      |> Js.Promise.then_((signature) => {
+                          Js.log(signature);
+                          Event.isOwnerSig(event,id,signature)
+                          |> BsWeb3.Eth.call 
+                          |> Js.Promise.then_((isOwner) => {
+                              assert(isOwner);
+                              Js.Promise.resolve(Array.append([|(UnUsed(signature),id)|],sigs))
+                            })
                       })
-                })
+                      |> Js.Promise.catch((_) => {
+                          Js.Promise.resolve(Array.append([|(Used,id)|],sigs))
+                        })
+                    }
+                });
             })
 
             /* Cannot use eth_signTypedData on Toshi
@@ -204,10 +220,21 @@ let make = (~web3,_children) => {
             })
             */
         },Js.Promise.resolve([||]))
-        |> Js.Promise.then_((sigs) => { self.send(TicketSignatures(index,sigs)) |> Js.Promise.resolve });
+        |> Js.Promise.then_((sigs) => { 
+            let sorted_sigs = 
+              sigs 
+              |> Js.Array.sortInPlaceWith(((sig1,id1),(sig2,id2)) => {
+                  if (sig1 == Used && sig2 != Used) { 1 }
+                  else if (sig1 != Used && sig2 == Used) { -1 }
+                  else { 0 }
+                });
+            self.send(TicketSignatures(index,sorted_sigs))
+            |> Js.Promise.resolve 
+          });
         ()
       });
     | TicketSignatures(index,ticket_signatures) => {
+        Js.log(ticket_signatures);
         let event = state.myEvents[index];
         let event = {...event,ticket_signatures};
         state.myEvents[index] = event;
@@ -292,11 +319,21 @@ let make = (~web3,_children) => {
               : <tr key=(Js.String.concat("Qr",Js.String.concat(string_of_int(i),address)))>
                   <td colSpan=3 style=(ReactDOMRe.Style.make(~maxWidth="170px",()))> 
                     <Carousel> 
-                      (ticket_signatures |> Js.Array.map( ((id,sha)) =>
-                        <QrView 
-                          style=(ReactDOMRe.Style.make(~marginTop="15px",~marginBottom="10px",()))
-                          key=sha text=Js.String.concatMany([|"|",string_of_int(id)|],sha )
-                        />
+                      (ticket_signatures |> Js.Array.map( ((signature,id)) => {
+                        switch(signature) {
+                          | Used => 
+                            <img src="img/Ticket.svg" 
+                              key=string_of_int(id)
+                              style=(ReactDOMRe.Style.make(~marginTop="15px",~height="228px",()))
+                            />
+                          | UnUsed(sha) => {
+                            <QrView 
+                              style=(ReactDOMRe.Style.make(~marginTop="15px",~marginBottom="10px",()))
+                              key=string_of_int(id) text=Js.String.concatMany([|"|",string_of_int(id)|],sha )
+                            />
+                          }
+                        }
+                      }
                       ))
                     </Carousel>
                   </td>

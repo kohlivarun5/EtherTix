@@ -4,7 +4,7 @@
 type jsProps = {
   delay:int,
   facingMode:string,
-  onScan:(Js.Option.t(string) => unit),
+  onScan:(Js.Nullable.t(string) => unit),
   onError:(string => unit),
   style:ReactDOMRe.style
 };

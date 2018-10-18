@@ -1,9 +1,16 @@
 let text = ReasonReact.string;
 let int(i) = i |> string_of_int |> ReasonReact.string;
 
+[@bs.val] external alert: string => unit = "";
+
 type sold_data = {
   numSold:int,
   numUnsold:int
+}
+
+type used_data = {
+  numUsed:int,
+  numToBeUsed:int
 }
 
 type issue_data = {
@@ -15,17 +22,20 @@ type state = {
   web3 : Web3.state,
   address : BsWeb3.Eth.address,
   event: Event.t,
-  data:sold_data,
+  sold_data:sold_data,
+  used_data:used_data,
   issue_data:issue_data,
   show_scanner:bool
 };
 type action = 
 | FetchData
 | SoldData(sold_data) 
+| UsedData(used_data) 
 | IssueNumber(int) 
 | IssuePrice(int)
 | SubmitIssue
 | Withdraw 
+| UseTicket(string)
 | ToggleScanner
 
 let component = ReasonReact.reducerComponent("EventView");
@@ -36,7 +46,8 @@ let make = (~web3,~address,~event,_children) => {
     web3:web3,
     address:address,
     event:event,
-    data:{numSold:0,numUnsold:0},
+    sold_data:{numSold:0,numUnsold:0},
+    used_data:{numUsed:0,numToBeUsed:0},
     issue_data:{number:100,price_milli:100},
     show_scanner:false
   },
@@ -51,14 +62,24 @@ let make = (~web3,~address,~event,_children) => {
             Event.numUnSold(state.event)
             |> BsWeb3.Eth.call_with(tx)
             |> Js.Promise.then_ ((numUnsold) => {
-                self.send(SoldData({numSold:numSold,numUnsold:numUnsold}))
+                self.send(SoldData({numSold,numUnsold}))
+                |> Js.Promise.resolve 
+            })
+        });
+        Event.numUsed(state.event)
+        |> BsWeb3.Eth.call_with(tx)
+        |> Js.Promise.then_ ((numUsed) => {
+            Event.numToBeUsed(state.event)
+            |> BsWeb3.Eth.call_with(tx)
+            |> Js.Promise.then_ ((numToBeUsed) => {
+                self.send(UsedData({numUsed,numToBeUsed}))
                 |> Js.Promise.resolve 
             })
         });
         ()
       })
-
-    | SoldData(data) => ReasonReact.Update({...state,data:data})
+    | SoldData(sold_data) => ReasonReact.Update({...state,sold_data})
+    | UsedData(used_data) => ReasonReact.Update({...state,used_data})
     | IssueNumber(number) => ReasonReact.Update({...state,issue_data:{...state.issue_data,number}})
     | IssuePrice(price_milli) => ReasonReact.Update({...state,issue_data:{...state.issue_data,price_milli}})
     | SubmitIssue => ReasonReact.UpdateWithSideEffects(state,(self) => {
@@ -80,6 +101,27 @@ let make = (~web3,~address,~event,_children) => {
         ()
       })
     | ToggleScanner => ReasonReact.Update({...state,show_scanner:!state.show_scanner})
+    | UseTicket(code) => ReasonReact.UpdateWithSideEffects(state,(self) => {
+        self.send(ToggleScanner);
+        let [|signature,token|] = Js.String.split("|",code);
+        Js.log(signature);
+        Js.log(token);
+        Event.ticketUsed(state.event,int_of_string(token))
+        |> BsWeb3.Eth.call 
+        |> Js.Promise.then_ ((res) => {
+            if (res) { 
+              alert("Ticket already used!") |> Js.Promise.resolve;
+            } else {
+              Event.useTicket(state.event,int_of_string(token),signature)
+              |> BsWeb3.Eth.send(BsWeb3.Eth.make_transaction(~from=state.web3.account))
+              |> Js.Promise.then_ ((res) => {
+                  Js.log(res);
+                  self.send(FetchData) |> Js.Promise.resolve
+                });
+            }
+          });
+        ()
+      })
     }
   },
   render: ({send,state}) =>
@@ -100,22 +142,49 @@ let make = (~web3,~address,~event,_children) => {
       <div className="col col-5">
         <div className="row">
           <div className="col text-muted">(text("Sold"))</div>
-          <div className="col">(int(state.data.numSold))</div>
+          <div className="col">(int(state.sold_data.numSold))</div>
         </div>
       </div>
       <div className="col col-7">
         <div className="row">
           <div className="col text-muted">(text("Not Sold"))</div>
-          <div className="col">(int(state.data.numUnsold))</div>
+          <div className="col">(int(state.sold_data.numUnsold))</div>
         </div>
       </div>
     </div>
+
+    <div className="row">
+      <div className="col col-5">
+        <div className="row">
+          <div className="col text-muted">(text("Used"))</div>
+          <div className="col">(int(state.used_data.numUsed))</div>
+        </div>
+      </div>
+      <div className="col col-7">
+        <div className="row">
+          <div className="col text-muted">(text("To Be Used"))</div>
+          <div className="col">(int(state.used_data.numToBeUsed))</div>
+        </div>
+      </div>
+    </div>
+
 
     (!state.show_scanner 
      ? ReasonReact.null
      : <QrReader 
         style=(ReactDOMRe.Style.make(~marginTop="20px",()))
-        onScan=((result) => Js.log(result))
+        onScan=((result) => {
+          switch (Js.Nullable.toOption(result)) { 
+            | Some(code) => {
+                if (Js.String.length(code) > 3) {
+                  send(UseTicket(code)) 
+                } else {
+                  Js.log(code);
+                }
+            }
+            | None => Js.log("No code")
+          }
+        })
         onError=((error) => Js.log(error)) />
     )
 

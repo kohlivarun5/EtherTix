@@ -20,6 +20,11 @@ type t;
 [@bs.scope "methods"] [@bs.send] external ticketVerificationCode : t => int => BsWeb3.Eth.contract_method = "";
 [@bs.scope "methods"] [@bs.send] external isOwnerSig : t => int => string => BsWeb3.Eth.contract_method = "";
 
+[@bs.scope "methods"] [@bs.send] external numUsed : t => BsWeb3.Eth.contract_method = "";
+[@bs.scope "methods"] [@bs.send] external numToBeUsed : t => BsWeb3.Eth.contract_method = "";
+
+[@bs.scope "methods"] [@bs.send] external ticketUsed : t => int => BsWeb3.Eth.contract_method = "";
+[@bs.scope "methods"] [@bs.send] external useTicket : t => int => string => BsWeb3.Eth.contract_method = "";
 
 let ofAddress(web3,address) {
   let eth = BsWeb3.Web3.eth(web3);
