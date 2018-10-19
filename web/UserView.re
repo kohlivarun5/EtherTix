@@ -414,7 +414,7 @@ let make = (~web3,_children) => {
                       <div className="card-header">
                         <button className="btn btn-success btn-send" onClick=(_ => send(SellAllTickets(i)))
                                 style=(ReactDOMRe.Style.make(~width="100%",())) >
-                          (text("Sell All Tickets"))
+                          (text("Put for sale"))
                         </button>
                       </div>
                     </div>
