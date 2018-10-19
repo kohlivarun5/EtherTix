@@ -166,6 +166,15 @@ contract Event /* is ERC721 */  {
     return d_owner_tokens[msg.sender];
   }
   
+  function getAveragePrice(uint256[] _tokens) public constant returns(uint256) {
+    uint256 total_cost=0;
+    for(uint256 i=0;i<_tokens.length;++i) {
+      require(msg.sender == d_token_owner[_tokens[i]], "Only owner can see price!");
+      total_cost+=d_tickets[_tokens[i]].d_prev_price;
+    }
+    return total_cost/_tokens.length;
+  }
+  
   function proposeSale(uint256[] _tokens,uint256 _price) public {
     for(uint256 i=0;i<_tokens.length;++i) {
         uint256 _token=_tokens[i];
