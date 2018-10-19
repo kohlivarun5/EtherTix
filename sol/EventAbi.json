@@ -107,6 +107,25 @@
 	},
 	{
 		"constant": true,
+		"inputs": [
+			{
+				"name": "_tokens",
+				"type": "uint256[]"
+			}
+		],
+		"name": "getAveragePrice",
+		"outputs": [
+			{
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
 		"inputs": [],
 		"name": "forSale",
 		"outputs": [
@@ -367,25 +386,6 @@
 		"constant": true,
 		"inputs": [
 			{
-				"name": "_tokens",
-				"type": "uint256[]"
-			}
-		],
-		"name": "getTicketsPrice",
-		"outputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
 				"name": "_tokenId",
 				"type": "uint256"
 			},
@@ -449,4 +449,3 @@
 		"type": "constructor"
 	}
 ]
-

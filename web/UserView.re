@@ -262,7 +262,7 @@ let make = (~web3,_children) => {
         state.myEvents[index] = event;
         ReasonReact.UpdateWithSideEffects(state,(self) => {
           let transaction_data = BsWeb3.Eth.make_transaction(~from=state.web3.account);
-          Event.getTicketsPrice(state.myEvents[index].event,state.myEvents[index].tickets)
+          Event.getAveragePrice(state.myEvents[index].event,state.myEvents[index].tickets)
           |> BsWeb3.Eth.call_with(transaction_data)
           |> Js.Promise.then_((selling_price_per_ticket) => {
               self.send(SellingPricePerTicket(
