@@ -26,6 +26,13 @@ type t;
 [@bs.scope "methods"] [@bs.send] external ticketUsed : t => int => BsWeb3.Eth.contract_method = "";
 [@bs.scope "methods"] [@bs.send] external useTicket : t => int => string => BsWeb3.Eth.contract_method = "";
 
+[@bs.scope "methods"] [@bs.send] external getAveragePrice : t => Js.Array.t(int) => BsWeb3.Eth.contract_method = "";
+[@bs.scope "methods"] [@bs.send] external proposeSale : t => Js.Array.t(int) => (~price:BsWeb3.Types.big_number) => BsWeb3.Eth.contract_method = "";
+[@bs.scope "methods"] [@bs.send] external retractSale : t => Js.Array.t(int) => BsWeb3.Eth.contract_method = "";
+[@bs.scope "methods"] [@bs.send] external forSale : t => BsWeb3.Eth.contract_method = "";
+[@bs.scope "methods"] [@bs.send] external hitAsk : t => int => BsWeb3.Eth.contract_method = "";
+
+
 let ofAddress(web3,address) {
   let eth = BsWeb3.Web3.eth(web3);
   Js.log((eth,address,abi));

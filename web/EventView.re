@@ -142,13 +142,13 @@ let make = (~web3,~address,~event,_children) => {
       <div className="col col-5">
         <div className="row">
           <div className="col text-muted">(text("Sold"))</div>
-          <div className="col">(int(state.sold_data.numSold))</div>
+          <div className="col col-5">(int(state.sold_data.numSold))</div>
         </div>
       </div>
-      <div className="col col-7">
+      <div className="col col-7 padding-horizontal-less">
         <div className="row">
-          <div className="col text-muted">(text("Not Sold"))</div>
-          <div className="col">(int(state.sold_data.numUnsold))</div>
+          <div className="col text-muted padding-horizontal-less">(text("Not Sold"))</div>
+          <div className="col col-5">(int(state.sold_data.numUnsold))</div>
         </div>
       </div>
     </div>
@@ -157,13 +157,13 @@ let make = (~web3,~address,~event,_children) => {
       <div className="col col-5">
         <div className="row">
           <div className="col text-muted">(text("Used"))</div>
-          <div className="col">(int(state.used_data.numUsed))</div>
+          <div className="col col-5">(int(state.used_data.numUsed))</div>
         </div>
       </div>
-      <div className="col col-7">
+      <div className="col col-7 padding-horizontal-less">
         <div className="row">
-          <div className="col text-muted">(text("To Be Used"))</div>
-          <div className="col">(int(state.used_data.numToBeUsed))</div>
+          <div className="col text-muted padding-horizontal-less">(text("To Be Used"))</div>
+          <div className="col col-5">(int(state.used_data.numToBeUsed))</div>
         </div>
       </div>
     </div>
@@ -204,25 +204,27 @@ let make = (~web3,~address,~event,_children) => {
   </div>
 
   <h6 className="card-header">(text("Issue Tickets"))</h6>
-  <div className="card-body padding-vertical-less"> 
+  <div className="card-body padding-vertical-less padding-horizontal-less" > 
     <div className="form-group" style=(ReactDOMRe.Style.make(~margin="3%",()))>
-      <div className="row">
-        <label className="col col-5 col-form-label text-muted">(text("Number of tickets"))</label>
+      <div className="row row-margin">
+        <label className="col col-7 col-form-label text-muted" > (text("Number of tickets")) </label>
         <input className="col form-control" type_="text" placeholder="" id="inputLarge"
                onChange=(event => send(IssueNumber(ReactEvent.Form.target(event)##value)))
                value=(string_of_int(state.issue_data.number))
+               style=(ReactDOMRe.Style.make(~marginRight="10px",()))
         />
       </div>
-      <div className="row">
-        <label className="col col-5 col-form-label text-muted">(text("Price per ticket (milli ETH)"))</label>
+      <div className="row row-margin">
+        <label className="col col-7 col-form-label text-muted" > (text("Price per ticket (milli ETH)")) </label>
         <input className="col form-control" type_="text" placeholder="" id="inputLarge" 
                onChange=(event => send(IssuePrice(ReactEvent.Form.target(event)##value)))
                value=(string_of_int(state.issue_data.price_milli))
+               style=(ReactDOMRe.Style.make(~marginRight="10px",()))
         />
       </div>
       <div className="row">
         <button className="btn btn-success btn-send" onClick=(_ => send(SubmitIssue))
-                style=(ReactDOMRe.Style.make(~marginLeft="20px",~marginRight="20px",~marginTop="20px",~width="100%",())) >
+                style=(ReactDOMRe.Style.make(~marginLeft="20px",~marginRight="20px",~marginTop="10px",~width="100%",())) >
           (text("Submit"))
         </button>
       </div>
