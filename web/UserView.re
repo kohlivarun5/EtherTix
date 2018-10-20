@@ -7,7 +7,7 @@ type buy_data = {
   totalCost:BsWeb3.Types.big_number,
   numSold:int,
   numUnSold:int,
-  resale_tickets:Js.Array.t(BsWeb3.Types.big_number)
+  resale_tickets:Js.Array.t((int,BsWeb3.Types.big_number))
 };
 
 type ticket_sig = 
@@ -43,9 +43,10 @@ type action =
 | ToggleDetails(int)
 | SignTickets(int)
 | TicketSignatures(int,Js.Array.t(ticket_id_sig))
-| NumSoldUnsoldResale(int,int,Js.Array.t(BsWeb3.Types.big_number))
+| NumSoldUnsoldResale(int,int,Js.Array.t((int,BsWeb3.Types.big_number)))
 | SellingPricePerTicket(BsWeb3.Types.big_number)
 | SellAllTickets(int)
+| BuyResale(Event.t,int,BsWeb3.Types.big_number)
 
 let component = ReasonReact.reducerComponent("UserView");
 
@@ -125,7 +126,8 @@ let make = (~web3,_children) => {
                   |> Js.Promise.then_ ((resale_tickets) => {
                       let resale_tickets = 
                         resale_tickets
-                          |> Js.Array.filter((price) => "0" != (price |> BsWeb3.Types.toString(10)));
+                          |> Js.Array.mapi((price,i) => (i,price))
+                          |> Js.Array.filter(((i,price)) => "0" != (price |> BsWeb3.Types.toString(10)));
                       self.send(NumSoldUnsoldResale(numSold,numUnSold,resale_tickets))
                       |> Js.Promise.resolve 
                   })
@@ -165,6 +167,14 @@ let make = (~web3,_children) => {
             BsWeb3.Eth.make_transaction_with_value(
               ~value=totalCost,~from=state.web3.account))
         |> Js.Promise.then_ (_ => Js.Promise.resolve());
+        ()
+      })
+    | BuyResale(event,token,price) => ReasonReact.UpdateWithSideEffects(state,(self) => {
+        Event.hitAsk(event,token)
+        |> BsWeb3.Eth.send(
+            BsWeb3.Eth.make_transaction_with_value(
+              ~value=price,~from=state.web3.account))
+        |> Js.Promise.then_ (_ => self.send(BuyEventAddress(state.event_address)) |> Js.Promise.resolve);
         ()
       })
     | SignTickets(index) => ReasonReact.UpdateWithSideEffects(state,(self) => {
@@ -335,7 +345,7 @@ let make = (~web3,_children) => {
       </div>
       (switch(state.buy_data) {
        | None => ReasonReact.null 
-       | Some({resale_tickets}) =>
+       | Some({event,resale_tickets}) =>
           ((0 == Js.Array.length(resale_tickets))
            ? ReasonReact.null 
            : <div>
@@ -343,13 +353,13 @@ let make = (~web3,_children) => {
               <div className="card-body"
                    style=(ReactDOMRe.Style.make(~paddingTop="5px",~paddingBottom="10px",()))
                   >
-                (resale_tickets |> Js.Array.mapi((price,i) => {
+                (resale_tickets |> Js.Array.map(((i,price)) => {
                   <div key=string_of_int(i) className="row"
                        style=(ReactDOMRe.Style.make(~marginTop="10px",()))>
                     <label className="col col-form-label text-muted">(text("Ticket Price"))</label>
                     <label className="col col-form-label"> <WeiLabel amount=price/> </label>
                     <button className="col col-form-button btn btn-success btn-send" 
-                            onClick=(_ => send(SubmitBuy))
+                            onClick=(_ => send(BuyResale(event,i,price)))
                             style=(ReactDOMRe.Style.make(
                                     ~marginLeft="20px",
                                     ~marginRight="20px",
