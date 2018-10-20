@@ -38,6 +38,7 @@ let make = (_children) => {
       |> Js.Promise.then_ ((networkId) => {
           let {NetworkInfo.universe,address_uri} = (
             switch(networkId) {
+            | 1 => MainNet.t
             | 3 => Ropsten.t
             | 4 => Rinkeby.t
             | _ => Js.log(networkId);assert(false);
