@@ -7,7 +7,7 @@ type buy_data = {
   totalCost:BsWeb3.Types.big_number,
   numSold:int,
   numUnSold:int,
-  resale_tickets:Js.Array.t(int)
+  resale_tickets:Js.Array.t(BsWeb3.Types.big_number)
 };
 
 type ticket_sig = 
@@ -43,7 +43,7 @@ type action =
 | ToggleDetails(int)
 | SignTickets(int)
 | TicketSignatures(int,Js.Array.t(ticket_id_sig))
-| NumSoldUnsoldResale(int,int,Js.Array.t(int))
+| NumSoldUnsoldResale(int,int,Js.Array.t(BsWeb3.Types.big_number))
 | SellingPricePerTicket(BsWeb3.Types.big_number)
 | SellAllTickets(int)
 
@@ -125,7 +125,7 @@ let make = (~web3,_children) => {
                   |> Js.Promise.then_ ((resale_tickets) => {
                       let resale_tickets = 
                         resale_tickets
-                          |> Js.Array.filter((price) => price > 0);
+                          |> Js.Array.filter((price) => "0" != (price |> BsWeb3.Types.toString(10)));
                       self.send(NumSoldUnsoldResale(numSold,numUnSold,resale_tickets))
                       |> Js.Promise.resolve 
                   })
@@ -303,7 +303,7 @@ let make = (~web3,_children) => {
           </div>
           (switch(state.buy_data) {
            | None => ReasonReact.null 
-           | Some({numTickets,totalCost,numSold,numUnSold,resale_tickets}) => [|
+           | Some({numTickets,totalCost,numSold,numUnSold}) => [|
               <div key="Sold" className="row">
                 <label className="col col-form-label text-muted">(text("Sold"))</label>
                 <label className="col col-form-label"> (int(numSold)) </label>
@@ -326,22 +326,42 @@ let make = (~web3,_children) => {
               <div key="SubmitBuy" className="row">
                 <button className="btn btn-success btn-send" onClick=(_ => send(SubmitBuy))
                         style=(ReactDOMRe.Style.make(~marginLeft="20px",~marginRight="20px",~marginTop="20px",~width="100%",())) >
-                  (text("Submit"))
+                  (text("Buy Now"))
                 </button>
-              </div>,
-              ((0 == Js.Array.length(resale_tickets))
-               ? ReasonReact.null 
-               : resale_tickets |> Js.Array.mapi((price,i) => {
-                  <div className="row">
-                    <div className="col">(text(string_of_int(price)))</div>
-                  </div>
-                 }) |> ReasonReact.array
-              )
+              </div>
             |] |> ReasonReact.array
-            }
-          )
-        </div>
+          })
+          </div>
       </div>
+      (switch(state.buy_data) {
+       | None => ReasonReact.null 
+       | Some({resale_tickets}) =>
+          ((0 == Js.Array.length(resale_tickets))
+           ? ReasonReact.null 
+           : <div>
+              <div className="card-header padding-vertical-less">(text("Resale Tickets"))</div> 
+              <div className="card-body"
+                   style=(ReactDOMRe.Style.make(~paddingTop="5px",~paddingBottom="10px",()))
+                  >
+                (resale_tickets |> Js.Array.mapi((price,i) => {
+                  <div key=string_of_int(i) className="row"
+                       style=(ReactDOMRe.Style.make(~marginTop="10px",()))>
+                    <label className="col col-form-label text-muted">(text("Ticket Price"))</label>
+                    <label className="col col-form-label"> <WeiLabel amount=price/> </label>
+                    <button className="col col-form-button btn btn-success btn-send" 
+                            onClick=(_ => send(SubmitBuy))
+                            style=(ReactDOMRe.Style.make(
+                                    ~marginLeft="20px",
+                                    ~marginRight="20px",
+                                    ~width="100%",())) >
+                      (text("Buy Now"))
+                    </button>
+                  </div>
+                }) |> ReasonReact.array )
+              </div>
+             </div>
+          )
+      })
     </div>
   </div>
 
@@ -403,7 +423,7 @@ let make = (~web3,_children) => {
                       <div className="card-body padding-vertical-less"> 
                         <div className="form-group" style=(ReactDOMRe.Style.make(~margin="3%",()))>
                           <div className="row">
-                            <label className="col col-form-label text-muted">(text("Price per ticket (ETH)"))</label>
+                            <label className="col col-7 col-form-label text-muted">(text("Price per ticket (ETH)"))</label>
                             <input className="col form-control" type_="text" placeholder=""
                                    onChange=(event => send(SellingPricePerTicket(ReactEvent.Form.target(event)##value)))
                                    value=(BsWeb3.Types.toString(10,state.selling_price_per_ticket))
