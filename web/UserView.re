@@ -326,7 +326,7 @@ let make = (~web3,_children) => {
       </div>
       (switch(state.buy_data) {
        | None => ReasonReact.null 
-       | Some({description,numTickets,totalCost,numSold,numUnSold}) => <div>
+       | Some({event,description,numTickets,totalCost,numSold,numUnSold,resale_tickets}) => <div>
           <div className="card-header">(text(description))</div>
           <div key="Sold" className="card-body row padding-vertical-less">
             <label className="col col-3 col-form-label text-muted">(text("Sold"))</label>
@@ -354,38 +354,29 @@ let make = (~web3,_children) => {
               (text("Buy Now"))
             </button>
           </div>
-        </div>
-      })
-      (switch(state.buy_data) {
-       | None => ReasonReact.null 
-       | Some({event,resale_tickets}) =>
-          ((0 == Js.Array.length(resale_tickets))
-           ? ReasonReact.null 
-           : <div>
-              <div className="card-header padding-vertical-less">(text("Resale Tickets"))</div> 
-              <div className="card-body"
-                   style=(ReactDOMRe.Style.make(~paddingTop="5px",~paddingBottom="10px",()))
-                  >
-                (resale_tickets |> Js.Array.map(((i,price)) => {
-                  <div key=string_of_int(i) className="row"
-                       style=(ReactDOMRe.Style.make(~marginTop="10px",()))>
-                    <label className="col col col-form-label text-muted padding-horizontal-less">(text("Ticket Price"))</label>
-                    <label className="col col-4 col-form-label padding-horizontal-less"
-                           style=(ReactDOMRe.Style.make(~textAlign="center",()))> 
-                      <WeiLabel amount=price/> 
-                    </label>
-                    <button className="col col-4 col-form-button btn btn-success btn-send" 
-                            onClick=(_ => send(BuyResale(event,i,price)))
-                            style=(ReactDOMRe.Style.make(
-                                    ~marginRight="10px",
-                                    ~width="100%",())) >
-                      (text("Buy Now"))
-                    </button>
-                  </div>
-                }) |> ReasonReact.array )
+          <div className="card-header padding-vertical-less">(text("Resale Tickets"))</div> 
+          <div className="card-body"
+               style=(ReactDOMRe.Style.make(~paddingTop="5px",~paddingBottom="10px",()))
+              >
+            (resale_tickets |> Js.Array.map(((i,price)) => {
+              <div key=string_of_int(i) className="row"
+                   style=(ReactDOMRe.Style.make(~marginTop="10px",()))>
+                <label className="col col col-form-label text-muted padding-horizontal-less">(text("Ticket Price"))</label>
+                <label className="col col-4 col-form-label padding-horizontal-less"
+                       style=(ReactDOMRe.Style.make(~textAlign="center",()))> 
+                  <WeiLabel amount=price/> 
+                </label>
+                <button className="col col-4 col-form-button btn btn-success btn-send" 
+                        onClick=(_ => send(BuyResale(event,i,price)))
+                        style=(ReactDOMRe.Style.make(
+                                ~marginRight="10px",
+                                ~width="100%",())) >
+                  (text("Buy Now"))
+                </button>
               </div>
-             </div>
-          )
+            }) |> ReasonReact.array )
+          </div>
+        </div> 
       })
     </div>
   </div>
