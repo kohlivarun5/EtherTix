@@ -214,9 +214,10 @@ contract Event /* is ERC721 */  {
     uint256[] storage prev_owner_tokens = d_owner_tokens[prev_owner];
     for (uint256 i = 0;i<prev_owner_tokens.length; ++i) {
       if (prev_owner_tokens[i] == _token) {
-        prev_owner_tokens[i] = prev_owner_tokens[prev_owner_tokens.length-1];
-        delete prev_owner_tokens[prev_owner_tokens.length-1];
-        prev_owner_tokens.length = prev_owner_tokens.length-1;
+        uint256 lenBefore = prev_owner_tokens.length;
+        prev_owner_tokens[i] = prev_owner_tokens[lenBefore-1];
+        delete prev_owner_tokens[lenBefore-1];
+        prev_owner_tokens.length = lenBefore-1;
         break;
       }
     }
