@@ -204,7 +204,7 @@ contract Event /* is ERC721 */  {
   
   function hitAsk(uint256 _token) public payable {
     require(!d_tickets[_token].d_used, "Ticket already used!");
-    require(d_token_ask[_token] > 0 && msg.value > d_token_ask[_token]);
+    require(d_token_ask[_token] > 0 && msg.value >= d_token_ask[_token]);
       
     // Value provided, okay to transfer
     delete d_token_ask[_token]; // No more ask 
