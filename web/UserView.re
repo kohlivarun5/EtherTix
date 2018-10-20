@@ -305,7 +305,7 @@ let make = (~web3,_children) => {
       <div className="card-body padding-vertical-less"> 
         <div className="form-group" style=(ReactDOMRe.Style.make(~margin="3%",()))>
           <div className="row">
-            <label className="col col-5 col-form-label text-muted">(text("Event"))</label>
+            <label className="col col-6 col-form-label text-muted">(text("Event"))</label>
             <input className="col form-control" type_="text" placeholder="" id="inputLarge"
                    onChange=(event => send(BuyEventAddress(ReactEvent.Form.target(event)##value)))
                    value=state.event_address
@@ -316,26 +316,26 @@ let make = (~web3,_children) => {
            | Some({numTickets,totalCost,numSold,numUnSold}) => [|
               <div key="Sold" className="row">
                 <label className="col col-form-label text-muted">(text("Sold"))</label>
-                <label className="col col-form-label"> (int(numSold)) </label>
-                <label className="col col-form-label text-muted">(text("Not Sold"))</label>
-                <label className="col col-form-label"> (int(numUnSold)) </label>
+                <label className="col col-form-label padding-horizontal-less"> (int(numSold)) </label>
+                <label className="col col-form-label text-muted padding-horizontal-less">(text("Not Sold"))</label>
+                <label className="col col-form-label padding-horizontal-less"> (int(numUnSold)) </label>
               </div>,
               <div key="NumTickets" className="row">
-                <label className="col col-5 col-form-label text-muted">(text("Number of tickets"))</label>
+                <label className="col col-6 col-form-label text-muted">(text("Number of tickets"))</label>
                 <input className="col form-control" type_="text" placeholder="" id="inputLarge"
                        onChange=(event => send(NumTickets(int_of_float(Js.Float.fromString(ReactEvent.Form.target(event)##value)))))
                        value=(string_of_int(numTickets))
                 />
               </div>,
               <div key="TotalCost" className="row">
-                <label className="col col-5 col-form-label text-muted">(text("Total Cost"))</label>
-                <label className="col col-5 col-form-label">
+                <label className="col col-form-label text-muted">(text("Total Cost"))</label>
+                <label className="col col-6 col-form-label padding-horizontal-less">
                   <WeiLabel amount=totalCost/>
                 </label>
               </div>,
               <div key="SubmitBuy" className="row">
                 <button className="btn btn-success btn-send" onClick=(_ => send(SubmitBuy))
-                        style=(ReactDOMRe.Style.make(~marginLeft="20px",~marginRight="20px",~marginTop="20px",~width="100%",())) >
+                        style=(ReactDOMRe.Style.make(~marginLeft="20px",~marginRight="20px",~marginTop="10px",~width="100%",())) >
                   (text("Buy Now"))
                 </button>
               </div>
@@ -356,13 +356,15 @@ let make = (~web3,_children) => {
                 (resale_tickets |> Js.Array.map(((i,price)) => {
                   <div key=string_of_int(i) className="row"
                        style=(ReactDOMRe.Style.make(~marginTop="10px",()))>
-                    <label className="col col-form-label text-muted">(text("Ticket Price"))</label>
-                    <label className="col col-form-label"> <WeiLabel amount=price/> </label>
-                    <button className="col col-form-button btn btn-success btn-send" 
+                    <label className="col col col-form-label text-muted padding-horizontal-less">(text("Ticket Price"))</label>
+                    <label className="col col-4 col-form-label padding-horizontal-less"
+                           style=(ReactDOMRe.Style.make(~textAlign="center",()))> 
+                      <WeiLabel amount=price/> 
+                    </label>
+                    <button className="col col-4 col-form-button btn btn-success btn-send" 
                             onClick=(_ => send(BuyResale(event,i,price)))
                             style=(ReactDOMRe.Style.make(
-                                    ~marginLeft="20px",
-                                    ~marginRight="20px",
+                                    ~marginRight="10px",
                                     ~width="100%",())) >
                       (text("Buy Now"))
                     </button>
@@ -433,7 +435,7 @@ let make = (~web3,_children) => {
                       <div className="card-body padding-vertical-less"> 
                         <div className="form-group" style=(ReactDOMRe.Style.make(~margin="3%",()))>
                           <div className="row">
-                            <label className="col col-7 col-form-label text-muted">(text("Price per ticket (ETH)"))</label>
+                            <label className="col col-8 col-form-label text-muted padding-horizontal-less">(text("Price per ticket (ETH)"))</label>
                             <input className="col form-control" type_="text" placeholder=""
                                    onChange=(event => send(SellingPricePerTicket(ReactEvent.Form.target(event)##value)))
                                    value=(BsWeb3.Types.toString(10,state.selling_price_per_ticket))

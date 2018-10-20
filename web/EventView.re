@@ -142,13 +142,13 @@ let make = (~web3,~address,~event,_children) => {
       <div className="col col-5">
         <div className="row">
           <div className="col text-muted">(text("Sold"))</div>
-          <div className="col">(int(state.sold_data.numSold))</div>
+          <div className="col col-5">(int(state.sold_data.numSold))</div>
         </div>
       </div>
-      <div className="col col-7">
+      <div className="col col-7 padding-horizontal-less">
         <div className="row">
-          <div className="col text-muted">(text("Not Sold"))</div>
-          <div className="col">(int(state.sold_data.numUnsold))</div>
+          <div className="col text-muted padding-horizontal-less">(text("Not Sold"))</div>
+          <div className="col col-5">(int(state.sold_data.numUnsold))</div>
         </div>
       </div>
     </div>
@@ -157,13 +157,13 @@ let make = (~web3,~address,~event,_children) => {
       <div className="col col-5">
         <div className="row">
           <div className="col text-muted">(text("Used"))</div>
-          <div className="col">(int(state.used_data.numUsed))</div>
+          <div className="col col-5">(int(state.used_data.numUsed))</div>
         </div>
       </div>
-      <div className="col col-7">
+      <div className="col col-7 padding-horizontal-less">
         <div className="row">
-          <div className="col text-muted">(text("To Be Used"))</div>
-          <div className="col">(int(state.used_data.numToBeUsed))</div>
+          <div className="col text-muted padding-horizontal-less">(text("To Be Used"))</div>
+          <div className="col col-5">(int(state.used_data.numToBeUsed))</div>
         </div>
       </div>
     </div>
@@ -224,7 +224,7 @@ let make = (~web3,~address,~event,_children) => {
       </div>
       <div className="row">
         <button className="btn btn-success btn-send" onClick=(_ => send(SubmitIssue))
-                style=(ReactDOMRe.Style.make(~marginLeft="20px",~marginRight="20px",~marginTop="20px",~width="100%",())) >
+                style=(ReactDOMRe.Style.make(~marginLeft="20px",~marginRight="20px",~marginTop="10px",~width="100%",())) >
           (text("Submit"))
         </button>
       </div>
