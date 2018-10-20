@@ -3,6 +3,7 @@ let int(i) = i |> string_of_int |> ReasonReact.string;
 
 type buy_data = {
   event:Event.t,
+  description:string,
   numTickets:int,
   totalCost:BsWeb3.Types.big_number,
   numSold:int,
@@ -37,6 +38,7 @@ type action =
 | AddEvent(BsWeb3.Eth.address)
 | MyEventData(event_data)
 | BuyEventAddress(BsWeb3.Eth.address)
+| BuyEventDescription(string)
 | NumTickets(int)
 | TotalCost(BsWeb3.Types.big_number)
 | SubmitBuy 
@@ -102,7 +104,7 @@ let make = (~web3,_children) => {
         ReasonReact.UpdateWithSideEffects({
           ...state,
           event_address,buy_data:Some({
-            event,numTickets:0,
+            event,numTickets:0,description:"",
             totalCost:BsWeb3.Utils.toBN(0),
             numSold:0, numUnSold:0,
             resale_tickets:[||]
@@ -113,6 +115,11 @@ let make = (~web3,_children) => {
           | Some({numTickets}) => 
             self.send(NumTickets(numTickets))
           };
+          Event.description(event)
+          |> BsWeb3.Eth.call 
+          |> Js.Promise.then_ ((description) => 
+              self.send(BuyEventDescription(description)) 
+              |> Js.Promise.resolve);
           let tx = BsWeb3.Eth.make_transaction(~from=state.web3.account);
           Event.numSold(event)
           |> BsWeb3.Eth.call_with(tx)
@@ -136,6 +143,10 @@ let make = (~web3,_children) => {
           ()
         }
         )
+    | BuyEventDescription(description) => 
+        assert(state.buy_data != None);
+        let buy_data = Js.Option.getExn(state.buy_data);
+        ReasonReact.Update({...state,buy_data:Some({...buy_data,description})})
     | NumTickets(numTickets) => 
         Js.log(numTickets);
         Js.log(state);
@@ -311,38 +322,40 @@ let make = (~web3,_children) => {
                    value=state.event_address
             />
           </div>
-          (switch(state.buy_data) {
-           | None => ReasonReact.null 
-           | Some({numTickets,totalCost,numSold,numUnSold}) => [|
-              <div key="Sold" className="row">
-                <label className="col col-form-label text-muted">(text("Sold"))</label>
-                <label className="col col-form-label padding-horizontal-less"> (int(numSold)) </label>
-                <label className="col col-form-label text-muted padding-horizontal-less">(text("Not Sold"))</label>
-                <label className="col col-form-label padding-horizontal-less"> (int(numUnSold)) </label>
-              </div>,
-              <div key="NumTickets" className="row">
-                <label className="col col-6 col-form-label text-muted">(text("Number of tickets"))</label>
-                <input className="col form-control" type_="text" placeholder="" id="inputLarge"
-                       onChange=(event => send(NumTickets(int_of_float(Js.Float.fromString(ReactEvent.Form.target(event)##value)))))
-                       value=(string_of_int(numTickets))
-                />
-              </div>,
-              <div key="TotalCost" className="row">
-                <label className="col col-form-label text-muted">(text("Total Cost"))</label>
-                <label className="col col-6 col-form-label padding-horizontal-less">
-                  <WeiLabel amount=totalCost/>
-                </label>
-              </div>,
-              <div key="SubmitBuy" className="row">
-                <button className="btn btn-success btn-send" onClick=(_ => send(SubmitBuy))
-                        style=(ReactDOMRe.Style.make(~marginLeft="20px",~marginRight="20px",~marginTop="10px",~width="100%",())) >
-                  (text("Buy Now"))
-                </button>
-              </div>
-            |] |> ReasonReact.array
-          })
           </div>
       </div>
+      (switch(state.buy_data) {
+       | None => ReasonReact.null 
+       | Some({description,numTickets,totalCost,numSold,numUnSold}) => <div>
+          <div className="card-header">(text(description))</div>
+          <div key="Sold" className="card-body row padding-vertical-less">
+            <label className="col col-3 col-form-label text-muted">(text("Sold"))</label>
+            <label className="col col-3 col-form-label padding-horizontal-less"> (int(numSold)) </label>
+            <label className="col col-3 col-form-label text-muted padding-horizontal-less">(text("Not Sold"))</label>
+            <label className="col col-3 col-form-label padding-horizontal-less"> (int(numUnSold)) </label>
+          </div>
+          <div key="NumTickets" className="row card-body padding-vertical-less">
+            <label className="col col-6 col-form-label text-muted">(text("Number of tickets"))</label>
+            <input className="col form-control" type_="text" placeholder="" id="inputLarge"
+                   style=(ReactDOMRe.Style.make(~marginRight="10px",()))
+                   onChange=(event => send(NumTickets(int_of_float(Js.Float.fromString(ReactEvent.Form.target(event)##value)))))
+                   value=(string_of_int(numTickets))
+            />
+          </div>
+          <div key="TotalCost" className="row card-body padding-vertical-less">
+            <label className="col col-form-label text-muted">(text("Total Cost"))</label>
+            <label className="col col-6 col-form-label padding-horizontal-less">
+              <WeiLabel amount=totalCost/>
+            </label>
+          </div>
+          <div key="SubmitBuy" className="row card-body padding-vertical-less">
+            <button className="btn btn-success btn-send" onClick=(_ => send(SubmitBuy))
+                    style=(ReactDOMRe.Style.make(~marginLeft="20px",~marginRight="20px",~marginBottom="10px",~width="100%",())) >
+              (text("Buy Now"))
+            </button>
+          </div>
+        </div>
+      })
       (switch(state.buy_data) {
        | None => ReasonReact.null 
        | Some({event,resale_tickets}) =>
