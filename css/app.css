@@ -71,4 +71,6 @@ body {
   font-weight: bolder;
 }
 
+.share-icon { height:38px; }
+
 input[type='text'],textarea {font-size:1em;}

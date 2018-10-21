@@ -128,6 +128,18 @@ let make = (~web3,~address,~event,_children) => {
 <div className="card">
   
 
+  <div className="card-body row" >
+    <div className="col text-center" >
+      <img className="share-icon" src="img/imessage_logo.png" />
+    </div>
+    <div className="col text-center" >
+      <img className="share-icon" src="img/WhatsApp_Logo.png" />
+    </div>
+    <div className="col text-center" >
+      <img className="share-icon" src="img/Messenger_Icon.png" />
+    </div>
+  </div>
+  
   <div className="card-header">
     <button className="btn btn-success btn-send" onClick=(_ => send(Withdraw))
             style=(ReactDOMRe.Style.make(~width="100%",())) 
