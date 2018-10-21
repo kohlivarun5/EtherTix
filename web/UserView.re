@@ -61,7 +61,13 @@ let make = (~web3,_children) => {
     myEvents:[||],
     selling_price_per_ticket:BsWeb3.Utils.toBN(0)
   },
-  didMount: self => { self.send(GetMyEvents) },
+  didMount: self => { 
+    self.send(GetMyEvents);
+    switch(BsUtils.getSearchValueByKey("event")) {
+      | None => ()
+      | Some(address) => self.send(BuyEventAddress(address))
+    }
+  },
   reducer: (action,state:state) => {
     switch (action) {
     | GetMyEvents => {
@@ -334,11 +340,11 @@ let make = (~web3,_children) => {
       (switch(state.buy_data) {
        | None => ReasonReact.null 
        | Some({event,description,numTickets,totalCost,numSold,numUnSold,resale_tickets}) => <div>
-          <div className="card-header">(text(description))</div>
+          <h6 className="card-header bg-success text-light font-weight-bold">(text(description))</h6>
           <div key="Sold" className="card-body row padding-vertical-less">
             <label className="col col-3 col-form-label text-muted">(text("Sold"))</label>
             <label className="col col-3 col-form-label padding-horizontal-less"> (int(numSold)) </label>
-            <label className="col col-3 col-form-label text-muted padding-horizontal-less">(text("Not Sold"))</label>
+            <label className="col col-3 col-form-label text-muted padding-horizontal-less">(text("Available"))</label>
             <label className="col col-3 col-form-label padding-horizontal-less"> (int(numUnSold)) </label>
           </div>
           <div key="NumTickets" className="row card-body padding-vertical-less">
@@ -356,14 +362,20 @@ let make = (~web3,_children) => {
             </label>
           </div>
           <div key="SubmitBuy" className="row card-body padding-vertical-less">
-            <button className="btn btn-success btn-send" onClick=(_ => send(SubmitBuy))
+            <button className=Js.String.concat(" btn btn-send ",(
+                                BsWeb3.Types.toString(10,totalCost) == "0" 
+                                ? "btn-danger"
+                                : "btn-success"))
+                    onClick=(_ => send(SubmitBuy))
                     style=(ReactDOMRe.Style.make(~marginLeft="20px",~marginRight="20px",~marginBottom="10px",~width="100%",())) 
                     disabled={BsWeb3.Types.toString(10,totalCost) == "0" }>
-              (text("Buy Now"))
+              (text(BsWeb3.Types.toString(10,totalCost) == "0" 
+                    ? "Sold Out!"
+                    : "Buy Now"))
             </button>
           </div>
           (Js.Array.length(resale_tickets) <= 0 ? ReasonReact.null : <div>
-            <div className="card-header padding-vertical-less">(text("Resale Tickets"))</div> 
+            <div className="card-header font-weight-bold padding-vertical-less">(text("Resale Tickets"))</div> 
             <div className="card-body"
                  style=(ReactDOMRe.Style.make(~paddingTop="5px",~paddingBottom="10px",()))
                 >
@@ -419,12 +431,12 @@ let make = (~web3,_children) => {
                   <td colSpan=3 style=(ReactDOMRe.Style.make(~maxWidth="170px",())) >
                     <div className="card">
                       (Js.Array.length(ticket_signatures) <= 0 
-                       ?  <div className="card-body">
-                            <button className="btn btn-success btn-send" onClick=(_ => send(SignTickets(i)))
-                              style=(ReactDOMRe.Style.make(~width="100%",())) >
-                              (text("Get Tickets"))
-                            </button>
-                          </div>
+                       ? <div className="card-body">
+                          <button className="btn btn-success btn-send" onClick=(_ => send(SignTickets(i)))
+                            style=(ReactDOMRe.Style.make(~width="100%",())) >
+                            (text("Get Tickets"))
+                          </button>
+                         </div>
                        : <div className="card-body padding-vertical-less padding-horizontal-less" > 
                            <Carousel> 
                              (ticket_signatures |> Js.Array.map( ((signature,id)) => {
@@ -446,11 +458,11 @@ let make = (~web3,_children) => {
                            </Carousel>
                          </div>
                       )
-                      <div className="card-header padding-vertical-less">(text("Resale"))</div>
+                      <div className="card-header font-weight-bold padding-vertical-less">(text("Resale"))</div>
                       <div className="card-body padding-vertical-less"> 
                         <div className="form-group" style=(ReactDOMRe.Style.make(~margin="3%",()))>
                           <div className="row">
-                            <label className="col col-8 col-form-label text-muted padding-horizontal-less">(text("Price per ticket (milli ETH)"))</label>
+                            <label className="col col-8 col-form-label text-muted padding-horizontal-less">(text("Ticket price (milli ETH)"))</label>
                             <input className="col form-control" type_="text" placeholder=""
                                    onChange=(event => send(SellingPricePerTicket(ReactEvent.Form.target(event)##value)))
                                    value=(BsWeb3.Types.toString(10,state.selling_price_per_ticket))
