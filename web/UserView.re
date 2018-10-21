@@ -340,11 +340,11 @@ let make = (~web3,_children) => {
       (switch(state.buy_data) {
        | None => ReasonReact.null 
        | Some({event,description,numTickets,totalCost,numSold,numUnSold,resale_tickets}) => <div>
-          <div className="card-header bg-warning text-light font-weight-bold">(text(description))</div>
+          <h5 className="card-header bg-success text-light font-weight-bold">(text(description))</h5>
           <div key="Sold" className="card-body row padding-vertical-less">
             <label className="col col-3 col-form-label text-muted">(text("Sold"))</label>
             <label className="col col-3 col-form-label padding-horizontal-less"> (int(numSold)) </label>
-            <label className="col col-3 col-form-label text-muted padding-horizontal-less">(text("Not Sold"))</label>
+            <label className="col col-3 col-form-label text-muted padding-horizontal-less">(text("Available"))</label>
             <label className="col col-3 col-form-label padding-horizontal-less"> (int(numUnSold)) </label>
           </div>
           <div key="NumTickets" className="row card-body padding-vertical-less">
