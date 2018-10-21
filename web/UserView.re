@@ -431,11 +431,14 @@ let make = (~web3,_children) => {
                   <td colSpan=3 style=(ReactDOMRe.Style.make(~maxWidth="170px",())) >
                     <div className="card">
                       (Js.Array.length(ticket_signatures) <= 0 
-                       ?  <div className="card-body">
-                            <button className="btn btn-success btn-send" onClick=(_ => send(SignTickets(i)))
-                              style=(ReactDOMRe.Style.make(~width="100%",())) >
-                              (text("Get Tickets"))
-                            </button>
+                       ?  <div className="row">
+                            <div className="col">
+                              <button className="btn btn-success btn-send" onClick=(_ => send(SignTickets(i)))
+                                style=(ReactDOMRe.Style.make(~width="100%",())) >
+                                (text("Get Tickets"))
+                              </button>
+                            </div>
+                            <div className="col col-4">(text("Share"))</div>
                           </div>
                        : <div className="card-body padding-vertical-less padding-horizontal-less" > 
                            <Carousel> 
