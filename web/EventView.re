@@ -21,6 +21,7 @@ type issue_data = {
 type state = {
   web3 : Web3.state,
   address : BsWeb3.Eth.address,
+  description:string,
   event: Event.t,
   sold_data:sold_data,
   used_data:used_data,
@@ -40,11 +41,12 @@ type action =
 
 let component = ReasonReact.reducerComponent("EventView");
 
-let make = (~web3,~address,~event,_children) => {
+let make = (~web3,~description, ~address,~event,_children) => {
   ...component,
   initialState: () => { 
     web3:web3,
     address:address,
+    description:description,
     event:event,
     sold_data:{numSold:0,numUnsold:0},
     used_data:{numUsed:0,numToBeUsed:0},
@@ -130,13 +132,31 @@ let make = (~web3,~address,~event,_children) => {
 
   <div className="card-body row" >
     <div className="col text-center" >
-      <img className="share-icon" src="img/imessage_logo.png" />
+      <a href=(
+            "sms: &body="
+            |> Js.String.concat(
+                BsUtils.createEventLinkUriComponent(~address=state.address,~description=state.description))
+            )>
+        <img className="share-icon" src="img/imessage_logo.png" />
+      </a>
     </div>
     <div className="col text-center" >
-      <img className="share-icon" src="img/WhatsApp_Logo.png" />
+      <a href=(
+            "whatsapp://send?text="
+            |> Js.String.concat(
+                BsUtils.createEventLinkUriComponent(~address=state.address,~description=state.description))
+            )>
+        <img className="share-icon" src="img/WhatsApp_Logo.png" />
+      </a>
     </div>
     <div className="col text-center" >
-      <img className="share-icon" src="img/Messenger_Icon.png" />
+      <a href=(
+            "fb-messenger://share/?link="
+            |> Js.String.concat(
+                BsUtils.createEventLinkUriComponent(~address=state.address,~description=state.description))
+            )>
+        <img className="share-icon" src="img/Messenger_Icon.png" />
+      </a>
     </div>
   </div>
   

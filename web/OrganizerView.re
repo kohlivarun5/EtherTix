@@ -207,7 +207,7 @@ let make = (_children) => {
                  | true => 
                     <tr className="table-active bg-black" key=(Js.String.concat(address,"View"))>
                       <td colSpan=3>
-                        <EventView event=event address=address web3=Js.Option.getExn(state.web3) />
+                        <EventView description=description event=event address=address web3=Js.Option.getExn(state.web3) />
                       </td>
                     </tr>
                  | false => ReasonReact.null 
