@@ -61,7 +61,13 @@ let make = (~web3,_children) => {
     myEvents:[||],
     selling_price_per_ticket:BsWeb3.Utils.toBN(0)
   },
-  didMount: self => { self.send(GetMyEvents) },
+  didMount: self => { 
+    self.send(GetMyEvents);
+    switch(BsUtils.getSearchValueByKey("event")) {
+      | None => ()
+      | Some(address) => self.send(BuyEventAddress(address))
+    }
+  },
   reducer: (action,state:state) => {
     switch (action) {
     | GetMyEvents => {
@@ -334,7 +340,7 @@ let make = (~web3,_children) => {
       (switch(state.buy_data) {
        | None => ReasonReact.null 
        | Some({event,description,numTickets,totalCost,numSold,numUnSold,resale_tickets}) => <div>
-          <div className="card-header">(text(description))</div>
+          <div className="card-header bg-warning text-light font-weight-bold">(text(description))</div>
           <div key="Sold" className="card-body row padding-vertical-less">
             <label className="col col-3 col-form-label text-muted">(text("Sold"))</label>
             <label className="col col-3 col-form-label padding-horizontal-less"> (int(numSold)) </label>
@@ -356,14 +362,20 @@ let make = (~web3,_children) => {
             </label>
           </div>
           <div key="SubmitBuy" className="row card-body padding-vertical-less">
-            <button className="btn btn-success btn-send" onClick=(_ => send(SubmitBuy))
+            <button className=Js.String.concat(" btn btn-send ",(
+                                BsWeb3.Types.toString(10,totalCost) == "0" 
+                                ? ""
+                                : "btn-success"))
+                    onClick=(_ => send(SubmitBuy))
                     style=(ReactDOMRe.Style.make(~marginLeft="20px",~marginRight="20px",~marginBottom="10px",~width="100%",())) 
                     disabled={BsWeb3.Types.toString(10,totalCost) == "0" }>
-              (text("Buy Now"))
+              (text(BsWeb3.Types.toString(10,totalCost) == "0" 
+                    ? "No tickets available!"
+                    : "Buy Now"))
             </button>
           </div>
           (Js.Array.length(resale_tickets) <= 0 ? ReasonReact.null : <div>
-            <div className="card-header padding-vertical-less">(text("Resale Tickets"))</div> 
+            <div className="card-header font-weight-bold padding-vertical-less">(text("Resale Tickets"))</div> 
             <div className="card-body"
                  style=(ReactDOMRe.Style.make(~paddingTop="5px",~paddingBottom="10px",()))
                 >
@@ -446,7 +458,7 @@ let make = (~web3,_children) => {
                            </Carousel>
                          </div>
                       )
-                      <div className="card-header padding-vertical-less">(text("Resale"))</div>
+                      <div className="card-header font-weight-bold padding-vertical-less">(text("Resale"))</div>
                       <div className="card-body padding-vertical-less"> 
                         <div className="form-group" style=(ReactDOMRe.Style.make(~margin="3%",()))>
                           <div className="row">
