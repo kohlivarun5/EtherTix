@@ -364,13 +364,13 @@ let make = (~web3,_children) => {
           <div key="SubmitBuy" className="row card-body padding-vertical-less">
             <button className=Js.String.concat(" btn btn-send ",(
                                 BsWeb3.Types.toString(10,totalCost) == "0" 
-                                ? ""
+                                ? "btn-danger"
                                 : "btn-success"))
                     onClick=(_ => send(SubmitBuy))
                     style=(ReactDOMRe.Style.make(~marginLeft="20px",~marginRight="20px",~marginBottom="10px",~width="100%",())) 
                     disabled={BsWeb3.Types.toString(10,totalCost) == "0" }>
               (text(BsWeb3.Types.toString(10,totalCost) == "0" 
-                    ? "No tickets available!"
+                    ? "Sold Out!"
                     : "Buy Now"))
             </button>
           </div>
@@ -462,7 +462,7 @@ let make = (~web3,_children) => {
                       <div className="card-body padding-vertical-less"> 
                         <div className="form-group" style=(ReactDOMRe.Style.make(~margin="3%",()))>
                           <div className="row">
-                            <label className="col col-8 col-form-label text-muted padding-horizontal-less">(text("Price per ticket (milli ETH)"))</label>
+                            <label className="col col-8 col-form-label text-muted padding-horizontal-less">(text("Ticket price (milli ETH)"))</label>
                             <input className="col form-control" type_="text" placeholder=""
                                    onChange=(event => send(SellingPricePerTicket(ReactEvent.Form.target(event)##value)))
                                    value=(BsWeb3.Types.toString(10,state.selling_price_per_ticket))

@@ -207,7 +207,7 @@ let make = (~web3,~address,~event,_children) => {
   <div className="card-body padding-vertical-less padding-horizontal-less" > 
     <div className="form-group" style=(ReactDOMRe.Style.make(~margin="3%",()))>
       <div className="row row-margin">
-        <label className="col col-7 col-form-label text-muted" > (text("Number of tickets")) </label>
+        <label className="col col-8 col-form-label text-muted" > (text("Number of tickets")) </label>
         <input className="col form-control" type_="text" placeholder="" id="inputLarge"
                onChange=(event => send(IssueNumber(ReactEvent.Form.target(event)##value)))
                value=(string_of_int(state.issue_data.number))
@@ -215,7 +215,7 @@ let make = (~web3,~address,~event,_children) => {
         />
       </div>
       <div className="row row-margin">
-        <label className="col col-7 col-form-label text-muted" > (text("Price per ticket (milli ETH)")) </label>
+        <label className="col col-8 col-form-label text-muted" > (text("Ticket price (milli ETH)")) </label>
         <input className="col form-control" type_="text" placeholder="" id="inputLarge" 
                onChange=(event => send(IssuePrice(ReactEvent.Form.target(event)##value)))
                value=(string_of_int(state.issue_data.price_milli))
