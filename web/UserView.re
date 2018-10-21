@@ -340,7 +340,7 @@ let make = (~web3,_children) => {
       (switch(state.buy_data) {
        | None => ReasonReact.null 
        | Some({event,description,numTickets,totalCost,numSold,numUnSold,resale_tickets}) => <div>
-          <h5 className="card-header bg-success text-light font-weight-bold">(text(description))</h5>
+          <h6 className="card-header bg-success text-light font-weight-bold">(text(description))</h6>
           <div key="Sold" className="card-body row padding-vertical-less">
             <label className="col col-3 col-form-label text-muted">(text("Sold"))</label>
             <label className="col col-3 col-form-label padding-horizontal-less"> (int(numSold)) </label>
@@ -431,15 +431,12 @@ let make = (~web3,_children) => {
                   <td colSpan=3 style=(ReactDOMRe.Style.make(~maxWidth="170px",())) >
                     <div className="card">
                       (Js.Array.length(ticket_signatures) <= 0 
-                       ?  <div className="row">
-                            <div className="col">
-                              <button className="btn btn-success btn-send" onClick=(_ => send(SignTickets(i)))
-                                style=(ReactDOMRe.Style.make(~width="100%",())) >
-                                (text("Get Tickets"))
-                              </button>
-                            </div>
-                            <div className="col col-4">(text("Share"))</div>
-                          </div>
+                       ? <div className="card-body">
+                          <button className="btn btn-success btn-send" onClick=(_ => send(SignTickets(i)))
+                            style=(ReactDOMRe.Style.make(~width="100%",())) >
+                            (text("Get Tickets"))
+                          </button>
+                         </div>
                        : <div className="card-body padding-vertical-less padding-horizontal-less" > 
                            <Carousel> 
                              (ticket_signatures |> Js.Array.map( ((signature,id)) => {
