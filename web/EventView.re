@@ -134,12 +134,14 @@ let make = (~web3,~description, ~address,~event,_children) => {
     <div className="col text-center font-weight-bold" 
          style=ReactDOMRe.Style.make(~alignSelf="center",()) >(text("Share Event"))
     </div>
-    <div className="col text-center" >
+    <div className="col text-center" 
+         style=ReactDOMRe.Style.make(~alignSelf="center",())>
       <a href=BsUtils.createSearchUri("event",address)>
         <img className="share-icon" src="img/Sharethis.png" />
       </a>
     </div>
-    <div className="col text-center" >
+    <div className="col text-center" 
+         style=ReactDOMRe.Style.make(~alignSelf="center",())>
       <a href=(
             "sms: &body="
             |> Js.String.concat(
@@ -148,7 +150,8 @@ let make = (~web3,~description, ~address,~event,_children) => {
         <img className="share-icon" src="img/imessage_logo.png" />
       </a>
     </div>
-    <div className="col text-center" >
+    <div className="col text-center" 
+         style=ReactDOMRe.Style.make(~alignSelf="center",())>
       <a href=(
             "whatsapp://send?text="
             |> Js.String.concat(
