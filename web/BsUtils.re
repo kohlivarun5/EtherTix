@@ -4,7 +4,20 @@ type location;
 type search = string;
 [@bs.get] external search : location => search = "";
 
+type origin = string;
+[@bs.get] external origin : location => origin = "";
+
+type pathname = string;
+[@bs.get] external pathname : location => pathname = "";
+
+
 [@bs.val] external decodeURIComponent : string => string = "";
+[@bs.val] external encodeURIComponent : string => string = "";
+
+let createSearchUri(key,value) = 
+    location |> origin
+    |> Js.String.concat(location |> pathname)
+    |> Js.String.concatMany( [| "?", key, "=", value |] )
 
 let getSearchValueByKey(key) = 
   location 
@@ -25,3 +38,10 @@ let getSearchValueByKey(key) =
             })
       )
   })
+
+let createEventLinkUriComponent(~address,~description) =
+  createSearchUri("event",address)
+  |> Js.String.concat("\n")
+  |> Js.String.concat("\n")
+  |> Js.String.concat(description)
+  |> encodeURIComponent

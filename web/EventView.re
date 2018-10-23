@@ -21,6 +21,7 @@ type issue_data = {
 type state = {
   web3 : Web3.state,
   address : BsWeb3.Eth.address,
+  description:string,
   event: Event.t,
   sold_data:sold_data,
   used_data:used_data,
@@ -40,11 +41,12 @@ type action =
 
 let component = ReasonReact.reducerComponent("EventView");
 
-let make = (~web3,~address,~event,_children) => {
+let make = (~web3,~description, ~address,~event,_children) => {
   ...component,
   initialState: () => { 
     web3:web3,
     address:address,
+    description:description,
     event:event,
     sold_data:{numSold:0,numUnsold:0},
     used_data:{numUsed:0,numToBeUsed:0},
@@ -128,6 +130,49 @@ let make = (~web3,~address,~event,_children) => {
 <div className="card">
   
 
+  <div className="card-body row" >
+    <div className="col text-center font-weight-bold" 
+         style=ReactDOMRe.Style.make(~alignSelf="center",()) >(text("Share Event"))
+    </div>
+    <div className="col text-center" 
+         style=ReactDOMRe.Style.make(~alignSelf="center",())>
+      <a href=BsUtils.createSearchUri("event",address)>
+        <img className="share-icon" src="img/Sharethis.png" />
+      </a>
+    </div>
+    <div className="col text-center" 
+         style=ReactDOMRe.Style.make(~alignSelf="center",())>
+      <a href=(
+            "sms: &body="
+            |> Js.String.concat(
+                BsUtils.createEventLinkUriComponent(~address=state.address,~description=state.description))
+            )>
+        <img className="share-icon" src="img/imessage_logo.png" />
+      </a>
+    </div>
+    <div className="col text-center" 
+         style=ReactDOMRe.Style.make(~alignSelf="center",())>
+      <a href=(
+            "whatsapp://send?text="
+            |> Js.String.concat(
+                BsUtils.createEventLinkUriComponent(~address=state.address,~description=state.description))
+            )>
+        <img className="share-icon" src="img/whatsapp_logo2.png" />
+      </a>
+    </div>
+    /*
+    <div className="col text-center" >
+      <a href=(
+            "fb-messenger://share/?link="
+            |> Js.String.concat(
+                BsUtils.createEventLinkUriComponent(~address=state.address,~description=state.description))
+            )>
+        <img className="share-icon" src="img/Messenger_Icon.png" />
+      </a>
+    </div>
+    */
+  </div>
+  
   <div className="card-header">
     <button className="btn btn-success btn-send" onClick=(_ => send(Withdraw))
             style=(ReactDOMRe.Style.make(~width="100%",())) 

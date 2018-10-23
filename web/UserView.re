@@ -363,13 +363,15 @@ let make = (~web3,_children) => {
           </div>
           <div key="SubmitBuy" className="row card-body padding-vertical-less">
             <button className=Js.String.concat(" btn btn-send ",(
-                                BsWeb3.Types.toString(10,totalCost) == "0" 
-                                ? "btn-danger"
-                                : "btn-success"))
+                                numTickets == 0 
+                                ? "btn-secondary" 
+                                : (BsWeb3.Types.toString(10,totalCost) == "0" 
+                                    ? "btn-danger"
+                                    : "btn-success")))
                     onClick=(_ => send(SubmitBuy))
                     style=(ReactDOMRe.Style.make(~marginLeft="20px",~marginRight="20px",~marginBottom="10px",~width="100%",())) 
                     disabled={BsWeb3.Types.toString(10,totalCost) == "0" }>
-              (text(BsWeb3.Types.toString(10,totalCost) == "0" 
+              (text(BsWeb3.Types.toString(10,totalCost) == "0" && numTickets != 0 
                     ? "Sold Out!"
                     : "Buy Now"))
             </button>
