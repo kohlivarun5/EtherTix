@@ -131,6 +131,14 @@ let make = (~web3,~description, ~address,~event,_children) => {
   
 
   <div className="card-body row" >
+    <div className="col text-center font-weight-bold" 
+         style=ReactDOMRe.Style.make(~alignSelf="center",()) >(text("Share Event"))
+    </div>
+    <div className="col text-center" >
+      <a href=BsUtils.createSearchUri("event",address)>
+        <img className="share-icon" src="img/Link.png" />
+      </a>
+    </div>
     <div className="col text-center" >
       <a href=(
             "sms: &body="
@@ -149,6 +157,7 @@ let make = (~web3,~description, ~address,~event,_children) => {
         <img className="share-icon" src="img/WhatsApp_Logo.png" />
       </a>
     </div>
+    /*
     <div className="col text-center" >
       <a href=(
             "fb-messenger://share/?link="
@@ -158,6 +167,7 @@ let make = (~web3,~description, ~address,~event,_children) => {
         <img className="share-icon" src="img/Messenger_Icon.png" />
       </a>
     </div>
+    */
   </div>
   
   <div className="card-header">
