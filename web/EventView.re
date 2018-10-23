@@ -136,7 +136,7 @@ let make = (~web3,~description, ~address,~event,_children) => {
     </div>
     <div className="col text-center" >
       <a href=BsUtils.createSearchUri("event",address)>
-        <img className="share-icon" src="img/Link.png" />
+        <img className="share-icon" src="img/Sharethis.png" />
       </a>
     </div>
     <div className="col text-center" >
@@ -154,7 +154,7 @@ let make = (~web3,~description, ~address,~event,_children) => {
             |> Js.String.concat(
                 BsUtils.createEventLinkUriComponent(~address=state.address,~description=state.description))
             )>
-        <img className="share-icon" src="img/WhatsApp_Logo.png" />
+        <img className="share-icon" src="img/whatsapp_logo2.png" />
       </a>
     </div>
     /*
