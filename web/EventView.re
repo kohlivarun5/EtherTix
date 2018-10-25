@@ -105,7 +105,11 @@ let make = (~web3,~description, ~address,~event,_children) => {
     | ToggleScanner => ReasonReact.Update({...state,show_scanner:!state.show_scanner})
     | UseTicket(code) => ReasonReact.UpdateWithSideEffects(state,(self) => {
         self.send(ToggleScanner);
-        let [|signature,token|] = Js.String.split("|",code);
+        let (signature,token) = 
+          switch (Js.String.split("|",code)) {
+            | [|signature,token|] => (signature,token)
+            | _ => assert(false)
+          };
         Js.log(signature);
         Js.log(token);
         Event.ticketUsed(state.event,int_of_string(token))

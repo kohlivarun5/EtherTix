@@ -140,7 +140,7 @@ let make = (~web3,_children) => {
                       let resale_tickets = 
                         resale_tickets
                           |> Js.Array.mapi((price,i) => (i,price))
-                          |> Js.Array.filter(((i,price)) => "0" != (price |> BsWeb3.Types.toString(10)));
+                          |> Js.Array.filter(((_,price)) => "0" != (price |> BsWeb3.Types.toString(10)));
                       self.send(NumSoldUnsoldResale(numSold,numUnSold,resale_tickets))
                       |> Js.Promise.resolve 
                   })
@@ -190,7 +190,7 @@ let make = (~web3,_children) => {
         |> BsWeb3.Eth.send(
             BsWeb3.Eth.make_transaction_with_value(
               ~value=totalCost,~from=state.web3.account))
-        |> Js.Promise.then_ (_ => Js.Promise.resolve());
+        |> Js.Promise.then_ (_ => self.send(GetMyEvents) |> Js.Promise.resolve);
         ()
       })
     | BuyResale(event,token,price) => ReasonReact.UpdateWithSideEffects(state,(self) => {
@@ -273,7 +273,7 @@ let make = (~web3,_children) => {
         |> Js.Promise.then_((sigs) => { 
             let sorted_sigs = 
               sigs 
-              |> Js.Array.sortInPlaceWith(((sig1,id1),(sig2,id2)) => {
+              |> Js.Array.sortInPlaceWith(((sig1,_),(sig2,_)) => {
                   if (sig1 == Used && sig2 != Used) { 1 }
                   else if (sig1 != Used && sig2 == Used) { -1 }
                   else { 0 }
@@ -308,7 +308,7 @@ let make = (~web3,_children) => {
       }
     | SellingPricePerTicket(selling_price_per_ticket) => 
         ReasonReact.Update({...state,selling_price_per_ticket})
-    | SellAllTickets(index) => ReasonReact.UpdateWithSideEffects(state,(self) => {
+    | SellAllTickets(index) => ReasonReact.UpdateWithSideEffects(state,(_) => {
         let {event,tickets} = state.myEvents[index];
         Event.proposeSale(event,tickets,~price=(BsWeb3.Utils.toWei(
                             state.selling_price_per_ticket,
@@ -417,7 +417,7 @@ let make = (~web3,_children) => {
           </tr>
         </thead>
         <tbody>
-          (state.myEvents |> Js.Array.mapi((({event,description,address,tickets,show_details,ticket_signatures}),i) => {
+          (state.myEvents |> Js.Array.mapi((({description,address,tickets,show_details,ticket_signatures}),i) => {
             [|
             <tr key=(Js.String.concat(string_of_int(i),address ))
                 onClick=(_ => send(ToggleDetails(i)))
