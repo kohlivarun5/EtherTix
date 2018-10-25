@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "remix": "remixd -s sol",
+    "solc": "solcjs  --abi sol/*.sol && solcjs --optimize --bin sol/*.sol",
     "build": "bsb -make-world",
     "start": "bsb -make-world -w",
     "clean": "bsb -clean-world",
@@ -25,6 +26,7 @@
   "homepage": "https://github.com/kohlivarun5/SmartTix#readme",
   "devDependencies": {
     "bs-platform": "^4.0.3",
+    "solc": "^0.4.25",
     "remixd": "^0.1.8-alpha.4",
     "webpack": "^4.0.1",
     "webpack-cli": "^2.0.10",
