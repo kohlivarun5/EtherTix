@@ -3,7 +3,7 @@ let component = ReasonReact.statelessComponent("WeiLabel");
 let make = (~amount,_children) => {
   /* spread the other default fields of component here and override a few */
   ...component,
-  render: self => {
+  render: (_) => {
     <div> (
       BsWeb3.Utils.fromWei(amount,"ether") 
       |> BsWeb3.Types.toString(10)

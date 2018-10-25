@@ -25,18 +25,19 @@ let getSearchValueByKey(key) =
   |> Js.String.split("?")
   |> (fun (query) => switch(query) {
     | [||] | [|_|] => None
-    | [|uri,query|] => (
+    | [|_,query|] => (
           query 
           |> Js.String.split("&") 
           |> Js.Array.map(Js.String.split("="))
           |> Js.Array.map((key_value) => 
               (decodeURIComponent(key_value[0]),decodeURIComponent(key_value[1])))
-          |> Js.Array.find(((k,value)) => key == k)
+          |> Js.Array.find(((k,_)) => key == k)
           |> (fun (key_value) => switch(key_value) {
               | None => None 
               | Some((_,value)) => Some(value)
             })
       )
+    | _ => assert(false)
   })
 
 let createEventLinkUriComponent(~address,~description) =
