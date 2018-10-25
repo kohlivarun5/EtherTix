@@ -225,6 +225,9 @@ contract Event /* is ERC721 */  {
     d_token_owner[_token] = msg.sender;
     d_owner_tokens[msg.sender].push(_token);
     
+    Universe u = Universe(d_admin);
+    u.addUserEvent(msg.sender,this);
+    
     // Take money
     if (d_tickets[_token].d_prev_price > msg.value) {
       // Selling for less, all money to seller 

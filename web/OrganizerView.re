@@ -17,7 +17,7 @@ type state = {
 type action =
   | Submit
   | Change(string)
-  | InitWeb3(Web3.state)
+  | GetOrganizerEvents(Web3.state)
   | AddEvent(BsWeb3.Eth.address)
   | EventData(event_data)
   | ToggleEvent(BsWeb3.Eth.address)
@@ -57,8 +57,8 @@ let make = (_children) => {
             Js.log(Universe.abi);
             let universe:Universe.t = [%bs.raw{| new eth.Contract(UniverseAbiJson.default,universe_address) |}];
 
-            Js.log("InitWeb3");
-            self.send(InitWeb3({
+            Js.log("GetOrganizerEvents");
+            self.send(GetOrganizerEvents({
                 web3:w3,
                 account:accounts[0],
                 universe,
@@ -85,7 +85,7 @@ let make = (_children) => {
           let {Web3.account,universe} = Js.Option.getExn(state.web3);
           Universe.createEvent(universe,state.new_event_description)
           |> BsWeb3.Eth.send(BsWeb3.Eth.make_transaction(~from=account))
-          |> Js.Promise.then_ ((addr) => self.send(AddEvent(addr)) |> Js.Promise.resolve);
+          |> Js.Promise.then_ ((addr) => self.send(GetOrganizerEvents(addr)) |> Js.Promise.resolve);
           ()
         })
       })
@@ -122,7 +122,7 @@ let make = (_children) => {
           ()
         })
       })
-    | InitWeb3(web3_state) => (state => {
+    | GetOrganizerEvents(web3_state) => (state => {
         Js.log("Returning with side effects");
         ReasonReact.UpdateWithSideEffects({...state,web3:Some(web3_state)}, (self) => {
 
