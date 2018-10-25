@@ -292,7 +292,7 @@ let make = (~web3,_children) => {
       }
     | ToggleDetails(index) => {
         let event = state.myEvents[index];
-        let event = {...event,show_details:(!event.show_details)};
+        let event = {...event,show_details:(Js.Array.length(event.tickets) <= 0 ? false : !event.show_details)};
         state.myEvents[index] = event;
         ReasonReact.UpdateWithSideEffects(state,(self) => {
           let transaction_data = BsWeb3.Eth.make_transaction(~from=state.web3.account);
