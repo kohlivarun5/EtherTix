@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "remix": "remixd -s sol",
-    "solc": "solcjs  --abi sol/*.sol -o build && solcjs --optimize --bin sol/*.sol -o build",
+    "solc": "solcjs --abi sol/*.sol -o build && solcjs --optimize --bin sol/*.sol -o build",
     "build": "bsb -make-world",
     "start": "bsb -make-world -w",
     "clean": "bsb -clean-world",
