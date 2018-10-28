@@ -189,6 +189,7 @@ let make = (_children) => {
       
       </div>
 
+      (Js.Array.length(state.myEvents) <= 0 ? ReasonReact.null :
       <div className="col-md">
         <div className="card container-card">
           <h5 className="card-header card-title">(text("Organized Events"))</h5> 
@@ -225,7 +226,7 @@ let make = (_children) => {
             </tbody>
           </table> 
         </div>
-      </div>
+      </div>)
       
     </div>
 
