@@ -7,6 +7,8 @@ type search = string;
 type origin = string;
 [@bs.get] external origin : location => origin = "";
 
+[@bs.set] external href : location => string => unit = "";
+
 type pathname = string;
 [@bs.get] external pathname : location => pathname = "";
 
