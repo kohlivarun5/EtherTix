@@ -50,6 +50,7 @@ contract Event /* is ERC721 */  {
   }
   
   function issue(uint256 _numTickets,uint256 _price) public {
+    require(_numTickets <= 500);
     require(msg.sender == d_organizer);
     // require(_price > d_creator_commission_factor * 1 szabo,
     //         "Minimum cost is 100 szabo"); // Denominate in szabo
@@ -224,6 +225,9 @@ contract Event /* is ERC721 */  {
     
     d_token_owner[_token] = msg.sender;
     d_owner_tokens[msg.sender].push(_token);
+    
+    Universe u = Universe(d_admin);
+    u.addUserEvent(msg.sender,this);
     
     // Take money
     if (d_tickets[_token].d_prev_price > msg.value) {

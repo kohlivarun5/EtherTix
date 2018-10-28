@@ -17,7 +17,7 @@ type state = {
 type action =
   | Submit
   | Change(string)
-  | InitWeb3(Web3.state)
+  | GetOrganizerEvents(Web3.state)
   | AddEvent(BsWeb3.Eth.address)
   | EventData(event_data)
   | ToggleEvent(BsWeb3.Eth.address)
@@ -57,8 +57,8 @@ let make = (_children) => {
             Js.log(Universe.abi);
             let universe:Universe.t = [%bs.raw{| new eth.Contract(UniverseAbiJson.default,universe_address) |}];
 
-            Js.log("InitWeb3");
-            self.send(InitWeb3({
+            Js.log("GetOrganizerEvents");
+            self.send(GetOrganizerEvents({
                 web3:w3,
                 account:accounts[0],
                 universe,
@@ -129,7 +129,7 @@ let make = (_children) => {
           ()
         })
       })
-    | InitWeb3(web3_state) => (state => {
+    | GetOrganizerEvents(web3_state) => (state => {
         Js.log("Returning with side effects");
         ReasonReact.UpdateWithSideEffects({...state,web3:Some(web3_state)}, (self) => {
           Js.log("Calling myEvents");
@@ -191,7 +191,7 @@ let make = (_children) => {
 
       <div className="col-md">
         <div className="card container-card">
-          <h5 className="card-header card-title">(text("My Events"))</h5> 
+          <h5 className="card-header card-title">(text("Organized Events"))</h5> 
           <table className="table table-hover border-secondary border-solid table-no-bottom">
             <thead className="bg-secondary">
               <tr>

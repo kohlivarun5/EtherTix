@@ -339,7 +339,7 @@ let make = (~web3,_children) => {
       }
     | ToggleDetails(index) => {
         let event = state.myEvents[index];
-        let event = {...event,show_details:(!event.show_details)};
+        let event = {...event,show_details:(Js.Array.length(event.tickets) <= 0 ? false : !event.show_details)};
         state.myEvents[index] = event;
         ReasonReact.UpdateWithSideEffects(state,(self) => {
           let transaction_data = BsWeb3.Eth.make_transaction(~from=state.web3.account);
@@ -491,10 +491,10 @@ let make = (~web3,_children) => {
                            <Carousel> 
                              (ticket_signatures |> Js.Array.map( ((signature,id)) => {
                                switch(signature) {
-                                 | Used => 
-                                   <img src="img/Ticket.svg" 
+                                 | User => 
+                                   <img src="img/UsedTicket.png"
                                      key=string_of_int(id)
-                                     style=(ReactDOMRe.Style.make(~marginTop="15px",~height="228px",()))
+                                     className="used-ticket"
                                    />
                                  | UnUsed(sha) => {
                                    <QrView 
