@@ -443,10 +443,10 @@ let make = (~web3,_children) => {
                            <Carousel> 
                              (ticket_signatures |> Js.Array.map( ((signature,id)) => {
                                switch(signature) {
-                                 | Used => 
-                                   <img src="img/Ticket.svg" 
+                                 | User => 
+                                   <img src="img/UsedTicket.png"
                                      key=string_of_int(id)
-                                     style=(ReactDOMRe.Style.make(~marginTop="15px",~height="228px",()))
+                                     className="used-ticket"
                                    />
                                  | UnUsed(sha) => {
                                    <QrView 

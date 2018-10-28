@@ -50,6 +50,7 @@ contract Event /* is ERC721 */  {
   }
   
   function issue(uint256 _numTickets,uint256 _price) public {
+    require(_numTickets <= 500);
     require(msg.sender == d_organizer);
     // require(_price > d_creator_commission_factor * 1 szabo,
     //         "Minimum cost is 100 szabo"); // Denominate in szabo
