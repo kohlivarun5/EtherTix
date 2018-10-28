@@ -23,8 +23,8 @@ type organizerEventsData;
 [@bs.deriving abstract]
 type filter_options('a) = {
   [@bs.optional] filter : 'a,
-  fromBlock : int ,
-  [@bs.optional] toBlock : string ,
+  fromBlock : int,
+  toBlock : string ,
 };
 
 type organizer_events_watcher('a) = 'a => organizerEventsData => unit;

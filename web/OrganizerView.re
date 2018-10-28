@@ -137,7 +137,7 @@ let make = (_children) => {
             web3_state.universe,
             Universe.filter_options(
               ~filter=Universe.organizerEventsQuery(~organizerAddr=web3_state.account,~active=true,()),
-              ~fromBlock=0,()),
+              ~fromBlock=0,~toBlock="latest",()),
             ((error,eventData) => {
               Js.log(error);
               self.send(AddEvent(Universe.organizerEventAddr(eventData)))

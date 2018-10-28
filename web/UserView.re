@@ -86,7 +86,7 @@ let make = (~web3,_children) => {
             state.web3.universe,
             Universe.filter_options(
               ~filter=Universe.userEventsQuery(~userAddr=state.web3.account,()),
-              ~fromBlock=0,()),
+              ~fromBlock=0,~toBlock="latest",()),
             ((error,eventData) => {
               Js.log(error);
               assert(Universe.userAddr(eventData) == state.web3.account);
@@ -100,7 +100,7 @@ let make = (~web3,_children) => {
         ReasonReact.UpdateWithSideEffects(state, (self) => {
           Universe.organizerEvents(
             state.web3.universe,
-            Universe.filter_options(~fromBlock=0,()),
+            Universe.filter_options(~fromBlock=0,~toBlock="latest",()),
             ((error,eventData) => {
               Js.log(error);
               self.send(
