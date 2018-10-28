@@ -18,10 +18,11 @@ type organizerEventsQuery = {
 
 type organizerEventsData; 
 [@bs.scope "returnValues"] [@bs.get] external organizerEventAddr : organizerEventsData => BsWeb3.Eth.address = "eventAddr";
+[@bs.scope "returnValues"] [@bs.get] external organizerEventDesc : organizerEventsData => BsWeb3.Eth.address = "description";
 
 [@bs.deriving abstract]
 type filter_options('a) = {
-  filter : 'a,
+  [@bs.optional] filter : 'a,
   fromBlock : int ,
   [@bs.optional] toBlock : string ,
 };

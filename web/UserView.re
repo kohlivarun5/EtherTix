@@ -16,7 +16,7 @@ type ticket_sig =
 | UnUsed(string)
 
 type ticket_id_sig = (ticket_sig,int)
-type event_data = {
+type my_event_data = {
   address:BsWeb3.Eth.address,
   event:Event.t,
   description : string,
@@ -25,18 +25,26 @@ type event_data = {
   ticket_signatures:Js.Array.t(ticket_id_sig)
 }
 
+type event_data = {
+  address:BsWeb3.Eth.address,
+  description : string,
+}
+
 type state = {
   web3 : Web3.state,
   event_address:BsWeb3.Eth.address,
   buy_data:option(buy_data),
-  myEvents:Js.Array.t(event_data),
+  myEvents:Js.Array.t(my_event_data),
+  allEvents:Js.Array.t(event_data),
   selling_price_per_ticket:BsWeb3.Types.big_number
 };
 
 type action = 
 | GetMyEvents 
+| GetAllEvents
 | AddEvent(BsWeb3.Eth.address)
-| MyEventData(event_data)
+| MyEventData(my_event_data)
+| EventData(event_data)
 | BuyEventAddress(BsWeb3.Eth.address)
 | BuyEventDescription(string)
 | NumTickets(int)
@@ -59,10 +67,12 @@ let make = (~web3,_children) => {
     event_address:"",
     buy_data:None,
     myEvents:[||],
+    allEvents:[||],
     selling_price_per_ticket:BsWeb3.Utils.toBN(0)
   },
   didMount: self => { 
     self.send(GetMyEvents);
+    self.send(GetAllEvents);
     switch(BsUtils.getSearchValueByKey("event")) {
       | None => ()
       | Some(address) => self.send(BuyEventAddress(address))
@@ -81,6 +91,24 @@ let make = (~web3,_children) => {
               Js.log(error);
               assert(Universe.userAddr(eventData) == state.web3.account);
               self.send(AddEvent(Universe.userEventAddr(eventData)));
+            })
+          );
+          ()
+        })
+      }
+    | GetAllEvents => {
+        ReasonReact.UpdateWithSideEffects(state, (self) => {
+          Universe.organizerEvents(
+            state.web3.universe,
+            Universe.filter_options(~fromBlock=0,()),
+            ((error,eventData) => {
+              Js.log(error);
+              self.send(
+                EventData({
+                  address:Universe.organizerEventAddr(eventData),
+                  description:Universe.organizerEventDesc(eventData)
+                })
+              );
             })
           );
           ()
@@ -105,15 +133,24 @@ let make = (~web3,_children) => {
           ()
         })
       }
-
     | MyEventData(data) => { 
-      let index = Js.Array.findIndex((({address}) => address == data.address),state.myEvents);
+      let index = Js.Array.findIndex(((({address}:my_event_data)) => address == data.address),state.myEvents);
       if (index > -1 ) {
         state.myEvents[index] = data;
       } else {
         Js.Array.push(data,state.myEvents) |> ignore
       };
       ReasonReact.Update({...state,myEvents:state.myEvents})
+    }
+
+    | EventData(data) => { 
+      let index = Js.Array.findIndex(((({address}:event_data)) => address == data.address),state.allEvents);
+      if (index > -1 ) {
+        state.allEvents[index] = data;
+      } else {
+        Js.Array.push(data,state.allEvents) |> ignore
+      };
+      ReasonReact.Update({...state,allEvents:state.allEvents})
     }
 
     | BuyEventAddress(event_address) => 
@@ -498,6 +535,30 @@ let make = (~web3,_children) => {
           |> ReasonReact.array)
         </tbody>
       </table> 
+    </div>
+  </div>
+  )
+  
+  (Js.Array.length(state.allEvents) <= 0 ? ReasonReact.null :
+  <div className="col-md">
+    <div className="card container-card">
+      <h5 className="card-header card-title">(text("Events Lising"))</h5> 
+      <table className="table table-hover border-secondary border-solid table-no-bottom">
+        <thead className="bg-secondary">
+          <tr>
+            <th scope="col">(text("Description"))</th>
+            <th scope="col">(text("Address"))</th>
+          </tr>
+        </thead>
+        <tbody>
+          (state.allEvents |> Js.Array.mapi((({description,address}),i) => {
+            <tr key=(Js.String.concat(string_of_int(i),address )) >
+              <td>(text(description))</td>
+              <td><AddressLabel address=address uri=state.web3.address_uri /></td>
+            </tr> 
+          }) |> ReasonReact.array)
+        </tbody>
+      </table>
     </div>
   </div>
   )
