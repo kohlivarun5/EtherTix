@@ -99,7 +99,15 @@ let make = (_children) => {
         ReasonReact.Update(state)
       })
     | Change(text) => (state => ReasonReact.Update({...state,new_event_description: text}))
-    | EventData(data) => (state => { Js.Array.push(data,state.myEvents); ReasonReact.Update({...state,myEvents:state.myEvents}) })
+    | EventData(data) => (state => { 
+      let index = Js.Array.findIndex((({address}) => address == data.address),state.myEvents);
+      if (index > -1) {
+        state.myEvents[index] = data;
+      } else {
+        Js.Array.push(data,state.myEvents) |> ignore
+      };
+      ReasonReact.Update({...state,myEvents:state.myEvents})
+    })
     | AddEvent(address) => (state => {
         ReasonReact.UpdateWithSideEffects(state,(self) => {
           let web3_state = Js.Option.getExn(state.web3);

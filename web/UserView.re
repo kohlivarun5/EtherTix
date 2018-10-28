@@ -106,7 +106,15 @@ let make = (~web3,_children) => {
         })
       }
 
-    | MyEventData(data) => { Js.Array.push(data,state.myEvents); ReasonReact.Update({...state,myEvents:state.myEvents}) }
+    | MyEventData(data) => { 
+      let index = Js.Array.findIndex((({address}) => address == data.address),state.myEvents);
+      if (index > -1 ) {
+        state.myEvents[index] = data;
+      } else {
+        Js.Array.push(data,state.myEvents) |> ignore
+      };
+      ReasonReact.Update({...state,myEvents:state.myEvents})
+    }
 
     | BuyEventAddress(event_address) => 
         let event = Event.ofAddress(state.web3.web3,event_address);
@@ -184,7 +192,7 @@ let make = (~web3,_children) => {
         assert(state.buy_data != None);
         let buy_data = Js.Option.getExn(state.buy_data);
         ReasonReact.Update({...state,buy_data:Some({...buy_data,numSold,numUnSold,resale_tickets})})
-    | SubmitBuy => ReasonReact.UpdateWithSideEffects(state,(self) => {
+    | SubmitBuy => ReasonReact.UpdateWithSideEffects(state,(_) => {
         Js.log(state);
         assert(state.buy_data != None);
         let {event,numTickets,totalCost} = Js.Option.getExn(state.buy_data);
@@ -192,8 +200,7 @@ let make = (~web3,_children) => {
         Event.buy(event,~numTickets=numTickets)
         |> BsWeb3.Eth.send(
             BsWeb3.Eth.make_transaction_with_value(
-              ~value=totalCost,~from=state.web3.account))
-        |> Js.Promise.then_ (_ => self.send(GetMyEvents) |> Js.Promise.resolve);
+              ~value=totalCost,~from=state.web3.account));
         ()
       })
     | BuyResale(event,token,price) => ReasonReact.UpdateWithSideEffects(state,(self) => {
