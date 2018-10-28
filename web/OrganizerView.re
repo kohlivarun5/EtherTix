@@ -127,8 +127,9 @@ let make = (_children) => {
           Js.log("Calling myEvents");
           Universe.organizerEvents(
             web3_state.universe,
-            Universe.organizerEventsQuery(~organizerAddr=web3_state.account,~active=true,()),
-            Universe.filter_options(~fromBlock=0,~toBlock="latest"),
+            Universe.filter_options(
+              ~filter=Universe.organizerEventsQuery(~organizerAddr=web3_state.account,~active=true,()),
+              ~fromBlock=0,()),
             ((error,eventData) => {
               Js.log(error);
               self.send(AddEvent(Universe.organizerEventAddr(eventData)))

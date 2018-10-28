@@ -20,16 +20,16 @@ type organizerEventsData;
 [@bs.scope "returnValues"] [@bs.get] external organizerEventAddr : organizerEventsData => BsWeb3.Eth.address = "eventAddr";
 
 [@bs.deriving abstract]
-type filter_options = {
+type filter_options('a) = {
+  filter : 'a,
   fromBlock : int ,
-  toBlock : string ,
+  [@bs.optional] toBlock : string ,
 };
 
 type organizer_events_watcher('a) = 'a => organizerEventsData => unit;
 [@bs.scope "events"] [@bs.send] external organizerEvents : 
   t => 
-  organizerEventsQuery => 
-  filter_options => 
+  filter_options(organizerEventsQuery) => 
   organizer_events_watcher('a) =>
   unit = "OrganizerEvents";
 
@@ -43,10 +43,10 @@ type userEventsQuery = {
 
 type userEventsData;
 [@bs.scope "returnValues"] [@bs.get] external userEventAddr : userEventsData => BsWeb3.Eth.address = "eventAddr";
+[@bs.scope "returnValues"] [@bs.get] external userAddr : userEventsData => BsWeb3.Eth.address = "";
 type user_events_watcher('a) = 'a => userEventsData => unit;
 [@bs.scope "events"] [@bs.send] external userEvents : 
   t => 
-  userEventsQuery => 
-  filter_options => 
+  filter_options(userEventsQuery) => 
   user_events_watcher('a) => 
   unit = "UserEvents";
