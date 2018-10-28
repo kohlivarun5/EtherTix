@@ -491,7 +491,7 @@ let make = (~web3,_children) => {
                            <Carousel> 
                              (ticket_signatures |> Js.Array.map( ((signature,id)) => {
                                switch(signature) {
-                                 | User => 
+                                 | Used => 
                                    <img src="img/UsedTicket.png"
                                      key=string_of_int(id)
                                      className="used-ticket"
