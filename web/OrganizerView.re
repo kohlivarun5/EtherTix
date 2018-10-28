@@ -81,11 +81,10 @@ let make = (_children) => {
     switch (action) {
     | Submit => (state => {
         Js.log(state);
-        ReasonReact.UpdateWithSideEffects(state, (self) => {
+        ReasonReact.UpdateWithSideEffects(state, (_) => {
           let {Web3.account,universe} = Js.Option.getExn(state.web3);
           Universe.createEvent(universe,state.new_event_description)
-          |> BsWeb3.Eth.send(BsWeb3.Eth.make_transaction(~from=account))
-          |> Js.Promise.then_ ((addr) => self.send(AddEvent(addr)) |> Js.Promise.resolve);
+          |> BsWeb3.Eth.send(BsWeb3.Eth.make_transaction(~from=account));
           ()
         })
       })
@@ -125,17 +124,16 @@ let make = (_children) => {
     | InitWeb3(web3_state) => (state => {
         Js.log("Returning with side effects");
         ReasonReact.UpdateWithSideEffects({...state,web3:Some(web3_state)}, (self) => {
-
           Js.log("Calling myEvents");
-          let transaction_data = BsWeb3.Eth.make_transaction(~from=web3_state.account);
-          Universe.organizerEvents(web3_state.universe)
-          |> BsWeb3.Eth.call_with(transaction_data)
-          |> Js.Promise.then_ ((events_addr:Js.Array.t(BsWeb3.Eth.address)) => {
-              Js.log("Got Events");
-              Js.log(events_addr);
-              events_addr |> Js.Array.map((addr) => { self.send(AddEvent(addr)) });
-              Js.Promise.resolve();
-          });
+          Universe.organizerEvents(
+            web3_state.universe,
+            Universe.organizerEventsQuery(~organizerAddr=web3_state.account,~active=true,()),
+            Universe.filter_options(~fromBlock=0,~toBlock="latest"),
+            ((error,eventData) => {
+              Js.log(error);
+              self.send(AddEvent(Universe.organizerEventAddr(eventData)))
+            })
+          );
           ()
         });
       })

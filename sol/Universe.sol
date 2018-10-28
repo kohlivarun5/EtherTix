@@ -6,8 +6,17 @@ contract Universe {
   
   address private d_owner;
   
-  mapping(address => address[]) d_organizerEvents;
-  mapping(address => address[]) d_userEvents;
+  event OrganizerEvents(
+        address indexed eventAddr,
+        address indexed organizerAddr,
+        bool    indexed active,
+        string          description
+  );
+        
+  event UserEvents(
+        address indexed eventAddr,
+        address indexed userAddr,
+        bool    indexed active);
   
   constructor() public payable {
     d_owner = msg.sender;
@@ -29,41 +38,17 @@ contract Universe {
   }
   
   function createEvent(string _description) public payable returns(address) {
-    d_organizerEvents[msg.sender].push(new Event(_description,msg.sender));
-    return d_organizerEvents[msg.sender][d_organizerEvents[msg.sender].length-1];
-  }
-  
-  function organizerEvents() public constant returns(address[]) {
-    return d_organizerEvents[msg.sender];
-  }
-  
-  function userEvents() public constant returns(address[]) {
-    return d_userEvents[msg.sender];
+    address eventAddr = new Event(_description,msg.sender);
+    emit OrganizerEvents(eventAddr, msg.sender, true,_description);
+    return eventAddr;
   }
   
   function addUserEvent(address _user,address _event) public {
-      require(_user == msg.sender || _event == msg.sender);
-      for(uint i=0;i<d_userEvents[_user].length;++i) {
-          if (d_userEvents[_user][i] == _event)
-          { return; }
-      }
-      // Reached here, event not in list,
-      // Add it 
-      d_userEvents[_user].push(_event);
+      emit UserEvents(_event,_user,true);
   }
   
   function removeUserEvent(address _user,address _event) public {
-      require(_user == msg.sender || _event == msg.sender);
-      for(uint i=0;i<d_userEvents[_user].length;++i) {
-          if (d_userEvents[_user][i] == _event)
-          { 
-              d_userEvents[_user][i] = d_userEvents[_user][d_userEvents[_user].length-1];
-              delete d_userEvents[_user][d_userEvents[_user].length-1];
-              d_userEvents[_user].length = d_userEvents[_user].length-1;
-              return; 
-              
-          }
-      }
+      emit UserEvents(_event,_user,false);
   }
   
 }

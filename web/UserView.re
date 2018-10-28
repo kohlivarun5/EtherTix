@@ -72,14 +72,15 @@ let make = (~web3,_children) => {
     switch (action) {
     | GetMyEvents => {
         ReasonReact.UpdateWithSideEffects(state, (self) => {
-          let transaction_data = BsWeb3.Eth.make_transaction(~from=state.web3.account);
-          Universe.userEvents(state.web3.universe)
-          |> BsWeb3.Eth.call_with(transaction_data)
-          |> Js.Promise.then_ ((events_addr:Js.Array.t(BsWeb3.Eth.address)) => {
-              events_addr 
-              |> Js.Array.map((addr) => { self.send(AddEvent(addr)) })
-              |> Js.Promise.resolve
-            });
+          Universe.userEvents(
+            state.web3.universe,
+            Universe.userEventsQuery(~userAddr=state.web3.account,~active=true,()),
+            Universe.filter_options(~fromBlock=0,~toBlock="latest"),
+            ((error,eventData) => {
+              Js.log(error);
+              self.send(AddEvent(Universe.userEventAddr(eventData)));
+            })
+          );
           ()
         })
       }
