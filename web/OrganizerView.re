@@ -17,7 +17,7 @@ type state = {
 type action =
   | Submit
   | Change(string)
-  | InitWeb3(Web3.state)
+  | GetOrganizerEvents(Web3.state)
   | AddEvent(BsWeb3.Eth.address)
   | EventData(event_data)
   | ToggleEvent(BsWeb3.Eth.address)
@@ -57,8 +57,8 @@ let make = (_children) => {
             Js.log(Universe.abi);
             let universe:Universe.t = [%bs.raw{| new eth.Contract(UniverseAbiJson.default,universe_address) |}];
 
-            Js.log("InitWeb3");
-            self.send(InitWeb3({
+            Js.log("GetOrganizerEvents");
+            self.send(GetOrganizerEvents({
                 web3:w3,
                 account:accounts[0],
                 universe,
@@ -85,7 +85,7 @@ let make = (_children) => {
           let {Web3.account,universe} = Js.Option.getExn(state.web3);
           Universe.createEvent(universe,state.new_event_description)
           |> BsWeb3.Eth.send(BsWeb3.Eth.make_transaction(~from=account))
-          |> Js.Promise.then_ ((addr) => self.send(AddEvent(addr)) |> Js.Promise.resolve);
+          |> Js.Promise.then_((_) => self.send(GetOrganizerEvents(Js.Option.getExn(state.web3))) |> Js.Promise.resolve);
           ()
         })
       })
@@ -100,7 +100,15 @@ let make = (_children) => {
         ReasonReact.Update(state)
       })
     | Change(text) => (state => ReasonReact.Update({...state,new_event_description: text}))
-    | EventData(data) => (state => { Js.Array.push(data,state.myEvents); ReasonReact.Update({...state,myEvents:state.myEvents}) })
+    | EventData(data) => (state => { 
+      let index = Js.Array.findIndex((({address}) => address == data.address),state.myEvents);
+      if (index > -1) {
+        state.myEvents[index] = data;
+      } else {
+        Js.Array.push(data,state.myEvents) |> ignore
+      };
+      ReasonReact.Update({...state,myEvents:state.myEvents})
+    })
     | AddEvent(address) => (state => {
         ReasonReact.UpdateWithSideEffects(state,(self) => {
           let web3_state = Js.Option.getExn(state.web3);
@@ -122,20 +130,21 @@ let make = (_children) => {
           ()
         })
       })
-    | InitWeb3(web3_state) => (state => {
+    | GetOrganizerEvents(web3_state) => (state => {
         Js.log("Returning with side effects");
         ReasonReact.UpdateWithSideEffects({...state,web3:Some(web3_state)}, (self) => {
-
           Js.log("Calling myEvents");
-          let transaction_data = BsWeb3.Eth.make_transaction(~from=web3_state.account);
-          Universe.organizerEvents(web3_state.universe)
-          |> BsWeb3.Eth.call_with(transaction_data)
-          |> Js.Promise.then_ ((events_addr:Js.Array.t(BsWeb3.Eth.address)) => {
-              Js.log("Got Events");
-              Js.log(events_addr);
-              events_addr |> Js.Array.map((addr) => { self.send(AddEvent(addr)) });
-              Js.Promise.resolve();
-          });
+          Universe.organizerEvents(
+            web3_state.universe,
+            Universe.filter_options(
+              ~filter=Universe.organizerEventsQuery(~organizerAddr=web3_state.account,~active=true,()),
+              ~fromBlock=0,~toBlock="latest",())
+          )
+          |> Js.Promise.then_((events) => 
+              events |> Js.Array.map((event) => self.send(AddEvent(Universe.organizerEventAddr(event)))) 
+              |> ignore
+              |> Js.Promise.resolve
+          );
           ()
         });
       })
@@ -182,9 +191,10 @@ let make = (_children) => {
       
       </div>
 
+      (Js.Array.length(state.myEvents) <= 0 ? ReasonReact.null :
       <div className="col-md">
         <div className="card container-card">
-          <h5 className="card-header card-title">(text("My Events"))</h5> 
+          <h5 className="card-header card-title">(text("Organized Events"))</h5> 
           <table className="table table-hover border-secondary border-solid table-no-bottom">
             <thead className="bg-secondary">
               <tr>
@@ -218,7 +228,7 @@ let make = (_children) => {
             </tbody>
           </table> 
         </div>
-      </div>
+      </div>)
       
     </div>
 

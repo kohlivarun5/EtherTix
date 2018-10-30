@@ -16,7 +16,7 @@ type ticket_sig =
 | UnUsed(string)
 
 type ticket_id_sig = (ticket_sig,int)
-type event_data = {
+type my_event_data = {
   address:BsWeb3.Eth.address,
   event:Event.t,
   description : string,
@@ -25,18 +25,26 @@ type event_data = {
   ticket_signatures:Js.Array.t(ticket_id_sig)
 }
 
+type event_data = {
+  address:BsWeb3.Eth.address,
+  description : string,
+}
+
 type state = {
   web3 : Web3.state,
   event_address:BsWeb3.Eth.address,
   buy_data:option(buy_data),
-  myEvents:Js.Array.t(event_data),
+  myEvents:Js.Array.t(my_event_data),
+  allEvents:Js.Array.t(event_data),
   selling_price_per_ticket:BsWeb3.Types.big_number
 };
 
 type action = 
 | GetMyEvents 
+| GetAllEvents
 | AddEvent(BsWeb3.Eth.address)
-| MyEventData(event_data)
+| MyEventData(my_event_data)
+| EventData(event_data)
 | BuyEventAddress(BsWeb3.Eth.address)
 | BuyEventDescription(string)
 | NumTickets(int)
@@ -59,10 +67,12 @@ let make = (~web3,_children) => {
     event_address:"",
     buy_data:None,
     myEvents:[||],
+    allEvents:[||],
     selling_price_per_ticket:BsWeb3.Utils.toBN(0)
   },
   didMount: self => { 
     self.send(GetMyEvents);
+    self.send(GetAllEvents);
     switch(BsUtils.getSearchValueByKey("event")) {
       | None => ()
       | Some(address) => self.send(BuyEventAddress(address))
@@ -72,14 +82,34 @@ let make = (~web3,_children) => {
     switch (action) {
     | GetMyEvents => {
         ReasonReact.UpdateWithSideEffects(state, (self) => {
-          let transaction_data = BsWeb3.Eth.make_transaction(~from=state.web3.account);
-          Universe.userEvents(state.web3.universe)
-          |> BsWeb3.Eth.call_with(transaction_data)
-          |> Js.Promise.then_ ((events_addr:Js.Array.t(BsWeb3.Eth.address)) => {
-              events_addr 
-              |> Js.Array.map((addr) => { self.send(AddEvent(addr)) })
-              |> Js.Promise.resolve
-            });
+          Universe.userEvents(
+            state.web3.universe,
+            Universe.filter_options(
+              ~filter=Universe.userEventsQuery(~userAddr=state.web3.account,()),
+              ~fromBlock=0,~toBlock="latest",()))
+          |> Js.Promise.then_((events) => 
+            events |> Js.Array.map((event) => 
+              self.send(AddEvent(Universe.userEventAddr(event)))
+            ) |> ignore |> Js.Promise.resolve
+          );
+          ()
+        })
+      }
+    | GetAllEvents => {
+        ReasonReact.UpdateWithSideEffects(state, (self) => {
+          Universe.organizerEvents(
+            state.web3.universe,
+            Universe.filter_options(~fromBlock=0,~toBlock="latest",()))
+          |> Js.Promise.then_((events) => 
+            events |> Js.Array.map((event) => 
+              self.send(
+                EventData({
+                  address:Universe.organizerEventAddr(event),
+                  description:Universe.organizerEventDesc(event)
+                })
+              )
+            ) |> ignore |> Js.Promise.resolve 
+          );
           ()
         })
       }
@@ -102,8 +132,25 @@ let make = (~web3,_children) => {
           ()
         })
       }
+    | MyEventData(data) => { 
+      let index = Js.Array.findIndex(((({address}:my_event_data)) => address == data.address),state.myEvents);
+      if (index > -1 ) {
+        state.myEvents[index] = data;
+      } else {
+        Js.Array.push(data,state.myEvents) |> ignore
+      };
+      ReasonReact.Update({...state,myEvents:state.myEvents})
+    }
 
-    | MyEventData(data) => { Js.Array.push(data,state.myEvents); ReasonReact.Update({...state,myEvents:state.myEvents}) }
+    | EventData(data) => { 
+      let index = Js.Array.findIndex(((({address}:event_data)) => address == data.address),state.allEvents);
+      if (index > -1 ) {
+        state.allEvents[index] = data;
+      } else {
+        Js.Array.push(data,state.allEvents) |> ignore
+      };
+      ReasonReact.Update({...state,allEvents:state.allEvents})
+    }
 
     | BuyEventAddress(event_address) => 
         let event = Event.ofAddress(state.web3.web3,event_address);
@@ -292,7 +339,7 @@ let make = (~web3,_children) => {
       }
     | ToggleDetails(index) => {
         let event = state.myEvents[index];
-        let event = {...event,show_details:(!event.show_details)};
+        let event = {...event,show_details:(Js.Array.length(event.tickets) <= 0 ? false : !event.show_details)};
         state.myEvents[index] = event;
         ReasonReact.UpdateWithSideEffects(state,(self) => {
           let transaction_data = BsWeb3.Eth.make_transaction(~from=state.web3.account);
@@ -404,7 +451,8 @@ let make = (~web3,_children) => {
       })
     </div>
   </div>
-
+  
+  (Js.Array.length(state.myEvents) <= 0 ? ReasonReact.null : 
   <div className="col-md">
     <div className="card container-card">
       <h5 className="card-header card-title">(text("My Tickets"))</h5> 
@@ -444,9 +492,9 @@ let make = (~web3,_children) => {
                              (ticket_signatures |> Js.Array.map( ((signature,id)) => {
                                switch(signature) {
                                  | Used => 
-                                   <img src="img/Ticket.svg" 
+                                   <img src="img/UsedTicket.png"
                                      key=string_of_int(id)
-                                     style=(ReactDOMRe.Style.make(~marginTop="15px",~height="228px",()))
+                                     className="used-ticket"
                                    />
                                  | UnUsed(sha) => {
                                    <QrView 
@@ -489,7 +537,36 @@ let make = (~web3,_children) => {
       </table> 
     </div>
   </div>
-
+  )
+  
+  (Js.Array.length(state.allEvents) <= 0 ? ReasonReact.null :
+  <div className="col-md">
+    <div className="card container-card">
+      <h5 className="card-header card-title">(text("Events Listing"))</h5> 
+      <table className="table table-hover border-secondary border-solid table-no-bottom">
+        <thead className="bg-secondary">
+          <tr>
+            <th scope="col">(text("Description"))</th>
+            <th scope="col">(text("Address"))</th>
+          </tr>
+        </thead>
+        <tbody>
+          (state.allEvents |> Js.Array.mapi((({description,address}),i) => {
+            <tr key=(Js.String.concat(string_of_int(i),address )) 
+                onClick=((_) => 
+                    BsUtils.href(
+                      BsUtils.location,
+                      BsUtils.createSearchUri("event",address)))
+              >
+              <td>(text(description))</td>
+              <td><AddressLabel address=address uri=state.web3.address_uri /></td>
+            </tr> 
+          }) |> ReasonReact.array)
+        </tbody>
+      </table>
+    </div>
+  </div>
+  )
 
 </div>
 

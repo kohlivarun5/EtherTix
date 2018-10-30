@@ -75,4 +75,17 @@ body {
   height:36px; 
 }
 
+.used-ticket {
+  max-height: 100%;  
+  max-width: 80%; 
+  width: auto;
+  height: auto;
+  position: absolute;  
+  top: 0;  
+  bottom: 0;  
+  left: 0;  
+  right: 0;  
+  margin: auto;
+}
+
 input[type='text'],textarea {font-size:1em;}
