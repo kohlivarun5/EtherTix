@@ -396,7 +396,7 @@ let make = (~web3,_children) => {
           </div>
           <div key="NumTickets" className="row card-body padding-vertical-less">
             <label className="col col-6 col-form-label text-muted">(text("Number of tickets"))</label>
-            <input className="col form-control" type_="text" placeholder="" id="inputLarge"
+            <input autoFocus=true className="col form-control" type_="text" placeholder="" id="inputLarge"
                    style=(ReactDOMRe.Style.make(~marginRight="10px",()))
                    onChange=(event => send(NumTickets(int_of_float(Js.Float.fromString(ReactEvent.Form.target(event)##value)))))
                    value=(string_of_int(numTickets))
