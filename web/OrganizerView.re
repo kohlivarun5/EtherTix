@@ -81,10 +81,11 @@ let make = (_children) => {
     switch (action) {
     | Submit => (state => {
         Js.log(state);
-        ReasonReact.UpdateWithSideEffects(state, (_) => {
+        ReasonReact.UpdateWithSideEffects(state, (self) => {
           let {Web3.account,universe} = Js.Option.getExn(state.web3);
           Universe.createEvent(universe,state.new_event_description)
-          |> BsWeb3.Eth.send(BsWeb3.Eth.make_transaction(~from=account));
+          |> BsWeb3.Eth.send(BsWeb3.Eth.make_transaction(~from=account))
+          |> Js.Promise.then_((_) => self.send(GetOrganizerEvents(Js.Option.getExn(state.web3))) |> Js.Promise.resolve);
           ()
         })
       })
@@ -137,11 +138,12 @@ let make = (_children) => {
             web3_state.universe,
             Universe.filter_options(
               ~filter=Universe.organizerEventsQuery(~organizerAddr=web3_state.account,~active=true,()),
-              ~fromBlock=0,~toBlock="latest",()),
-            ((error,eventData) => {
-              Js.log(error);
-              self.send(AddEvent(Universe.organizerEventAddr(eventData)))
-            })
+              ~fromBlock=0,~toBlock="latest",())
+          )
+          |> Js.Promise.then_((events) => 
+              events |> Js.Array.map((event) => self.send(AddEvent(Universe.organizerEventAddr(event)))) 
+              |> ignore
+              |> Js.Promise.resolve
           );
           ()
         });

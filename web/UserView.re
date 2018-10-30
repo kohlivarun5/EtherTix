@@ -86,12 +86,11 @@ let make = (~web3,_children) => {
             state.web3.universe,
             Universe.filter_options(
               ~filter=Universe.userEventsQuery(~userAddr=state.web3.account,()),
-              ~fromBlock=0,~toBlock="latest",()),
-            ((error,eventData) => {
-              Js.log(error);
-              assert(Universe.userAddr(eventData) == state.web3.account);
-              self.send(AddEvent(Universe.userEventAddr(eventData)));
-            })
+              ~fromBlock=0,~toBlock="latest",()))
+          |> Js.Promise.then_((events) => 
+            events |> Js.Array.map((event) => 
+              self.send(AddEvent(Universe.userEventAddr(event)))
+            ) |> ignore |> Js.Promise.resolve
           );
           ()
         })
@@ -100,16 +99,16 @@ let make = (~web3,_children) => {
         ReasonReact.UpdateWithSideEffects(state, (self) => {
           Universe.organizerEvents(
             state.web3.universe,
-            Universe.filter_options(~fromBlock=0,~toBlock="latest",()),
-            ((error,eventData) => {
-              Js.log(error);
+            Universe.filter_options(~fromBlock=0,~toBlock="latest",()))
+          |> Js.Promise.then_((events) => 
+            events |> Js.Array.map((event) => 
               self.send(
                 EventData({
-                  address:Universe.organizerEventAddr(eventData),
-                  description:Universe.organizerEventDesc(eventData)
+                  address:Universe.organizerEventAddr(event),
+                  description:Universe.organizerEventDesc(event)
                 })
-              );
-            })
+              )
+            ) |> ignore |> Js.Promise.resolve 
           );
           ()
         })
@@ -229,7 +228,7 @@ let make = (~web3,_children) => {
         assert(state.buy_data != None);
         let buy_data = Js.Option.getExn(state.buy_data);
         ReasonReact.Update({...state,buy_data:Some({...buy_data,numSold,numUnSold,resale_tickets})})
-    | SubmitBuy => ReasonReact.UpdateWithSideEffects(state,(_) => {
+    | SubmitBuy => ReasonReact.UpdateWithSideEffects(state,(self) => {
         Js.log(state);
         assert(state.buy_data != None);
         let {event,numTickets,totalCost} = Js.Option.getExn(state.buy_data);
@@ -237,7 +236,8 @@ let make = (~web3,_children) => {
         Event.buy(event,~numTickets=numTickets)
         |> BsWeb3.Eth.send(
             BsWeb3.Eth.make_transaction_with_value(
-              ~value=totalCost,~from=state.web3.account));
+              ~value=totalCost,~from=state.web3.account))
+        |> Js.Promise.then_((_) => self.send(GetMyEvents) |> Js.Promise.resolve);
         ()
       })
     | BuyResale(event,token,price) => ReasonReact.UpdateWithSideEffects(state,(self) => {
@@ -542,7 +542,7 @@ let make = (~web3,_children) => {
   (Js.Array.length(state.allEvents) <= 0 ? ReasonReact.null :
   <div className="col-md">
     <div className="card container-card">
-      <h5 className="card-header card-title">(text("Events Lising"))</h5> 
+      <h5 className="card-header card-title">(text("Events Listing"))</h5> 
       <table className="table table-hover border-secondary border-solid table-no-bottom">
         <thead className="bg-secondary">
           <tr>
@@ -553,7 +553,10 @@ let make = (~web3,_children) => {
         <tbody>
           (state.allEvents |> Js.Array.mapi((({description,address}),i) => {
             <tr key=(Js.String.concat(string_of_int(i),address )) 
-                onClick=((_) => send(BuyEventAddress(address)))
+                onClick=((_) => 
+                    BsUtils.href(
+                      BsUtils.location,
+                      BsUtils.createSearchUri("event",address)))
               >
               <td>(text(description))</td>
               <td><AddressLabel address=address uri=state.web3.address_uri /></td>

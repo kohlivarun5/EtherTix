@@ -27,12 +27,11 @@ type filter_options('a) = {
   toBlock : string ,
 };
 
-type organizer_events_watcher('a) = 'a => organizerEventsData => unit;
-[@bs.scope "events"] [@bs.send] external organizerEvents : 
+[@bs.send] external organizerEvents : 
   t => 
+  ([@bs.as "OrganizerEvents"] _ ) => 
   filter_options(organizerEventsQuery) => 
-  organizer_events_watcher('a) =>
-  unit = "OrganizerEvents";
+  Js.Promise.t(Js.Array.t(organizerEventsData)) = "getPastEvents";
 
 
 [@bs.deriving abstract]
@@ -44,10 +43,9 @@ type userEventsQuery = {
 
 type userEventsData;
 [@bs.scope "returnValues"] [@bs.get] external userEventAddr : userEventsData => BsWeb3.Eth.address = "eventAddr";
-[@bs.scope "returnValues"] [@bs.get] external userAddr : userEventsData => BsWeb3.Eth.address = "";
-type user_events_watcher('a) = 'a => userEventsData => unit;
-[@bs.scope "events"] [@bs.send] external userEvents : 
+
+[@bs.send] external userEvents : 
   t => 
+  ([@bs.as "UserEvents"] _ ) => 
   filter_options(userEventsQuery) => 
-  user_events_watcher('a) => 
-  unit = "UserEvents";
+  Js.Promise.t(Js.Array.t(userEventsData)) = "getPastEvents";
