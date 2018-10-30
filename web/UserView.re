@@ -456,10 +456,7 @@ let make = (~web3,_children) => {
           <tbody>
             (state.allEvents |> Js.Array.mapi((({description,address}),i) => {
               <tr key=(Js.String.concat(string_of_int(i),address )) 
-                  onClick=((_) => 
-                      BsUtils.href(
-                        BsUtils.location,
-                        BsUtils.createSearchUri("event",address)))
+                  onClick=((_) => send(BuyEventAddress(address)))
                 >
                 <td>(text(description))</td>
                 <td><AddressLabel address=address uri=state.web3.address_uri /></td>
