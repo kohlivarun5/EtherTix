@@ -12,6 +12,7 @@ type origin = string;
 type pathname = string;
 [@bs.get] external pathname : location => pathname = "";
 
+[@bs.val] external alert: string => unit = "";
 
 [@bs.val] external decodeURIComponent : string => string = "";
 [@bs.val] external encodeURIComponent : string => string = "";
