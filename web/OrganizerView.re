@@ -85,7 +85,10 @@ let make = (_children) => {
           let {Web3.account,universe} = Js.Option.getExn(state.web3);
           Universe.createEvent(universe,state.new_event_description)
           |> BsWeb3.Eth.send(BsWeb3.Eth.make_transaction(~from=account))
-          |> Js.Promise.then_((_) => self.send(GetOrganizerEvents(Js.Option.getExn(state.web3))) |> Js.Promise.resolve);
+          |> Js.Promise.then_((_) => {
+              BsUtils.alert("Event Created!");
+              self.send(GetOrganizerEvents(Js.Option.getExn(state.web3))) |> Js.Promise.resolve
+          });
           ()
         })
       })
