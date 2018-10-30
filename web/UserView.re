@@ -451,7 +451,7 @@ let make = (~web3,_children) => {
       })
       (state.buy_data != None || Js.Array.length(state.allEvents) <= 0 ? ReasonReact.null : 
       <div>
-        <div className="card-header font-weight-bold padding-vertical-less">(text("Events Listing"))</div> 
+        <h5 className="card-header font-weight-bold padding-vertical-less">(text("Events Listing"))</h5> 
         <table className="table table-hover border-secondary border-solid table-no-bottom tableBodyScroll">
           <tbody>
             (state.allEvents |> Js.Array.mapi((({description,address}),i) => {
