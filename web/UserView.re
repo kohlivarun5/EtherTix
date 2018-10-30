@@ -449,7 +449,7 @@ let make = (~web3,_children) => {
           </div>)
         </div> 
       })
-      (state.buy_data != None ? ReasonReact.null : 
+      (state.buy_data != None || Js.Array.length(state.allEvents) <= 0 ? ReasonReact.null : 
       <div>
         <div className="card-header font-weight-bold padding-vertical-less">(text("Events Listing"))</div> 
         <table className="table table-hover border-secondary border-solid table-no-bottom tableBodyScroll">
