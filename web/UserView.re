@@ -237,7 +237,7 @@ let make = (~web3,_children) => {
         |> BsWeb3.Eth.send(
             BsWeb3.Eth.make_transaction_with_value(
               ~value=totalCost,~from=state.web3.account))
-        |> Js.Promise.then_((_) => self.send(GetMyEvents) |> Js.Promise.resolve);
+        |> Js.Promise.then_ (_ => self.send(GetMyEvents) |> Js.Promise.resolve);
         ()
       })
     | BuyResale(event,token,price) => ReasonReact.UpdateWithSideEffects(state,(self) => {
