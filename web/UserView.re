@@ -451,11 +451,38 @@ let make = (~web3,_children) => {
       })
     </div>
   </div>
+
+  <div className="col-md">
+    <div className="card container-card">
+      <h5 className="card-header card-title">(text("Events Listing"))</h5> 
+      <table className="table table-hover border-secondary border-solid table-no-bottom tableBodyScroll">
+        <thead className="bg-secondary">
+          <tr>
+            <th scope="col">(text("Description"))</th>
+            <th scope="col">(text("Address"))</th>
+          </tr>
+        </thead>
+        <tbody>
+          (state.allEvents |> Js.Array.mapi((({description,address}),i) => {
+            <tr key=(Js.String.concat(string_of_int(i),address )) 
+                onClick=((_) => 
+                    BsUtils.href(
+                      BsUtils.location,
+                      BsUtils.createSearchUri("event",address)))
+              >
+              <td>(text(description))</td>
+              <td><AddressLabel address=address uri=state.web3.address_uri /></td>
+            </tr> 
+          }) |> ReasonReact.array)
+        </tbody>
+      </table>
+    </div>
+  </div>
   
   (Js.Array.length(state.myEvents) <= 0 ? ReasonReact.null : 
   <div className="col-md">
     <div className="card container-card">
-      <h5 className="card-header card-title">(text("My Tickets"))</h5> 
+      <h5 className="card-header card-title bg-danger">(text("Tickets"))</h5> 
       <table className="table table-hover border-secondary border-solid table-no-bottom">
         <thead className="bg-secondary">
           <tr>
@@ -539,35 +566,6 @@ let make = (~web3,_children) => {
   </div>
   )
   
-  (Js.Array.length(state.allEvents) <= 0 ? ReasonReact.null :
-  <div className="col-md">
-    <div className="card container-card">
-      <h5 className="card-header card-title">(text("Events Listing"))</h5> 
-      <table className="table table-hover border-secondary border-solid table-no-bottom">
-        <thead className="bg-secondary">
-          <tr>
-            <th scope="col">(text("Description"))</th>
-            <th scope="col">(text("Address"))</th>
-          </tr>
-        </thead>
-        <tbody>
-          (state.allEvents |> Js.Array.mapi((({description,address}),i) => {
-            <tr key=(Js.String.concat(string_of_int(i),address )) 
-                onClick=((_) => 
-                    BsUtils.href(
-                      BsUtils.location,
-                      BsUtils.createSearchUri("event",address)))
-              >
-              <td>(text(description))</td>
-              <td><AddressLabel address=address uri=state.web3.address_uri /></td>
-            </tr> 
-          }) |> ReasonReact.array)
-        </tbody>
-      </table>
-    </div>
-  </div>
-  )
-
 </div>
 
 };
