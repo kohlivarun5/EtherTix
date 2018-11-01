@@ -85,7 +85,10 @@ let make = (_children) => {
           let {Web3.account,universe} = Js.Option.getExn(state.web3);
           Universe.createEvent(universe,state.new_event_description)
           |> BsWeb3.Eth.send(BsWeb3.Eth.make_transaction(~from=account))
-          |> Js.Promise.then_((_) => self.send(GetOrganizerEvents(Js.Option.getExn(state.web3))) |> Js.Promise.resolve);
+          |> Js.Promise.then_((_) => {
+              BsUtils.alert("Event Created!");
+              self.send(GetOrganizerEvents(Js.Option.getExn(state.web3))) |> Js.Promise.resolve
+          });
           ()
         })
       })
@@ -153,7 +156,7 @@ let make = (_children) => {
   render: ({send,state}) =>
 <div>
   <nav className="navbar navbar-expand-lg navbar-dark bg-success fixed-top">
-    <a className="navbar-brand" href="#">(ReasonReact.string("BlockTix"))</a>
+    <a className="navbar-brand" href=BsUtils.homeUri()>(ReasonReact.string("BlockTix"))</a>
   </nav>
 
   <div className="container">

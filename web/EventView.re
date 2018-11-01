@@ -1,8 +1,6 @@
 let text = ReasonReact.string;
 let int(i) = i |> string_of_int |> ReasonReact.string;
 
-[@bs.val] external alert: string => unit = "";
-
 type sold_data = {
   numSold:int,
   numUnsold:int
@@ -116,7 +114,7 @@ let make = (~web3,~description, ~address,~event,_children) => {
         |> BsWeb3.Eth.call 
         |> Js.Promise.then_ ((res) => {
             if (res) { 
-              alert("Ticket already used!") |> Js.Promise.resolve;
+              BsUtils.alert("Ticket already used!") |> Js.Promise.resolve;
             } else {
               Event.useTicket(state.event,int_of_string(token),signature)
               |> BsWeb3.Eth.send(BsWeb3.Eth.make_transaction(~from=state.web3.account))

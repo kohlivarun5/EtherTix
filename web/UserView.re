@@ -376,7 +376,7 @@ let make = (~web3,_children) => {
       <div className="card-body padding-vertical-less"> 
         <div className="form-group" style=(ReactDOMRe.Style.make(~margin="3%",()))>
           <div className="row">
-            <label className="col col-6 col-form-label text-muted">(text("Event"))</label>
+            <label className="col col-6 col-form-label text-muted">(text("Event Address"))</label>
             <input className="col form-control" type_="text" placeholder="" id="inputLarge"
                    onChange=(event => send(BuyEventAddress(ReactEvent.Form.target(event)##value)))
                    value=state.event_address
@@ -396,7 +396,7 @@ let make = (~web3,_children) => {
           </div>
           <div key="NumTickets" className="row card-body padding-vertical-less">
             <label className="col col-6 col-form-label text-muted">(text("Number of tickets"))</label>
-            <input className="col form-control" type_="text" placeholder="" id="inputLarge"
+            <input autoFocus=true className="col form-control" type_="text" placeholder="" id="inputLarge"
                    style=(ReactDOMRe.Style.make(~marginRight="10px",()))
                    onChange=(event => send(NumTickets(int_of_float(Js.Float.fromString(ReactEvent.Form.target(event)##value)))))
                    value=(string_of_int(numTickets))
@@ -449,13 +449,30 @@ let make = (~web3,_children) => {
           </div>)
         </div> 
       })
+      (state.buy_data != None || Js.Array.length(state.allEvents) <= 0 ? ReasonReact.null : 
+      <div>
+        <div className="card-header font-weight-bold padding-vertical-less"
+            style=ReactDOMRe.Style.make(~borderBottom="0px",())>(text("Events Listing"))</div> 
+        <table className="table table-hover border-secondary border-solid table-no-bottom tableBodyScroll">
+          <tbody>
+            (state.allEvents |> Js.Array.mapi((({description,address}),i) => {
+              <tr key=(Js.String.concat(string_of_int(i),address )) 
+                  onClick=((_) => send(BuyEventAddress(address)))
+                >
+                <td>(text(description))</td>
+                <td><AddressLabel address=address uri=state.web3.address_uri /></td>
+              </tr> 
+            }) |> ReasonReact.array)
+          </tbody>
+        </table>
+      </div>)
     </div>
   </div>
   
   (Js.Array.length(state.myEvents) <= 0 ? ReasonReact.null : 
   <div className="col-md">
     <div className="card container-card">
-      <h5 className="card-header card-title">(text("My Tickets"))</h5> 
+      <h5 className="card-header card-title bg-danger">(text("My Tickets"))</h5> 
       <table className="table table-hover border-secondary border-solid table-no-bottom">
         <thead className="bg-secondary">
           <tr>
@@ -539,35 +556,6 @@ let make = (~web3,_children) => {
   </div>
   )
   
-  (Js.Array.length(state.allEvents) <= 0 ? ReasonReact.null :
-  <div className="col-md">
-    <div className="card container-card">
-      <h5 className="card-header card-title">(text("Events Listing"))</h5> 
-      <table className="table table-hover border-secondary border-solid table-no-bottom">
-        <thead className="bg-secondary">
-          <tr>
-            <th scope="col">(text("Description"))</th>
-            <th scope="col">(text("Address"))</th>
-          </tr>
-        </thead>
-        <tbody>
-          (state.allEvents |> Js.Array.mapi((({description,address}),i) => {
-            <tr key=(Js.String.concat(string_of_int(i),address )) 
-                onClick=((_) => 
-                    BsUtils.href(
-                      BsUtils.location,
-                      BsUtils.createSearchUri("event",address)))
-              >
-              <td>(text(description))</td>
-              <td><AddressLabel address=address uri=state.web3.address_uri /></td>
-            </tr> 
-          }) |> ReasonReact.array)
-        </tbody>
-      </table>
-    </div>
-  </div>
-  )
-
 </div>
 
 };

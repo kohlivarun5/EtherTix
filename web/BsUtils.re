@@ -12,13 +12,17 @@ type origin = string;
 type pathname = string;
 [@bs.get] external pathname : location => pathname = "";
 
+[@bs.val] external alert: string => unit = "";
 
 [@bs.val] external decodeURIComponent : string => string = "";
 [@bs.val] external encodeURIComponent : string => string = "";
 
+let homeUri () = 
+  location |> origin
+  |> Js.String.concat(location |> pathname)
+
 let createSearchUri(key,value) = 
-    location |> origin
-    |> Js.String.concat(location |> pathname)
+    homeUri()
     |> Js.String.concatMany( [| "?", key, "=", value |] )
 
 let getSearchValueByKey(key) = 
