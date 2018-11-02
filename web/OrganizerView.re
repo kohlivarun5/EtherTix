@@ -29,9 +29,13 @@ let component = ReasonReact.reducerComponent("OrganizerView");
 let make = (_children) => {
   ...component,
   didMount: self => { 
-    if (Js.typeof(BsWeb3.Web3.get) !== "undefined") {
-      let w3_global = Js.Undefined.getExn(BsWeb3.Web3.get);
-      let w3 = BsWeb3.Web3.makeWeb3(BsWeb3.Web3.currentProvider(w3_global));
+      let w3 = 
+        Js.typeof(BsWeb3.Web3.ethereum) !== "undefined" 
+        ? BsWeb3.Web3.makeWeb3(Js.Undefined.getExn(BsWeb3.Web3.ethereum))
+        : (Js.typeof(BsWeb3.Web3.get) !== "undefined" 
+          ? BsWeb3.Web3.makeWeb3(BsWeb3.Web3.currentProvider(Js.Undefined.getExn(BsWeb3.Web3.get)))
+          : assert(false));
+        
       let eth = BsWeb3.Web3.eth(w3);
       BsWeb3.Eth.net(eth)
       |> BsWeb3.Net.getId
@@ -44,33 +48,36 @@ let make = (_children) => {
             | _ => Js.log(networkId);assert(false);
             }
           );
+  
+          BsWeb3.Web3.enable(Js.Undefined.getExn(BsWeb3.Web3.ethereum)) 
+          |> Js.Promise.then_(() => {
+            BsWeb3.Eth.getAccounts(eth)
+            |> Js.Promise.then_((accounts) => {
+              if (Js.Array.length(accounts) >0 ) {
+                /* Don't change code untill universe creation 
+                   As Bs does not support send with new 
+                   */
+                let universe_address = Js.String.concat("",universe);
+                Js.log(eth);
+                Js.log(universe_address);
+                Js.log(Universe.abi);
+                let universe:Universe.t = [%bs.raw{| new eth.Contract(UniverseAbiJson.default,universe_address) |}];
 
-          BsWeb3.Eth.getAccounts(eth)
-          |> Js.Promise.then_((accounts) => {
-
-            /* Don't change code untill universe creation 
-               As Bs does not support send with new 
-               */
-            let universe_address = Js.String.concat("",universe);
-            Js.log(eth);
-            Js.log(universe_address);
-            Js.log(Universe.abi);
-            let universe:Universe.t = [%bs.raw{| new eth.Contract(UniverseAbiJson.default,universe_address) |}];
-
-            Js.log("GetOrganizerEvents");
-            self.send(GetOrganizerEvents({
-                web3:w3,
-                account:accounts[0],
-                universe,
-                address_uri 
-            }))
-            |> Js.Promise.resolve
+                Js.log("GetOrganizerEvents");
+                self.send(GetOrganizerEvents({
+                    web3:w3,
+                    account:accounts[0],
+                    universe,
+                    address_uri 
+                }))
+                |> Js.Promise.resolve 
+              } else {
+                Js.Promise.resolve ()
+              }
+            })
           })
       });
       ()
-    } else {
-      Js.log("Web3 is undefined!");
-    }
   },
   initialState: () => {
     new_event_description : "",
