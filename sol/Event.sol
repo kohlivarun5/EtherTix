@@ -105,7 +105,7 @@ contract Event /* is ERC721 */  {
     address(d_admin).transfer(commission);
     
     Universe u = Universe(d_admin);
-    u.addUserEvent(msg.sender,this);
+    u.addUserEvent(address(this),msg.sender);
   }
   
   function getBalance() public constant returns(uint) {
@@ -226,7 +226,7 @@ contract Event /* is ERC721 */  {
     d_owner_tokens[msg.sender].push(_token);
     
     Universe u = Universe(d_admin);
-    u.addUserEvent(msg.sender,this);
+    u.addUserEvent(address(this),msg.sender);
     
     // Take money
     if (d_tickets[_token].d_prev_price > msg.value) {

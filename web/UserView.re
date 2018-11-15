@@ -81,17 +81,19 @@ let make = (~web3,_children) => {
   reducer: (action,state:state) => {
     switch (action) {
     | GetMyEvents => {
+        Js.log("GetMyEvents");
         ReasonReact.UpdateWithSideEffects(state, (self) => {
           Universe.userEvents(
             state.web3.universe,
             Universe.filter_options(
               ~filter=Universe.userEventsQuery(~userAddr=state.web3.account,()),
               ~fromBlock=0,~toBlock="latest",()))
-          |> Js.Promise.then_((events) => 
+          |> Js.Promise.then_((events) => {
+            Js.log(events);
             events |> Js.Array.map((event) => 
               self.send(AddEvent(Universe.userEventAddr(event)))
             ) |> ignore |> Js.Promise.resolve
-          );
+          });
           ()
         })
       }
