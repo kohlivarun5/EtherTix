@@ -156,7 +156,7 @@ let make = (_children) => {
   render: ({send,state}) =>
 <div>
   <nav className="navbar navbar-expand-lg navbar-dark bg-success fixed-top">
-    <a className="navbar-brand" href=BsUtils.homeUri()>(ReasonReact.string("BlockTix"))</a>
+    <a className="navbar-brand" href=BsUtils.homeUri()>(ReasonReact.string("CrypTix"))</a>
   </nav>
 
   <div className="container">
