@@ -113,15 +113,24 @@ let make = (~web3,~description, ~address,~event,_children) => {
         Event.ticketUsed(state.event,int_of_string(token))
         |> BsWeb3.Eth.call 
         |> Js.Promise.then_ ((res) => {
-            if (res) { 
+            if (res || Dom.Storage.getItem(token,Dom.Storage.localStorage) != None) { 
               BsUtils.alert("Ticket already used!") |> Js.Promise.resolve;
+              self.send(ToggleScanner) |> Js.Promise.resolve
             } else {
-              Event.useTicket(state.event,int_of_string(token),signature)
-              |> BsWeb3.Eth.send(BsWeb3.Eth.make_transaction(~from=state.web3.account))
+              Event.isOwnerSig(state.event,int_of_string(token),signature)
+              |> BsWeb3.Eth.call 
               |> Js.Promise.then_ ((res) => {
-                  Js.log(res);
-                  self.send(FetchData) |> Js.Promise.resolve
-                });
+                if (!res) {
+                  BsUtils.alert("Invalid ticket code") |> Js.Promise.resolve;
+                  self.send(ToggleScanner) |> Js.Promise.resolve
+                } else {
+                  Dom.Storage.setItem(token,signature,Dom.Storage.localStorage);
+                  self.send(ToggleScanner);
+                  Event.useTicket(state.event,int_of_string(token),signature)
+                  |> BsWeb3.Eth.send(BsWeb3.Eth.make_transaction(~from=state.web3.account))
+                  |> Js.Promise.then_ ((res) => { Js.log(res); self.send(FetchData) |> Js.Promise.resolve });
+                }
+              });
             }
           });
         ()
