@@ -185,11 +185,8 @@ let make = (~web3,_children) => {
 
                   Event.forSale(event)
                   |> BsWeb3.Eth.call_with(tx)
-                  |> Js.Promise.then_ ((resale_tickets) => {
-                      let resale_tickets = 
-                        resale_tickets
-                          |> Js.Array.mapi((price,i) => (i,price))
-                          |> Js.Array.filter(((_,price)) => "0" != (price |> BsWeb3.Types.toString(10)));
+                  |> Js.Promise.then_ (((_,tokens,asks)) => {
+                      let resale_tickets = Belt.Array.zip(tokens,asks);
                       self.send(NumSoldUnsoldResale(numSold,numUnSold,resale_tickets))
                       |> Js.Promise.resolve 
                   })
@@ -359,12 +356,13 @@ let make = (~web3,_children) => {
         ReasonReact.Update({...state,selling_price_per_ticket})
     | SellAllTickets(index) => ReasonReact.UpdateWithSideEffects(state,(_) => {
         let {event,tickets} = state.myEvents[index];
-        Event.proposeSale(event,tickets,~price=(BsWeb3.Utils.toWei(
-                            state.selling_price_per_ticket,
-                            "milliether")))
-        |> BsWeb3.Eth.send(
-            BsWeb3.Eth.make_transaction(~from=state.web3.account))
-        |> Js.Promise.then_ (_ => Js.Promise.resolve());
+        tickets |> Js.Array.map((ticket) => 
+          Event.proposeSale(event,ticket,~price=(BsWeb3.Utils.toWei(
+                              state.selling_price_per_ticket,
+                              "milliether")))
+          |> BsWeb3.Eth.send(
+              BsWeb3.Eth.make_transaction(~from=state.web3.account))
+          |> Js.Promise.then_ (_ => Js.Promise.resolve()));
         ()
       });
     }

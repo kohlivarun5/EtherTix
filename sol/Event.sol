@@ -32,11 +32,13 @@ contract Event /* is ERC721 */  {
   
   // For transfers 
   mapping(uint256 => uint256) internal d_token_ask;
+  uint256 d_token_ask_num;
 
   constructor(string _description, address _organizer) public { 
     description = _description;
     d_admin = msg.sender;
     d_organizer = _organizer;
+    d_token_ask_num=0;
   }
   
   function setImg(string _imgSrc) public {
@@ -175,31 +177,35 @@ contract Event /* is ERC721 */  {
     return _tokens.length > 0 ? (total_cost/(_tokens.length)) : 0;
   }
   
-  function proposeSale(uint256[] _tokens,uint256 _price) public {
-    for(uint256 i=0;i<_tokens.length;++i) {
-        uint256 _token=_tokens[i];
-        require(d_tickets[_token].d_used == false, "Ticket already used!");
-        require(d_token_owner[_token] == msg.sender);
-        require(_price > 0, "Please set a valid non-zero price");
-        d_token_ask[_token] = _price;
-    }
+  function proposeSale(uint256 _token,uint256 _price) public {
+    require(d_tickets[_token].d_used == false, "Ticket already used!");
+    require(d_token_owner[_token] == msg.sender);
+    require(_price > 0, "Please set a valid non-zero price");
+    d_token_ask[_token] = _price;
+    d_token_ask_num++;
   }
   
-  function retractSale(uint256[] _tokens) public {
-    for(uint256 i=0;i<_tokens.length;++i) {
-        uint256 _token=_tokens[i];
-        require(d_token_owner[_token] == msg.sender);
-        delete d_token_ask[_token];
-    }
+  function retractSale(uint256 _token) public {
+    require(d_token_owner[_token] == msg.sender);
+    require(d_token_ask[_token] != 0);
+    delete d_token_ask[_token];
+    d_token_ask_num--;
   }
 
-  function forSale() public constant returns(uint256[] token_asks) {
-    uint256[] memory tokens = new uint256[](d_tickets.length);
+  function forSale() public constant returns(uint256,uint256[],uint256[]) {
+    uint256[] memory tokens = new uint256[](d_token_ask_num);
+    uint256[] memory asks = new uint256[](d_token_ask_num);
+    uint256 iter=0;
     for(uint256 i=0;i<d_tickets.length;++i)
     {
-        if (d_token_ask[i] > 0) { tokens[i] = d_token_ask[i]; }
+        if (d_token_ask[i] > 0) { 
+            tokens[iter] = i;
+            asks[iter] = d_token_ask[i];
+            iter++;
+        }
     }
-    return tokens;
+    require(iter == d_token_ask_num);
+    return (iter,tokens,asks);
   }
   
   function hitAsk(uint256 _token) public payable {
@@ -208,6 +214,7 @@ contract Event /* is ERC721 */  {
       
     // Value provided, okay to transfer
     delete d_token_ask[_token]; // No more ask 
+    d_token_ask_num--;
     
     address prev_owner = d_token_owner[_token];
     
@@ -266,7 +273,10 @@ contract Event /* is ERC721 */  {
     require(isOwnerSig(_tokenId,signature), "Incorrect usage signature!");
     require(!ticketUsed(_tokenId), "Ticket already used!");
     d_tickets[_tokenId].d_used = true;
-    delete d_token_ask[_tokenId]; // Just in case
+    if (d_token_ask[_tokenId] != 0) {
+        delete d_token_ask[_tokenId]; // Just in case
+        d_token_ask_num--;
+    }
     return true;
   }
 
