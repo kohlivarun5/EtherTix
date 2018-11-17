@@ -186,7 +186,9 @@ let make = (~web3,_children) => {
                   Event.forSale(event)
                   |> BsWeb3.Eth.call_with(tx)
                   |> Js.Promise.then_ (((_,tokens,asks)) => {
-                      let resale_tickets = Belt.Array.zip(tokens,asks);
+                      let resale_tickets = 
+                        Belt.Array.zip(tokens,asks)
+                        |> Js.Array.filter(((_,price)) => "0" != (price |> BsWeb3.Types.toString(10)));
                       self.send(NumSoldUnsoldResale(numSold,numUnSold,resale_tickets))
                       |> Js.Promise.resolve 
                   })
