@@ -164,8 +164,24 @@ contract Event /* is ERC721 */  {
     return _tokenId >= 0 && _tokenId < d_tickets.length;
   }
   
-  function myTickets() public constant returns(uint256[]) {
-    return d_owner_tokens[msg.sender];
+  function myTickets() public constant returns(uint256[],uint256[],bool[],bool[]) {
+    uint256[] storage tokens = d_owner_tokens[msg.sender];
+    uint256[] memory prices = new uint256[](tokens.length);
+    bool[] memory for_sale = new bool[](tokens.length);
+    bool[] memory used = new bool[](tokens.length);
+    for(uint256 i=0;i<tokens.length;++i)
+    {
+        uint256 token=tokens[i];
+        if (d_token_ask[token] != 0) {
+            prices[i] = d_token_ask[token];
+            for_sale[i] = true;
+        } else {
+            prices[i] = d_tickets[token].d_prev_price;
+            for_sale[i] = false;
+        }
+        used[i] = d_tickets[token].d_used;
+    }
+    return (tokens,prices,for_sale,used);
   }
   
   function getAveragePrice(uint256[] _tokens) public constant returns(uint256) {
@@ -181,8 +197,10 @@ contract Event /* is ERC721 */  {
     require(d_tickets[_token].d_used == false, "Ticket already used!");
     require(d_token_owner[_token] == msg.sender);
     require(_price > 0, "Please set a valid non-zero price");
+    if (d_token_ask[_token] == 0) {
+        d_token_ask_num++;
+    }
     d_token_ask[_token] = _price;
-    d_token_ask_num++;
   }
   
   function retractSale(uint256 _token) public {
@@ -321,3 +339,4 @@ contract Event /* is ERC721 */  {
   function safeTransferFrom(address _from, address _to, uint256 _tokenId) public;
 */
 }
+

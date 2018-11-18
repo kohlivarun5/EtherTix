@@ -7,6 +7,18 @@
 			{
 				"name": "",
 				"type": "uint256[]"
+			},
+			{
+				"name": "",
+				"type": "uint256[]"
+			},
+			{
+				"name": "",
+				"type": "bool[]"
+			},
+			{
+				"name": "",
+				"type": "bool[]"
 			}
 		],
 		"payable": false,
@@ -55,24 +67,6 @@
 			}
 		],
 		"name": "setExternalLink",
-		"outputs": [],
-		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"constant": false,
-		"inputs": [
-			{
-				"name": "_tokens",
-				"type": "uint256[]"
-			},
-			{
-				"name": "_price",
-				"type": "uint256"
-			}
-		],
-		"name": "proposeSale",
 		"outputs": [],
 		"payable": false,
 		"stateMutability": "nonpayable",
@@ -130,7 +124,15 @@
 		"name": "forSale",
 		"outputs": [
 			{
-				"name": "token_asks",
+				"name": "",
+				"type": "uint256"
+			},
+			{
+				"name": "",
+				"type": "uint256[]"
+			},
+			{
+				"name": "",
 				"type": "uint256[]"
 			}
 		],
@@ -227,6 +229,24 @@
 		"constant": false,
 		"inputs": [
 			{
+				"name": "_token",
+				"type": "uint256"
+			},
+			{
+				"name": "_price",
+				"type": "uint256"
+			}
+		],
+		"name": "proposeSale",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
 				"name": "_imgSrc",
 				"type": "string"
 			}
@@ -293,8 +313,8 @@
 		"constant": false,
 		"inputs": [
 			{
-				"name": "_tokens",
-				"type": "uint256[]"
+				"name": "_token",
+				"type": "uint256"
 			}
 		],
 		"name": "retractSale",

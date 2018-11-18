@@ -15,7 +15,7 @@ type t;
 
 [@bs.scope "methods"] [@bs.send] external getCostFor : t => (~numTickets:int) => BsWeb3.Eth.contract_method(BsWeb3.Types.big_number) = "";
 [@bs.scope "methods"] [@bs.send] external buy : t => (~numTickets:int) => BsWeb3.Eth.contract_method(unit) = "";
-[@bs.scope "methods"] [@bs.send] external myTickets : t => BsWeb3.Eth.contract_method(Js.Array.t(int)) = "";
+[@bs.scope "methods"] [@bs.send] external myTickets : t => BsWeb3.Eth.contract_method((Js.Array.t(int),Js.Array.t(BsWeb3.Types.big_number),Js.Array.t(bool),Js.Array.t(bool))) = "";
 
 [@bs.scope "methods"] [@bs.send] external ticketVerificationCode : t => int => BsWeb3.Eth.contract_method(string) = "";
 [@bs.scope "methods"] [@bs.send] external isOwnerSig : t => int => string => BsWeb3.Eth.contract_method(bool) = "";
