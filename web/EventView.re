@@ -102,6 +102,8 @@ let make = (~web3,~description, ~address,~event,_children) => {
       })
     | ToggleScanner => ReasonReact.Update({...state,show_scanner:!state.show_scanner})
     | UseTicket(code) => ReasonReact.UpdateWithSideEffects(state,(self) => {
+        Js.log(code);
+        Js.log(Dom.Storage.localStorage);
         self.send(ToggleScanner);
         let (signature,token) = 
           switch (Js.String.split("|",code)) {
@@ -113,7 +115,7 @@ let make = (~web3,~description, ~address,~event,_children) => {
         Event.ticketUsed(state.event,int_of_string(token))
         |> BsWeb3.Eth.call 
         |> Js.Promise.then_ ((res) => {
-            if (res || Dom.Storage.getItem(token,Dom.Storage.localStorage) != None) { 
+            if (res || Dom.Storage.getItem(code,Dom.Storage.localStorage) != None) { 
               BsUtils.alert("Ticket already used!") |> Js.Promise.resolve;
               self.send(ToggleScanner) |> Js.Promise.resolve
             } else {
@@ -124,7 +126,7 @@ let make = (~web3,~description, ~address,~event,_children) => {
                   BsUtils.alert("Invalid ticket code") |> Js.Promise.resolve;
                   self.send(ToggleScanner) |> Js.Promise.resolve
                 } else {
-                  Dom.Storage.setItem(token,signature,Dom.Storage.localStorage);
+                  Dom.Storage.setItem(code,code,Dom.Storage.localStorage);
                   self.send(ToggleScanner);
                   Event.useTicket(state.event,int_of_string(token),signature)
                   |> BsWeb3.Eth.send(BsWeb3.Eth.make_transaction(~from=state.web3.account))
@@ -244,18 +246,20 @@ let make = (~web3,~description, ~address,~event,_children) => {
         onError=((error) => Js.log(error)) />
     )
 
-    (Js.Re.test(
-      (Navigator.userAgent(Navigator.get)),
-      [%bs.re "/iPad|iPhone|iPod/"])
-     ? ReasonReact.null 
-     : <div className="padding-vertical-less">
-         <button className="btn btn-success btn-send" onClick=(_ => send(ToggleScanner))
-                 style=(ReactDOMRe.Style.make(~marginTop="20px",~width="100%",())) 
-           >
+    <div className="padding-vertical-less">
+      (Js.Re.test(
+          (Navigator.userAgent(Navigator.get)),
+              [%bs.re "/iPad|iPhone|iPod/"])
+      ? <button disabled=true className="btn btn-warning"
+                 style=(ReactDOMRe.Style.make(~marginTop="20px",~width="100%",())) >
+           (text("Scanner not available on iOS"))
+        </button>
+      : <button className="btn btn-success btn-send" onClick=(_ => send(ToggleScanner))
+                 style=(ReactDOMRe.Style.make(~marginTop="20px",~width="100%",()))>
            (text(state.show_scanner ? "Hide Scanner" : "Scan Tickets"))
-         </button>
-       </div>
-    )
+        </button>
+      )
+      </div>
 
   </div>
 
