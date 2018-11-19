@@ -2,13 +2,9 @@ language: node_js
 node_js:
   - "10"
 sudo: false
-cache:
-  directories:
-  - node_modules/
 install:
-  - npm install -f
+  - npm install
 script:
-  - npm install -f
   - npm run clean
   - npm run build
   - npm run solc
