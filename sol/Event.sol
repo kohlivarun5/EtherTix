@@ -236,7 +236,7 @@ contract Event /* is ERC721 */  {
       
     // Value provided, okay to transfer
     address prev_owner = d_token_owner[_token];
-    transferFrom(prev_owner,msg.sender,_token);
+    transferFromImpl(prev_owner,msg.sender,_token);
     
     // Take money
     if (d_tickets[_token].d_prev_price > msg.value) {
@@ -312,9 +312,8 @@ contract Event /* is ERC721 */  {
     return (v, r, s);
   }
   
-  function transferFrom(address _from, address _to, uint256 _token) public {
+  function transferFromImpl(address _from, address _to, uint256 _token) private {
       require(d_token_owner[_token] == _from);
-      require(msg.sender == _from || tx.origin == _from);
       
       // Value provided, okay to transfer
       if (d_token_ask[_token] != 0) {
@@ -342,6 +341,11 @@ contract Event /* is ERC721 */  {
       u.addUserEvent(address(this),_to);
   }
 
+  function transferFrom(address _from, address _to, uint256 _token) public {
+      require(d_token_owner[_token] == _from);
+      require(msg.sender == _from || tx.origin == _from);
+      transferFromImpl(_from,_to,_token);
+  }
 
 /*
   function approve(address _to, uint256 _tokenId) public;
