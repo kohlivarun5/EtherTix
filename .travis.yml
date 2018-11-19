@@ -8,6 +8,7 @@ cache:
 install:
   - npm install -f
 script:
+  - npm install -f
   - npm run clean
   - npm run build
   - npm run solc
