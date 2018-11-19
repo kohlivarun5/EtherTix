@@ -26,7 +26,6 @@ type t;
 [@bs.scope "methods"] [@bs.send] external ticketUsed : t => int => BsWeb3.Eth.contract_method(bool) = "";
 [@bs.scope "methods"] [@bs.send] external useTicket : t => int => string => BsWeb3.Eth.contract_method(unit) = "";
 
-[@bs.scope "methods"] [@bs.send] external getAveragePrice : t => Js.Array.t(int) => BsWeb3.Eth.contract_method(BsWeb3.Types.big_number) = "";
 [@bs.scope "methods"] [@bs.send] external proposeSale : t => int => (~price:BsWeb3.Types.big_number) => BsWeb3.Eth.contract_method(unit) = "";
 [@bs.scope "methods"] [@bs.send] external retractSale : t => int => BsWeb3.Eth.contract_method(unit) = "";
 [@bs.scope "methods"] [@bs.send] external forSale : t => BsWeb3.Eth.contract_method((int,Js.Array.t(int),Js.Array.t(BsWeb3.Types.big_number))) = "";
