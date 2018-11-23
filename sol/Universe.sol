@@ -43,11 +43,11 @@ contract Universe {
     return eventAddr;
   }
   
-  function addUserEvent(address _user,address _event) public {
+  function addUserEvent(address _event,address _user) public {
       emit UserEvents(_event,_user,true);
   }
   
-  function removeUserEvent(address _user,address _event) public {
+  function removeUserEvent(address _event,address _user) public {
       emit UserEvents(_event,_user,false);
   }
   

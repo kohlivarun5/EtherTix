@@ -7,6 +7,18 @@
 			{
 				"name": "",
 				"type": "uint256[]"
+			},
+			{
+				"name": "",
+				"type": "uint256[]"
+			},
+			{
+				"name": "",
+				"type": "bool[]"
+			},
+			{
+				"name": "",
+				"type": "bool[]"
 			}
 		],
 		"payable": false,
@@ -64,15 +76,19 @@
 		"constant": false,
 		"inputs": [
 			{
-				"name": "_tokens",
-				"type": "uint256[]"
+				"name": "_from",
+				"type": "address"
 			},
 			{
-				"name": "_price",
+				"name": "_to",
+				"type": "address"
+			},
+			{
+				"name": "_token",
 				"type": "uint256"
 			}
 		],
-		"name": "proposeSale",
+		"name": "transferFrom",
 		"outputs": [],
 		"payable": false,
 		"stateMutability": "nonpayable",
@@ -107,17 +123,20 @@
 	},
 	{
 		"constant": true,
-		"inputs": [
-			{
-				"name": "_tokens",
-				"type": "uint256[]"
-			}
-		],
-		"name": "getAveragePrice",
+		"inputs": [],
+		"name": "forSale",
 		"outputs": [
 			{
 				"name": "",
 				"type": "uint256"
+			},
+			{
+				"name": "",
+				"type": "uint256[]"
+			},
+			{
+				"name": "",
+				"type": "uint256[]"
 			}
 		],
 		"payable": false,
@@ -125,17 +144,21 @@
 		"type": "function"
 	},
 	{
-		"constant": true,
-		"inputs": [],
-		"name": "forSale",
-		"outputs": [
+		"constant": false,
+		"inputs": [
 			{
-				"name": "token_asks",
+				"name": "_tokens",
+				"type": "uint256[]"
+			},
+			{
+				"name": "_prices",
 				"type": "uint256[]"
 			}
 		],
+		"name": "proposeSales",
+		"outputs": [],
 		"payable": false,
-		"stateMutability": "view",
+		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
@@ -227,6 +250,24 @@
 		"constant": false,
 		"inputs": [
 			{
+				"name": "_token",
+				"type": "uint256"
+			},
+			{
+				"name": "_price",
+				"type": "uint256"
+			}
+		],
+		"name": "proposeSale",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
 				"name": "_imgSrc",
 				"type": "string"
 			}
@@ -293,8 +334,8 @@
 		"constant": false,
 		"inputs": [
 			{
-				"name": "_tokens",
-				"type": "uint256[]"
+				"name": "_token",
+				"type": "uint256"
 			}
 		],
 		"name": "retractSale",
@@ -366,6 +407,20 @@
 		"outputs": [],
 		"payable": true,
 		"stateMutability": "payable",
+		"type": "function"
+	},
+	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "_tokens",
+				"type": "uint256[]"
+			}
+		],
+		"name": "retractSales",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{

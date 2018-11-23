@@ -3,11 +3,11 @@ type abi;
 
 type t;
 [@bs.send] external contract : BsWeb3.Eth.t => abi => BsWeb3.Eth.address => t = "Contract";
-[@bs.scope "methods"] [@bs.send] external isOwner : t => BsWeb3.Eth.contract_method = "";
-[@bs.scope "methods"] [@bs.send] external getBalance : t => BsWeb3.Eth.contract_method = "";
-[@bs.scope "methods"] [@bs.send] external withdraw : t => BsWeb3.Eth.contract_method = "";
+[@bs.scope "methods"] [@bs.send] external isOwner : t => BsWeb3.Eth.contract_method(bool) = "";
+[@bs.scope "methods"] [@bs.send] external getBalance : t => BsWeb3.Eth.contract_method(BsWeb3.Types.big_number) = "";
+[@bs.scope "methods"] [@bs.send] external withdraw : t => BsWeb3.Eth.contract_method(unit) = "";
 
-[@bs.scope "methods"] [@bs.send] external createEvent : t => string => BsWeb3.Eth.contract_method = "";
+[@bs.scope "methods"] [@bs.send] external createEvent : t => string => BsWeb3.Eth.contract_method(unit) = "";
 
 [@bs.deriving abstract]
 type organizerEventsQuery = {

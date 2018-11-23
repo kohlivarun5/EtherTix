@@ -32,11 +32,13 @@ contract Event /* is ERC721 */  {
   
   // For transfers 
   mapping(uint256 => uint256) internal d_token_ask;
+  uint256 d_token_ask_num;
 
   constructor(string _description, address _organizer) public { 
     description = _description;
     d_admin = msg.sender;
     d_organizer = _organizer;
+    d_token_ask_num=0;
   }
   
   function setImg(string _imgSrc) public {
@@ -105,7 +107,7 @@ contract Event /* is ERC721 */  {
     address(d_admin).transfer(commission);
     
     Universe u = Universe(d_admin);
-    u.addUserEvent(msg.sender,this);
+    u.addUserEvent(address(this),msg.sender);
   }
   
   function getBalance() public constant returns(uint) {
@@ -162,44 +164,70 @@ contract Event /* is ERC721 */  {
     return _tokenId >= 0 && _tokenId < d_tickets.length;
   }
   
-  function myTickets() public constant returns(uint256[]) {
-    return d_owner_tokens[msg.sender];
-  }
-  
-  function getAveragePrice(uint256[] _tokens) public constant returns(uint256) {
-    uint256 total_cost=0;
-    for(uint256 i=0;i<_tokens.length;++i) {
-      require(msg.sender == d_token_owner[_tokens[i]], "Only owner can see price!");
-      total_cost+=d_tickets[_tokens[i]].d_prev_price;
+  function myTickets() public constant returns(uint256[],uint256[],bool[],bool[]) {
+    uint256[] storage tokens = d_owner_tokens[msg.sender];
+    uint256[] memory prices = new uint256[](tokens.length);
+    bool[] memory for_sale = new bool[](tokens.length);
+    bool[] memory used = new bool[](tokens.length);
+    for(uint256 i=0;i<tokens.length;++i)
+    {
+        uint256 token=tokens[i];
+        if (d_token_ask[token] != 0) {
+            prices[i] = d_token_ask[token];
+            for_sale[i] = true;
+        } else {
+            prices[i] = d_tickets[token].d_prev_price;
+            for_sale[i] = false;
+        }
+        used[i] = d_tickets[token].d_used;
     }
-    return _tokens.length > 0 ? (total_cost/(_tokens.length)) : 0;
+    return (tokens,prices,for_sale,used);
   }
   
-  function proposeSale(uint256[] _tokens,uint256 _price) public {
-    for(uint256 i=0;i<_tokens.length;++i) {
-        uint256 _token=_tokens[i];
-        require(d_tickets[_token].d_used == false, "Ticket already used!");
-        require(d_token_owner[_token] == msg.sender);
-        require(_price > 0, "Please set a valid non-zero price");
-        d_token_ask[_token] = _price;
+  function proposeSale(uint256 _token,uint256 _price) public {
+    require(d_tickets[_token].d_used == false, "Ticket already used!");
+    require(d_token_owner[_token] == msg.sender);
+    require(_price > 0, "Please set a valid non-zero price");
+    if (d_token_ask[_token] == 0) {
+        d_token_ask_num++;
     }
+    d_token_ask[_token] = _price;
   }
   
-  function retractSale(uint256[] _tokens) public {
+  function proposeSales(uint256[] _tokens,uint256[] _prices) public {
+      require(_tokens.length == _prices.length);
+      for(uint256 i=0;i<_tokens.length;++i) {
+        proposeSale(_tokens[i],_prices[i]);
+      }
+  }
+  
+  function retractSale(uint256 _token) public {
+    require(d_token_owner[_token] == msg.sender);
+    require(d_token_ask[_token] != 0);
+    delete d_token_ask[_token];
+    d_token_ask_num--;
+  }
+  
+  function retractSales(uint256[] _tokens) public {
     for(uint256 i=0;i<_tokens.length;++i) {
-        uint256 _token=_tokens[i];
-        require(d_token_owner[_token] == msg.sender);
-        delete d_token_ask[_token];
+      retractSale(_tokens[i]);
     }
   }
 
-  function forSale() public constant returns(uint256[] token_asks) {
-    uint256[] memory tokens = new uint256[](d_tickets.length);
+  function forSale() public constant returns(uint256,uint256[],uint256[]) {
+    uint256[] memory tokens = new uint256[](d_token_ask_num);
+    uint256[] memory asks = new uint256[](d_token_ask_num);
+    uint256 iter=0;
     for(uint256 i=0;i<d_tickets.length;++i)
     {
-        if (d_token_ask[i] > 0) { tokens[i] = d_token_ask[i]; }
+        if (d_token_ask[i] > 0) { 
+            tokens[iter] = i;
+            asks[iter] = d_token_ask[i];
+            iter++;
+        }
     }
-    return tokens;
+    require(iter == d_token_ask_num);
+    return (iter,tokens,asks);
   }
   
   function hitAsk(uint256 _token) public payable {
@@ -207,26 +235,8 @@ contract Event /* is ERC721 */  {
     require(d_token_ask[_token] > 0 && msg.value >= d_token_ask[_token]);
       
     // Value provided, okay to transfer
-    delete d_token_ask[_token]; // No more ask 
-    
     address prev_owner = d_token_owner[_token];
-    
-    uint256[] storage prev_owner_tokens = d_owner_tokens[prev_owner];
-    for (uint256 i = 0;i<prev_owner_tokens.length; ++i) {
-      if (prev_owner_tokens[i] == _token) {
-        uint256 lenBefore = prev_owner_tokens.length;
-        prev_owner_tokens[i] = prev_owner_tokens[lenBefore-1];
-        delete prev_owner_tokens[lenBefore-1];
-        prev_owner_tokens.length = lenBefore-1;
-        break;
-      }
-    }
-    
-    d_token_owner[_token] = msg.sender;
-    d_owner_tokens[msg.sender].push(_token);
-    
-    Universe u = Universe(d_admin);
-    u.addUserEvent(msg.sender,this);
+    transferFromImpl(prev_owner,msg.sender,_token);
     
     // Take money
     if (d_tickets[_token].d_prev_price > msg.value) {
@@ -266,7 +276,10 @@ contract Event /* is ERC721 */  {
     require(isOwnerSig(_tokenId,signature), "Incorrect usage signature!");
     require(!ticketUsed(_tokenId), "Ticket already used!");
     d_tickets[_tokenId].d_used = true;
-    delete d_token_ask[_tokenId]; // Just in case
+    if (d_token_ask[_tokenId] != 0) {
+        delete d_token_ask[_tokenId]; // Just in case
+        d_token_ask_num--;
+    }
     return true;
   }
 
@@ -298,7 +311,41 @@ contract Event /* is ERC721 */  {
     }
     return (v, r, s);
   }
+  
+  function transferFromImpl(address _from, address _to, uint256 _token) private {
+      require(d_token_owner[_token] == _from);
+      
+      // Value provided, okay to transfer
+      if (d_token_ask[_token] != 0) {
+        delete d_token_ask[_token]; // No more ask 
+        d_token_ask_num--;
+      }
+        
+      address prev_owner = d_token_owner[_token];
+        
+      uint256[] storage prev_owner_tokens = d_owner_tokens[prev_owner];
+      for (uint256 i = 0;i<prev_owner_tokens.length; ++i) {
+        if (prev_owner_tokens[i] == _token) {
+            uint256 lenBefore = prev_owner_tokens.length;
+            prev_owner_tokens[i] = prev_owner_tokens[lenBefore-1];
+            delete prev_owner_tokens[lenBefore-1];
+            prev_owner_tokens.length = lenBefore-1;
+            break;
+        }
+      }
+        
+      d_token_owner[_token] = _to;
+      d_owner_tokens[_to].push(_token);
+        
+      Universe u = Universe(d_admin);
+      u.addUserEvent(address(this),_to);
+  }
 
+  function transferFrom(address _from, address _to, uint256 _token) public {
+      require(d_token_owner[_token] == _from);
+      require(msg.sender == _from || tx.origin == _from);
+      transferFromImpl(_from,_to,_token);
+  }
 
 /*
   function approve(address _to, uint256 _tokenId) public;
@@ -307,7 +354,7 @@ contract Event /* is ERC721 */  {
   function setApprovalForAll(address _operator, bool _approved) public;
   function isApprovedForAll(address _owner, address _operator) public constant returns (bool);
 
-  function transferFrom(address _from, address _to, uint256 _tokenId) public;
   function safeTransferFrom(address _from, address _to, uint256 _tokenId) public;
 */
 }
+
