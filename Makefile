@@ -10,4 +10,4 @@ release:
 	git add -f build/Index.js 
 	git add -f node_modules/react-responsive-carousel/lib/styles/carousel.min.css
 	git commit -am 'Add Build'
-	git push -f origin gh-pages:gh-pages  
+	git push -f https://github.com/EtherTix/ethertix.github.io.git gh-pages:master
