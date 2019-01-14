@@ -59,6 +59,20 @@
 		"type": "function"
 	},
 	{
+		"constant": true,
+		"inputs": [],
+		"name": "d_organizer",
+		"outputs": [
+			{
+				"name": "",
+				"type": "address"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
 		"constant": false,
 		"inputs": [
 			{
@@ -202,6 +216,20 @@
 			{
 				"name": "",
 				"type": "string"
+			}
+		],
+		"payable": false,
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"constant": true,
+		"inputs": [],
+		"name": "d_mark_delete",
+		"outputs": [
+			{
+				"name": "",
+				"type": "bool"
 			}
 		],
 		"payable": false,
@@ -382,6 +410,20 @@
 		"type": "function"
 	},
 	{
+		"constant": false,
+		"inputs": [
+			{
+				"name": "mark_delete",
+				"type": "bool"
+			}
+		],
+		"name": "markDelete",
+		"outputs": [],
+		"payable": false,
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
 		"constant": true,
 		"inputs": [],
 		"name": "numToBeUsed",
@@ -497,6 +539,10 @@
 			{
 				"name": "_organizer",
 				"type": "address"
+			},
+			{
+				"name": "commission_percent",
+				"type": "uint256"
 			}
 		],
 		"payable": false,
