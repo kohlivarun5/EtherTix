@@ -5,6 +5,7 @@ release:
 	npm -f install react-responsive-carousel
 	npm run clean
 	npm run build
+	echo "import styles from 'react-responsive-carousel/lib/styles/carousel.min.css';" >> web/react-responsive-carousel/Carousel.bs.js
 	npm run webpack:production
 	git add -f img
 	git add -f build/Index.js 
