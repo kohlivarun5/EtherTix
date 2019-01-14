@@ -1,5 +1,5 @@
 # EtherTix
-Smart Tix Dapp
+EtherTix Dapp
 
 ## Run Project
 
