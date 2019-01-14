@@ -18,7 +18,7 @@ contract Event /* is ERC721 */  {
   uint256 internal d_creator_commission_percent = 1;
  
   address internal d_admin;
-  address internal d_organizer;
+  address public d_organizer;
   
   
   // Array with all token ids, used for enumeration
@@ -34,12 +34,15 @@ contract Event /* is ERC721 */  {
   mapping(uint256 => uint256) internal d_token_ask;
   uint256 d_token_ask_num;
 
+  bool public d_mark_delete;
+
   constructor(string _description, address _organizer,uint256 commission_percent) public { 
     description = _description;
     d_admin = msg.sender;
     d_organizer = _organizer;
     d_token_ask_num=0;
     d_creator_commission_percent=commission_percent;
+    d_mark_delete=false;
   }
   
   function setImg(string _imgSrc) public {
@@ -343,6 +346,11 @@ contract Event /* is ERC721 */  {
       require(d_token_owner[_token] == _from);
       require(msg.sender == _from || tx.origin == _from);
       transferFromImpl(_from,_to,_token);
+  }
+
+  function markDelete(bool mark_delete) public {
+    require(msg.sender == d_organizer);
+    d_mark_delete=mark_delete;
   }
 
 /*
