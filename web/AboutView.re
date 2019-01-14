@@ -59,10 +59,10 @@ let make = (_children) => {
       <h5 className="card-header card-title">(text("Contact Us"))</h5>
       <div className="card-body padding-vertical-less" style=(ReactDOMRe.Style.make(~margin="3%",()))> 
         <div className="row text-muted">
-          (text("If you would like more information, reach out by creating an issue at:"))
+          (text("If you would like more information, reach out at:"))
         </div>
-        <a className="row" href="https://github.com/EtherTix/EtherTix/issues">
-          (text("https://github.com/EtherTix/EtherTix/issues"))
+        <a className="row" href="mailto:ethertix@gmail.com?subject=Using EtherTix&body=Hi, I would like to learn more about EtherTix">
+          (text("ethertix@gmail.com"))
         </a>
       </div>
     </div>
