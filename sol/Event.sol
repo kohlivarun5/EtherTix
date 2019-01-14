@@ -15,10 +15,10 @@ contract Event /* is ERC721 */  {
   string public imgSrc; // Can be data or link
   string public externalLink;
  
-  uint256 internal d_creator_commission_factor = 100; /* 1% commission */
+  uint256 internal d_creator_commission_percent = 1;
  
   address internal d_admin;
-  address internal d_organizer;
+  address public d_organizer;
   
   
   // Array with all token ids, used for enumeration
@@ -34,11 +34,15 @@ contract Event /* is ERC721 */  {
   mapping(uint256 => uint256) internal d_token_ask;
   uint256 d_token_ask_num;
 
-  constructor(string _description, address _organizer) public { 
+  bool public d_mark_delete;
+
+  constructor(string _description, address _organizer,uint256 commission_percent) public { 
     description = _description;
     d_admin = msg.sender;
     d_organizer = _organizer;
     d_token_ask_num=0;
+    d_creator_commission_percent=commission_percent;
+    d_mark_delete=false;
   }
   
   function setImg(string _imgSrc) public {
@@ -53,9 +57,6 @@ contract Event /* is ERC721 */  {
   
   function issue(uint256 _numTickets,uint256 _price) public {
     require(msg.sender == d_organizer);
-    // require(_price > d_creator_commission_factor * 1 szabo,
-    //         "Minimum cost is 100 szabo"); // Denominate in szabo
-    
     for(uint256 i=0;i<_numTickets;++i) {
       d_tickets.push(TicketInfo({d_prev_price:_price,d_used:false}));
     }
@@ -103,7 +104,7 @@ contract Event /* is ERC721 */  {
     require(total_cost <= msg.value, "Cost is more than transaction value.");
     
     // Take admin cut
-    uint256 commission = msg.value / d_creator_commission_factor;
+    uint256 commission = msg.value * (d_creator_commission_percent / 100) ;
     address(d_admin).transfer(commission);
     
     Universe u = Universe(d_admin);
@@ -250,7 +251,7 @@ contract Event /* is ERC721 */  {
       address(prev_owner).transfer(seller_premium + d_tickets[_token].d_prev_price);
       
       // Other half premium is for the event, and commission out of it 
-      uint256 commission = seller_premium / d_creator_commission_factor;
+      uint256 commission = seller_premium * d_creator_commission_percent / 100;
       address(d_admin).transfer(commission);
       
       d_tickets[_token].d_prev_price = msg.value;
@@ -345,6 +346,11 @@ contract Event /* is ERC721 */  {
       require(d_token_owner[_token] == _from);
       require(msg.sender == _from || tx.origin == _from);
       transferFromImpl(_from,_to,_token);
+  }
+
+  function markDelete(bool mark_delete) public {
+    require(msg.sender == d_organizer);
+    d_mark_delete=mark_delete;
   }
 
 /*
