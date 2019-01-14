@@ -9,6 +9,7 @@ type event_data = {
 };
 
 type state = {
+  show_about:bool,
   web3 : option(Web3.state),
   new_event_description : string,
   myEvents : Js.Array.t(event_data)
@@ -21,6 +22,7 @@ type action =
   | AddEvent(BsWeb3.Eth.address)
   | EventData(event_data)
   | ToggleEvent(BsWeb3.Eth.address)
+  | ShowAbout
  
 let text = ReasonReact.string;
 
@@ -29,56 +31,62 @@ let component = ReasonReact.reducerComponent("OrganizerView");
 let make = (_children) => {
   ...component,
   didMount: self => { 
-    if (Js.typeof(BsWeb3.Web3.get) !== "undefined") {
-      let w3_global = Js.Undefined.getExn(BsWeb3.Web3.get);
-      let w3 = BsWeb3.Web3.makeWeb3(BsWeb3.Web3.currentProvider(w3_global));
-      let eth = BsWeb3.Web3.eth(w3);
-      BsWeb3.Eth.net(eth)
-      |> BsWeb3.Net.getId
-      |> Js.Promise.then_ ((networkId) => {
-          let {NetworkInfo.universe,address_uri} = (
-            switch(networkId) {
-            | 1 => MainNet.t
-            /* | 3 => Ropsten.t */
-            | 4 => Rinkeby.t
-            | _ => Js.log(networkId);assert(false);
-            }
-          );
+    switch(BsUtils.getSearchValueByKey("about")) {
+      | Some(_) => self.send(ShowAbout)
+      | None => 
+      if (Js.typeof(BsWeb3.Web3.get) !== "undefined") {
+        let w3_global = Js.Undefined.getExn(BsWeb3.Web3.get);
+        let w3 = BsWeb3.Web3.makeWeb3(BsWeb3.Web3.currentProvider(w3_global));
+        let eth = BsWeb3.Web3.eth(w3);
+        BsWeb3.Eth.net(eth)
+        |> BsWeb3.Net.getId
+        |> Js.Promise.then_ ((networkId) => {
+            let {NetworkInfo.universe,address_uri} = (
+              switch(networkId) {
+              | 1 => MainNet.t
+              /* | 3 => Ropsten.t */
+              | 4 => Rinkeby.t
+              | _ => Js.log(networkId);assert(false);
+              }
+            );
 
-          BsWeb3.Eth.getAccounts(eth)
-          |> Js.Promise.then_((accounts) => {
+            BsWeb3.Eth.getAccounts(eth)
+            |> Js.Promise.then_((accounts) => {
 
-            /* Don't change code untill universe creation 
-               As Bs does not support send with new 
-               */
-            let universe_address = Js.String.concat("",universe);
-            Js.log(eth);
-            Js.log(universe_address);
-            Js.log(Universe.abi);
-            let universe:Universe.t = [%bs.raw{| new eth.Contract(UniverseAbiJson.default,universe_address) |}];
+              /* Don't change code untill universe creation 
+                 As Bs does not support send with new 
+                 */
+              let universe_address = Js.String.concat("",universe);
+              Js.log(eth);
+              Js.log(universe_address);
+              Js.log(Universe.abi);
+              let universe:Universe.t = [%bs.raw{| new eth.Contract(UniverseAbiJson.default,universe_address) |}];
 
-            Js.log("GetOrganizerEvents");
-            self.send(GetOrganizerEvents({
-                web3:w3,
-                account:accounts[0],
-                universe,
-                address_uri 
-            }))
-            |> Js.Promise.resolve
-          })
-      });
-      ()
-    } else {
-      Js.log("Web3 is undefined!");
+              Js.log("GetOrganizerEvents");
+              self.send(GetOrganizerEvents({
+                  web3:w3,
+                  account:accounts[0],
+                  universe,
+                  address_uri 
+              }))
+              |> Js.Promise.resolve
+            })
+        });
+        ()
+      } else {
+        Js.log("Web3 is undefined!");
+      }
     }
   },
   initialState: () => {
     new_event_description : "",
     web3:None,
-    myEvents:[||]
+    myEvents:[||],
+    show_about:false
   },
   reducer: action => {
     switch (action) {
+    | ShowAbout => (state => ReasonReact.Update({...state,show_about:true}))
     | Submit => (state => {
         Js.log(state);
         ReasonReact.UpdateWithSideEffects(state, (self) => {
@@ -161,86 +169,91 @@ let make = (_children) => {
 
   <div className="container">
 
-    (state.web3 === None 
-      ? ReasonReact.null 
-      : <UserView web3=Js.Option.getExn(state.web3) />
-    )
+    (state.show_about 
+     ? <AboutView />
+     : <div>
+      (state.web3 === None 
+        ? ReasonReact.null 
+        : <UserView web3=Js.Option.getExn(state.web3) />
+      )
 
-    <div className="row">
+      <div className="row">
 
-      <div className="col-md">
-        <div className="card container-card">
-          <h5 className="card-header card-title">(text("Create Event"))</h5>
-          <div className="card-body padding-vertical-less">
+        <div className="col-md">
+          <div className="card container-card">
+            <h5 className="card-header card-title">(text("Create Event"))</h5>
+            <div className="card-body padding-vertical-less">
 
-            <div className="form-group" style=(ReactDOMRe.Style.make(~margin="3%",()))>
-              <div className="row">
-                <label className="col col-5 col-form-label text-muted">(text("Description"))</label>
-                <input className="col form-control" type_="text" placeholder="" id="inputLarge" 
-                       value=state.new_event_description
-                       onChange=(event => send(Change(ReactEvent.Form.target(event)##value)))
-                />
+              <div className="form-group" style=(ReactDOMRe.Style.make(~margin="3%",()))>
+                <div className="row">
+                  <label className="col col-5 col-form-label text-muted">(text("Description"))</label>
+                  <input className="col form-control" type_="text" placeholder="" id="inputLarge" 
+                         value=state.new_event_description
+                         onChange=(event => send(Change(ReactEvent.Form.target(event)##value)))
+                  />
+                </div>
               </div>
             </div>
-          </div>
-          <div className="card-footer">
-            <button disabled={state.web3 == None} type_="submit" className="col btn btn-success btn-send" 
-                    onClick=(_ => send(Submit))>
-              (text("Submit"))
-            </button>
-          </div>
+            <div className="card-footer">
+              <button disabled={state.web3 == None} type_="submit" className="col btn btn-success btn-send" 
+                      onClick=(_ => send(Submit))>
+                (text("Submit"))
+              </button>
+            </div>
 
+          </div>
+        
         </div>
-      
+
+        (Js.Array.length(state.myEvents) <= 0 ? ReasonReact.null :
+        <div className="col-md">
+          <div className="card container-card">
+            <h5 className="card-header card-title">(text("Organized Events"))</h5> 
+            <table className="table table-hover border-secondary border-solid table-no-bottom">
+              <thead className="bg-secondary">
+                <tr>
+                  <th scope="col">(text("Description"))</th>
+                  <th scope="col">(text("Address"))</th>
+                  <th scope="col">(text("Balance"))</th>
+                </tr>
+              </thead>
+              <tbody>
+                (state.myEvents |> Js.Array.map(({event,description,address,balance,show}) => {
+                  [|
+                  <tr key=address 
+                      className=((show) ? "table-active bg-black" : "")
+                      onClick=(_ => send(ToggleEvent(address)))>
+                    <td>(text(description))</td>
+                    <td><AddressLabel address=address uri=Js.Option.getExn(state.web3).address_uri /></td>
+                    <td><WeiLabel amount=balance/></td>
+                  </tr>,
+                  (switch (show) {
+                   | true => 
+                      <tr className="table-active bg-black" key=(Js.String.concat(address,"View"))>
+                        <td colSpan=3>
+                          <EventView description=description event=event address=address web3=Js.Option.getExn(state.web3) />
+                        </td>
+                      </tr>
+                   | false => ReasonReact.null 
+                   })
+                  |] |> ReasonReact.array
+                })
+              |> ReasonReact.array)
+              </tbody>
+            </table> 
+          </div>
+        </div>)
+        
       </div>
 
-      (Js.Array.length(state.myEvents) <= 0 ? ReasonReact.null :
-      <div className="col-md">
-        <div className="card container-card">
-          <h5 className="card-header card-title">(text("Organized Events"))</h5> 
-          <table className="table table-hover border-secondary border-solid table-no-bottom">
-            <thead className="bg-secondary">
-              <tr>
-                <th scope="col">(text("Description"))</th>
-                <th scope="col">(text("Address"))</th>
-                <th scope="col">(text("Balance"))</th>
-              </tr>
-            </thead>
-            <tbody>
-              (state.myEvents |> Js.Array.map(({event,description,address,balance,show}) => {
-                [|
-                <tr key=address 
-                    className=((show) ? "table-active bg-black" : "")
-                    onClick=(_ => send(ToggleEvent(address)))>
-                  <td>(text(description))</td>
-                  <td><AddressLabel address=address uri=Js.Option.getExn(state.web3).address_uri /></td>
-                  <td><WeiLabel amount=balance/></td>
-                </tr>,
-                (switch (show) {
-                 | true => 
-                    <tr className="table-active bg-black" key=(Js.String.concat(address,"View"))>
-                      <td colSpan=3>
-                        <EventView description=description event=event address=address web3=Js.Option.getExn(state.web3) />
-                      </td>
-                    </tr>
-                 | false => ReasonReact.null 
-                 })
-                |] |> ReasonReact.array
-              })
-            |> ReasonReact.array)
-            </tbody>
-          </table> 
-        </div>
-      </div>)
-      
-    </div>
+      (state.web3 === None 
+        ? ReasonReact.null 
+        : <AdminView web3=Js.Option.getExn(state.web3) />
+      )
 
-    (state.web3 === None 
-      ? ReasonReact.null 
-      : <AdminView web3=Js.Option.getExn(state.web3) />
+      </div>
     )
 
-  
   </div>
 
 </div>

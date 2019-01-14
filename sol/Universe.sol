@@ -5,6 +5,9 @@ import "./Event.sol";
 contract Universe {
   
   address private d_owner;
+  uint256 d_commission_percent;
+
+  mapping(address => string) d_verified_users;
   
   event OrganizerEvents(
         address indexed eventAddr,
@@ -18,8 +21,9 @@ contract Universe {
         address indexed userAddr,
         bool    indexed active);
   
-  constructor() public payable {
+  constructor(uint256 commission_percent) public payable {
     d_owner = msg.sender;
+    d_commission_percent = commission_percent;
   }
   
   function() public payable {}
@@ -38,7 +42,7 @@ contract Universe {
   }
   
   function createEvent(string _description) public payable returns(address) {
-    address eventAddr = new Event(_description,msg.sender);
+    address eventAddr = new Event(_description,msg.sender,d_commission_percent);
     emit OrganizerEvents(eventAddr, msg.sender, true,_description);
     return eventAddr;
   }
@@ -49,6 +53,20 @@ contract Universe {
   
   function removeUserEvent(address _event,address _user) public {
       emit UserEvents(_event,_user,false);
+  }
+
+  function updateCommission(uint256 commission_percent) public {
+    require(msg.sender == d_owner,"Owner can update commission");
+    d_commission_percent=commission_percent;
+  }
+
+  function verifiedUser(address _user) public constant returns(string) {
+    return d_verified_users[_user];
+  }
+
+  function verifyUser(address _user,string info) public {
+    require(msg.sender == d_owner);
+    d_verified_users[_user] = info;
   }
   
 }
