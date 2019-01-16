@@ -104,7 +104,7 @@ contract Event /* is ERC721 */  {
     require(total_cost <= msg.value, "Cost is more than transaction value.");
     
     // Take admin cut
-    uint256 commission = msg.value * (d_creator_commission_percent / 100) ;
+    uint256 commission = (msg.value / 100) * d_creator_commission_percent;
     address(d_admin).transfer(commission);
     
     Universe u = Universe(d_admin);
@@ -251,7 +251,7 @@ contract Event /* is ERC721 */  {
       address(prev_owner).transfer(seller_premium + d_tickets[_token].d_prev_price);
       
       // Other half premium is for the event, and commission out of it 
-      uint256 commission = seller_premium * d_creator_commission_percent / 100;
+      uint256 commission = (seller_premium / 100) * d_creator_commission_percent;
       address(d_admin).transfer(commission);
       
       d_tickets[_token].d_prev_price = msg.value;
