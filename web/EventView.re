@@ -106,7 +106,7 @@ let make = (~web3,~description, ~address,~event,_children) => {
           switch (Js.String.split("|",code)) {
             | [|signature,token|] => (signature,token)
             | _ => BsUtils.alert(
-                    "Invalid code:"
+                    "Ticket code invalid:\n"
                     |> Js.String.concat(code));
                    assert(false)
           };
@@ -242,12 +242,14 @@ let make = (~web3,~description, ~address,~event,_children) => {
                         send(UseTicket(code)) 
                         |> Js.Promise.resolve
                     })
+                    /*
                     |> Js.Promise.catch((error) => {
                         BsUtils.alert(
                           "Invalid code:"
                           |> Js.String.concat(string_of_any(error)))
                         |> Js.Promise.resolve
                     })
+                    */
                     |> ignore
                   )
                   style=(ReactDOMRe.Style.make(~marginTop="20px",~width="100%",()))>
