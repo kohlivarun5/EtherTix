@@ -9,12 +9,10 @@ FLG -nostdlib -no-alias-deps -color always
 FLG -w -30-40+6+7+27+32..39+44+45+101
 S /Users/vkohli/Github/SmartTix/node_modules/reason-react/lib/ocaml
 B /Users/vkohli/Github/SmartTix/node_modules/reason-react/lib/ocaml
-S /Users/vkohli/Github/SmartTix/node_modules/bs-web3/lib/ocaml
-B /Users/vkohli/Github/SmartTix/node_modules/bs-web3/lib/ocaml
+S bs-web3
+B lib/bs/bs-web3
 S web
 B lib/bs/web
-S web/react-qr-reader
-B lib/bs/web/react-qr-reader
 S web/qrcode
 B lib/bs/web/qrcode
 S web/react-responsive-carousel

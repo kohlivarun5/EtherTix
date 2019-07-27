@@ -5,7 +5,8 @@
   },
   "sources": [
 		{ "dir" : "sol", "subdirs" : true},
-		{ "dir" : "web", "subdirs" : true}
+		{ "dir" : "web", "subdirs" : true},
+		{ "dir" : "bs-web3", "subdirs" : true}
   ],
   "package-specs": [{
     "module": "es6",
@@ -14,8 +15,7 @@
   "suffix": ".bs.js",
   "namespace": true,
   "bs-dependencies": [
-    "reason-react",
-    "bs-web3"
+    "reason-react"
   ],
   "refmt": 3,
   "warnings": {

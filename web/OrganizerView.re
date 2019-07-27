@@ -10,7 +10,7 @@ type event_data = {
 
 type state = {
   show_about:bool,
-  web3 : option(Web3.state),
+  web3 : option(Web3State.t),
   new_event_description : string,
   myEvents : Js.Array.t(event_data)
 };
@@ -18,7 +18,7 @@ type state = {
 type action =
   | Submit
   | Change(string)
-  | GetOrganizerEvents(Web3.state)
+  | GetOrganizerEvents(Web3State.t)
   | AddEvent(BsWeb3.Eth.address)
   | EventData(event_data)
   | ToggleEvent(BsWeb3.Eth.address)
@@ -90,7 +90,7 @@ let make = (_children) => {
     | Submit => (state => {
         Js.log(state);
         ReasonReact.UpdateWithSideEffects(state, (self) => {
-          let {Web3.account,universe} = Js.Option.getExn(state.web3);
+          let {Web3State.account,universe} = Js.Option.getExn(state.web3);
           Universe.createEvent(universe,state.new_event_description)
           |> BsWeb3.Eth.send(BsWeb3.Eth.make_transaction(~from=account))
           |> Js.Promise.then_((_) => {

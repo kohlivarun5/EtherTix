@@ -1,6 +1,8 @@
 let text = ReasonReact.string;
 let int(i) = i |> string_of_int |> ReasonReact.string;
 
+external string_of_any : 'a => string = "%identity"
+
 type sold_data = {
   numSold:int,
   numUnsold:int
@@ -17,14 +19,13 @@ type issue_data = {
 }
 
 type state = {
-  web3 : Web3.state,
+  web3 : Web3State.t,
   address : BsWeb3.Eth.address,
   description:string,
   event: Event.t,
   sold_data:sold_data,
   used_data:used_data,
   issue_data:issue_data,
-  show_scanner:bool
 };
 type action = 
 | FetchData
@@ -34,8 +35,8 @@ type action =
 | IssuePrice(int)
 | SubmitIssue
 | Withdraw 
+| ScanTickets
 | UseTicket(string)
-| ToggleScanner
 
 let component = ReasonReact.reducerComponent("EventView");
 
@@ -49,7 +50,6 @@ let make = (~web3,~description, ~address,~event,_children) => {
     sold_data:{numSold:0,numUnsold:0},
     used_data:{numUsed:0,numToBeUsed:0},
     issue_data:{number:100,price_milli:100},
-    show_scanner:false
   },
   didMount: ({send}) => send(FetchData),
   reducer: (action,state:state) => {
@@ -100,15 +100,32 @@ let make = (~web3,~description, ~address,~event,_children) => {
         |> Js.Promise.then_ (_ => self.send(FetchData) |> Js.Promise.resolve);
         ()
       })
-    | ToggleScanner => ReasonReact.Update({...state,show_scanner:!state.show_scanner})
+    | ScanTickets => ReasonReact.UpdateWithSideEffects(state,(self) => {
+        BsWeb3.Web3.scanQRCode(state.web3.web3,[%bs.re "/.*/"])
+        |> Js.Promise.then_((code) => {
+            self.send(UseTicket(code)) |> Js.Promise.resolve
+        })
+        /*
+        |> Js.Promise.catch((error) => {
+            BsUtils.alert(
+              "Invalid code:"
+              |> Js.String.concat(string_of_any(error)))
+            |> Js.Promise.resolve
+        })
+        */
+        |> ignore
+
+      })
     | UseTicket(code) => ReasonReact.UpdateWithSideEffects(state,(self) => {
         Js.log(code);
         Js.log(Dom.Storage.localStorage);
-        self.send(ToggleScanner);
         let (signature,token) = 
           switch (Js.String.split("|",code)) {
             | [|signature,token|] => (signature,token)
-            | _ => assert(false)
+            | _ => BsUtils.alert(
+                    "Ticket code invalid:\n"
+                    |> Js.String.concat(code));
+                   assert(false)
           };
         Js.log(signature);
         Js.log(token);
@@ -116,21 +133,27 @@ let make = (~web3,~description, ~address,~event,_children) => {
         |> BsWeb3.Eth.call 
         |> Js.Promise.then_ ((res) => {
             if (res || Dom.Storage.getItem(code,Dom.Storage.localStorage) != None) { 
-              BsUtils.alert("Ticket already used!") |> Js.Promise.resolve;
-              self.send(ToggleScanner) |> Js.Promise.resolve
+              BsUtils.alert("Ticket already used!");
+              self.send(ScanTickets)
+              |> Js.Promise.resolve
             } else {
               Event.isOwnerSig(state.event,int_of_string(token),signature)
               |> BsWeb3.Eth.call 
               |> Js.Promise.then_ ((res) => {
                 if (!res) {
-                  BsUtils.alert("Invalid ticket code") |> Js.Promise.resolve;
-                  self.send(ToggleScanner) |> Js.Promise.resolve
+                  BsUtils.alert("Invalid ticket code");
+                  self.send(ScanTickets)
+                  |> Js.Promise.resolve
                 } else {
                   Dom.Storage.setItem(code,code,Dom.Storage.localStorage);
-                  self.send(ToggleScanner);
                   Event.useTicket(state.event,int_of_string(token),signature)
                   |> BsWeb3.Eth.send(BsWeb3.Eth.make_transaction(~from=state.web3.account))
-                  |> Js.Promise.then_ ((res) => { Js.log(res); self.send(FetchData) |> Js.Promise.resolve });
+                  |> Js.Promise.then_ ((_) => { 
+                      self.send(FetchData) 
+                      |> Js.Promise.resolve 
+                  });
+                  self.send(ScanTickets)
+                  |> Js.Promise.resolve
                 }
               });
             }
@@ -227,40 +250,25 @@ let make = (~web3,~description, ~address,~event,_children) => {
     </div>
 
 
-    (!state.show_scanner 
-     ? ReasonReact.null
-     : <QrReader 
-        style=(ReactDOMRe.Style.make(~marginTop="20px",()))
-        onScan=((result) => {
-          switch (Js.Nullable.toOption(result)) { 
-            | Some(code) => {
-                if (Js.String.length(code) > 3) {
-                  send(UseTicket(code)) 
-                } else {
-                  Js.log(code);
-                }
-            }
-            | None => Js.log("No code")
-          }
-        })
-        onError=((error) => Js.log(error)) />
-    )
-
     <div className="padding-vertical-less">
-      (Js.Re.test(
-          (Navigator.userAgent(Navigator.get)),
-              [%bs.re "/iPad|iPhone|iPod/"])
-      ? <button disabled=true className="btn btn-warning"
-                 style=(ReactDOMRe.Style.make(~marginTop="20px",~width="100%",())) >
-           (text("Scanner not available on iOS"))
-        </button>
-      : <button className="btn btn-success btn-send" onClick=(_ => send(ToggleScanner))
-                 style=(ReactDOMRe.Style.make(~marginTop="20px",~width="100%",()))>
-           (text(state.show_scanner ? "Hide Scanner" : "Scan Tickets"))
-        </button>
-      )
-      </div>
-
+      (switch(state.web3.web3 
+              |> BsWeb3.Web3.getScanQrCode
+              |> Js.Undefined.toOption) {
+        | None => (
+          <button disabled=true className="btn btn-warning"
+                  style=(ReactDOMRe.Style.make(~marginTop="20px",~width="100%",())) >
+            (text("Scanner not available"))
+          </button>
+        )
+        | Some(_) => (
+          <button className="btn btn-success btn-send" 
+                  onClick=(_ => send(ScanTickets))
+                  style=(ReactDOMRe.Style.make(~marginTop="20px",~width="100%",()))>
+            (text("Scan Tickets"))
+          </button>
+        )
+      })
+    </div>
   </div>
 
   <h6 className="card-header">(text("Issue Tickets"))</h6>

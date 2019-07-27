@@ -6,7 +6,7 @@ type universe_info = {
 };
 
 type state = {
-  web3 : Web3.state,
+  web3 : Web3State.t,
   universe_info:universe_info
 };
 

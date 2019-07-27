@@ -31,7 +31,7 @@ type event_data = {
 }
 
 type state = {
-  web3 : Web3.state,
+  web3 : Web3State.t,
   event_address:BsWeb3.Eth.address,
   buy_data:option(buy_data),
   myEvents:Js.Array.t(my_event_data),
@@ -314,7 +314,7 @@ let make = (~web3,_children) => {
 
             Js.Promise.make((~resolve,~reject) => {
               state.web3.web3 
-              |> BsWeb3.Web3.currentProvider__fromWeb3 
+              |> BsWeb3.Web3.getCurrentProvider
               |> BsWeb3.Web3.sendAsync(send_params,((error,result) => 
                   resolve(.
                     (id,BsWeb3.Web3.async_result_sha(result))
