@@ -19,7 +19,7 @@ type issue_data = {
 }
 
 type state = {
-  web3 : Web3.state,
+  web3 : Web3State.t,
   address : BsWeb3.Eth.address,
   description:string,
   event: Event.t,

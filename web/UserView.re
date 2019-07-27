@@ -31,7 +31,7 @@ type event_data = {
 }
 
 type state = {
-  web3 : Web3.state,
+  web3 : Web3State.t,
   event_address:BsWeb3.Eth.address,
   buy_data:option(buy_data),
   myEvents:Js.Array.t(my_event_data),
