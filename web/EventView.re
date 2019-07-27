@@ -1,6 +1,8 @@
 let text = ReasonReact.string;
 let int(i) = i |> string_of_int |> ReasonReact.string;
 
+external string_of_any : 'a => string = "%identity"
+
 type sold_data = {
   numSold:int,
   numUnsold:int
@@ -24,7 +26,6 @@ type state = {
   sold_data:sold_data,
   used_data:used_data,
   issue_data:issue_data,
-  scanner:Js.Option.t(BsWeb3.Web3.scanner)
 };
 type action = 
 | FetchData
@@ -48,7 +49,6 @@ let make = (~web3,~description, ~address,~event,_children) => {
     sold_data:{numSold:0,numUnsold:0},
     used_data:{numUsed:0,numToBeUsed:0},
     issue_data:{number:100,price_milli:100},
-    scanner:None
   },
   didMount: ({send}) => send(FetchData),
   reducer: (action,state:state) => {
@@ -105,7 +105,10 @@ let make = (~web3,~description, ~address,~event,_children) => {
         let (signature,token) = 
           switch (Js.String.split("|",code)) {
             | [|signature,token|] => (signature,token)
-            | _ => assert(false)
+            | _ => BsUtils.alert(
+                    "Invalid code:"
+                    |> Js.String.concat(code));
+                   assert(false)
           };
         Js.log(signature);
         Js.log(token);
@@ -223,7 +226,6 @@ let make = (~web3,~description, ~address,~event,_children) => {
 
     <div className="padding-vertical-less">
       (switch(state.web3.web3 
-              |> BsWeb3.Web3.getCurrentProvider
               |> BsWeb3.Web3.getScanQrCode
               |> Js.Undefined.toOption) {
         | None => (
@@ -235,13 +237,15 @@ let make = (~web3,~description, ~address,~event,_children) => {
         | Some(_) => (
           <button className="btn btn-success btn-send" 
                   onClick=(_ => 
-                    BsWeb3.Web3.scanQRCode(state.web3.web3)
+                    BsWeb3.Web3.scanQRCode(state.web3.web3,[%bs.re "/.*/"])
                     |> Js.Promise.then_((code) => {
                         send(UseTicket(code)) 
                         |> Js.Promise.resolve
                     })
                     |> Js.Promise.catch((error) => {
-                        Js.log(error) 
+                        BsUtils.alert(
+                          "Invalid code:"
+                          |> Js.String.concat(string_of_any(error)))
                         |> Js.Promise.resolve
                     })
                     |> ignore
