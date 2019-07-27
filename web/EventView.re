@@ -24,7 +24,7 @@ type state = {
   sold_data:sold_data,
   used_data:used_data,
   issue_data:issue_data,
-  show_scanner:bool
+  scanner:Js.Option.t(BsWeb3.Web3.scanner)
 };
 type action = 
 | FetchData
@@ -35,7 +35,6 @@ type action =
 | SubmitIssue
 | Withdraw 
 | UseTicket(string)
-| ToggleScanner
 
 let component = ReasonReact.reducerComponent("EventView");
 
@@ -49,7 +48,7 @@ let make = (~web3,~description, ~address,~event,_children) => {
     sold_data:{numSold:0,numUnsold:0},
     used_data:{numUsed:0,numToBeUsed:0},
     issue_data:{number:100,price_milli:100},
-    show_scanner:false
+    scanner:None
   },
   didMount: ({send}) => send(FetchData),
   reducer: (action,state:state) => {
@@ -100,11 +99,9 @@ let make = (~web3,~description, ~address,~event,_children) => {
         |> Js.Promise.then_ (_ => self.send(FetchData) |> Js.Promise.resolve);
         ()
       })
-    | ToggleScanner => ReasonReact.Update({...state,show_scanner:!state.show_scanner})
     | UseTicket(code) => ReasonReact.UpdateWithSideEffects(state,(self) => {
         Js.log(code);
         Js.log(Dom.Storage.localStorage);
-        self.send(ToggleScanner);
         let (signature,token) = 
           switch (Js.String.split("|",code)) {
             | [|signature,token|] => (signature,token)
@@ -117,17 +114,14 @@ let make = (~web3,~description, ~address,~event,_children) => {
         |> Js.Promise.then_ ((res) => {
             if (res || Dom.Storage.getItem(code,Dom.Storage.localStorage) != None) { 
               BsUtils.alert("Ticket already used!") |> Js.Promise.resolve;
-              self.send(ToggleScanner) |> Js.Promise.resolve
             } else {
               Event.isOwnerSig(state.event,int_of_string(token),signature)
               |> BsWeb3.Eth.call 
               |> Js.Promise.then_ ((res) => {
                 if (!res) {
                   BsUtils.alert("Invalid ticket code") |> Js.Promise.resolve;
-                  self.send(ToggleScanner) |> Js.Promise.resolve
                 } else {
                   Dom.Storage.setItem(code,code,Dom.Storage.localStorage);
-                  self.send(ToggleScanner);
                   Event.useTicket(state.event,int_of_string(token),signature)
                   |> BsWeb3.Eth.send(BsWeb3.Eth.make_transaction(~from=state.web3.account))
                   |> Js.Promise.then_ ((res) => { Js.log(res); self.send(FetchData) |> Js.Promise.resolve });
@@ -227,40 +221,37 @@ let make = (~web3,~description, ~address,~event,_children) => {
     </div>
 
 
-    (!state.show_scanner 
-     ? ReasonReact.null
-     : <QrReader 
-        style=(ReactDOMRe.Style.make(~marginTop="20px",()))
-        onScan=((result) => {
-          switch (Js.Nullable.toOption(result)) { 
-            | Some(code) => {
-                if (Js.String.length(code) > 3) {
-                  send(UseTicket(code)) 
-                } else {
-                  Js.log(code);
-                }
-            }
-            | None => Js.log("No code")
-          }
-        })
-        onError=((error) => Js.log(error)) />
-    )
-
     <div className="padding-vertical-less">
-      (Js.Re.test(
-          (Navigator.userAgent(Navigator.get)),
-              [%bs.re "/iPad|iPhone|iPod/"])
-      ? <button disabled=true className="btn btn-warning"
-                 style=(ReactDOMRe.Style.make(~marginTop="20px",~width="100%",())) >
-           (text("Scanner not available on iOS"))
-        </button>
-      : <button className="btn btn-success btn-send" onClick=(_ => send(ToggleScanner))
-                 style=(ReactDOMRe.Style.make(~marginTop="20px",~width="100%",()))>
-           (text(state.show_scanner ? "Hide Scanner" : "Scan Tickets"))
-        </button>
-      )
-      </div>
-
+      (switch(state.web3.web3 
+              |> BsWeb3.Web3.getCurrentProvider
+              |> BsWeb3.Web3.getScanQrCode
+              |> Js.Undefined.toOption) {
+        | None => (
+          <button disabled=true className="btn btn-warning"
+                  style=(ReactDOMRe.Style.make(~marginTop="20px",~width="100%",())) >
+            (text("Scanner not available"))
+          </button>
+        )
+        | Some(scanner) => (
+          <button className="btn btn-success btn-send" 
+                  onClick=(_ => 
+                    scanner()
+                    |> Js.Promise.then_((code) => {
+                        send(UseTicket(code)) 
+                        |> Js.Promise.resolve
+                    })
+                    |> Js.Promise.catch((error) => {
+                        Js.log(error) 
+                        |> Js.Promise.resolve
+                    })
+                    |> ignore
+                  )
+                  style=(ReactDOMRe.Style.make(~marginTop="20px",~width="100%",()))>
+            (text("Scan Tickets"))
+          </button>
+        )
+      })
+    </div>
   </div>
 
   <h6 className="card-header">(text("Issue Tickets"))</h6>

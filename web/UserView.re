@@ -314,7 +314,7 @@ let make = (~web3,_children) => {
 
             Js.Promise.make((~resolve,~reject) => {
               state.web3.web3 
-              |> BsWeb3.Web3.currentProvider__fromWeb3 
+              |> BsWeb3.Web3.getCurrentProvider
               |> BsWeb3.Web3.sendAsync(send_params,((error,result) => 
                   resolve(.
                     (id,BsWeb3.Web3.async_result_sha(result))
