@@ -35,6 +35,7 @@ type action =
 | IssuePrice(int)
 | SubmitIssue
 | Withdraw 
+| ScanTickets
 | UseTicket(string)
 
 let component = ReasonReact.reducerComponent("EventView");
@@ -99,6 +100,22 @@ let make = (~web3,~description, ~address,~event,_children) => {
         |> Js.Promise.then_ (_ => self.send(FetchData) |> Js.Promise.resolve);
         ()
       })
+    | ScanTickets => ReasonReact.UpdateWithSideEffects(state,(self) => {
+        BsWeb3.Web3.scanQRCode(state.web3.web3,[%bs.re "/.*/"])
+        |> Js.Promise.then_((code) => {
+            self.send(UseTicket(code)) |> Js.Promise.resolve
+        })
+        /*
+        |> Js.Promise.catch((error) => {
+            BsUtils.alert(
+              "Invalid code:"
+              |> Js.String.concat(string_of_any(error)))
+            |> Js.Promise.resolve
+        })
+        */
+        |> ignore
+
+      })
     | UseTicket(code) => ReasonReact.UpdateWithSideEffects(state,(self) => {
         Js.log(code);
         Js.log(Dom.Storage.localStorage);
@@ -116,18 +133,27 @@ let make = (~web3,~description, ~address,~event,_children) => {
         |> BsWeb3.Eth.call 
         |> Js.Promise.then_ ((res) => {
             if (res || Dom.Storage.getItem(code,Dom.Storage.localStorage) != None) { 
-              BsUtils.alert("Ticket already used!") |> Js.Promise.resolve;
+              BsUtils.alert("Ticket already used!");
+              self.send(ScanTickets)
+              |> Js.Promise.resolve
             } else {
               Event.isOwnerSig(state.event,int_of_string(token),signature)
               |> BsWeb3.Eth.call 
               |> Js.Promise.then_ ((res) => {
                 if (!res) {
-                  BsUtils.alert("Invalid ticket code") |> Js.Promise.resolve;
+                  BsUtils.alert("Invalid ticket code");
+                  self.send(ScanTickets)
+                  |> Js.Promise.resolve
                 } else {
                   Dom.Storage.setItem(code,code,Dom.Storage.localStorage);
                   Event.useTicket(state.event,int_of_string(token),signature)
                   |> BsWeb3.Eth.send(BsWeb3.Eth.make_transaction(~from=state.web3.account))
-                  |> Js.Promise.then_ ((res) => { Js.log(res); self.send(FetchData) |> Js.Promise.resolve });
+                  |> Js.Promise.then_ ((_) => { 
+                      self.send(FetchData) 
+                      |> Js.Promise.resolve 
+                  });
+                  self.send(ScanTickets)
+                  |> Js.Promise.resolve
                 }
               });
             }
@@ -236,22 +262,7 @@ let make = (~web3,~description, ~address,~event,_children) => {
         )
         | Some(_) => (
           <button className="btn btn-success btn-send" 
-                  onClick=(_ => 
-                    BsWeb3.Web3.scanQRCode(state.web3.web3,[%bs.re "/.*/"])
-                    |> Js.Promise.then_((code) => {
-                        send(UseTicket(code)) 
-                        |> Js.Promise.resolve
-                    })
-                    /*
-                    |> Js.Promise.catch((error) => {
-                        BsUtils.alert(
-                          "Invalid code:"
-                          |> Js.String.concat(string_of_any(error)))
-                        |> Js.Promise.resolve
-                    })
-                    */
-                    |> ignore
-                  )
+                  onClick=(_ => send(ScanTickets))
                   style=(ReactDOMRe.Style.make(~marginTop="20px",~width="100%",()))>
             (text("Scan Tickets"))
           </button>
