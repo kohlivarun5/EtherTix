@@ -90,7 +90,7 @@ let make = (_children) => {
     | Submit => (state => {
         Js.log(state);
         ReasonReact.UpdateWithSideEffects(state, (self) => {
-          let {Web3.account,universe} = Js.Option.getExn(state.web3);
+          let {Web3State.account,universe} = Js.Option.getExn(state.web3);
           Universe.createEvent(universe,state.new_event_description)
           |> BsWeb3.Eth.send(BsWeb3.Eth.make_transaction(~from=account))
           |> Js.Promise.then_((_) => {
