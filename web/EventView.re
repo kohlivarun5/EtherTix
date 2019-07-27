@@ -232,10 +232,10 @@ let make = (~web3,~description, ~address,~event,_children) => {
             (text("Scanner not available"))
           </button>
         )
-        | Some(scanner) => (
+        | Some(_) => (
           <button className="btn btn-success btn-send" 
                   onClick=(_ => 
-                    scanner()
+                    BsWeb3.Web3.scanQRCode(state.web3.web3)
                     |> Js.Promise.then_((code) => {
                         send(UseTicket(code)) 
                         |> Js.Promise.resolve
