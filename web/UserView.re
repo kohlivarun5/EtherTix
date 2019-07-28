@@ -287,13 +287,14 @@ let make = (~web3,_children) => {
                           Event.isOwnerSig(event,ticket.id,signature)
                           |> BsWeb3.Eth.call 
                           |> Js.Promise.then_((isOwner) => {
+                              Js.log((ticket,"isOwner is not true",signature,isOwner));
                               assert(isOwner);
                               Js.Promise.resolve(Array.append([|{...ticket,signature:Some(UnUsed(signature))}|],tickets))
                             })
                       })
                       |> Js.Promise.catch((e) => {
                           Js.log(e);
-                          Js.Promise.resolve(Array.append([|{...ticket,used:true}|],tickets))
+                          Js.Promise.resolve(Array.append([|{...ticket,signature:None}|],tickets))
                       })
                     }
                 });
@@ -516,7 +517,7 @@ let make = (~web3,_children) => {
                       (Js.Array.length(tickets) == 0
                        ? ReasonReact.null
                        : <div className="card-body padding-vertical-less padding-horizontal-less user-tickets" > 
-                            (Js.Array.concat(tickets,tickets) |> Js.Array.mapi(({id,signature,used},index) => {
+                            (tickets |> Js.Array.mapi(({id,signature,used},index) => {
                               Js.log((id,signature,used));
                               <div className="user-ticket" key=string_of_int(index)>
                                 (switch(used,signature) {

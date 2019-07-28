@@ -92,10 +92,13 @@ body {
   display: flex;
   flex-wrap: nowrap;
   overflow-x: auto;
+}
 
-  .user-ticket {
-    flex: 0 0 auto;
-  }
+.user-ticket {
+  flex: 0 0 auto;
+  margin: auto;
+  padding-left: 30px;
+  padding-right: 30px;
 }
 
 input[type='text'],textarea {font-size:1em;}
