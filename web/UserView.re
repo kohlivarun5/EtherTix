@@ -276,11 +276,9 @@ let make = (~web3,_children) => {
                     if (isUsed) {
                       Js.Promise.resolve(Array.append([|{...ticket,used:true}|],tickets))
                     } else {
-                      Js.log(ticket.id);
                       Event.ticketVerificationCode(event,ticket.id)
                       |> BsWeb3.Eth.call 
                       |> Js.Promise.then_((code) =>
-                        Js.log(code);
                         state.web3.web3 
                         |> BsWeb3.Web3.eth 
                         |> BsWeb3.Eth.sign(code,state.web3.account))
