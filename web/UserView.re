@@ -514,6 +514,7 @@ let make = (~web3,_children) => {
                     <div className="card">
                       <div className="card-body padding-vertical-less padding-horizontal-less" > 
                         <Carousel> 
+                          <div>(text("sas"))</div>
                           (tickets |> Js.Array.map(({id,signature,used}) => {
                             Js.log((id,signature,used));
                             switch(used,signature) {
@@ -526,10 +527,13 @@ let make = (~web3,_children) => {
                               }
                               | (_,None) => ReasonReact.null
                               | (_,Some(UnUsed(sha))) => {
+                                <div>
                                 <QrView 
                                   style=(ReactDOMRe.Style.make(~marginTop="15px",~marginBottom="10px",()))
                                   key=string_of_int(id) text=Js.String.concatMany([|"|",string_of_int(id)|],sha )
                                 />
+                                <p>(text("S"))</p>
+                                </div>
                               }
                             }
                           }) |> ReasonReact.array)
