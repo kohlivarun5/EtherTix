@@ -17,7 +17,7 @@ let make = (children) =>
       ~showArrows=true,
       ~showThumbs=false,
       ~emulateTouch=true,
-      ~dynamicHeight=true,
+      ~dynamicHeight=false,
       ~showIndicators=false),
     children,
   );

@@ -519,21 +519,22 @@ let make = (~web3,_children) => {
                               (tickets |> Js.Array.map(({id,signature,used}) => {
                                 Js.log((id,signature,used));
                                 switch(used,signature) {
+                                  | (false,None) => ReasonReact.null
                                   | (true,_) => {
                                     <img src="img/UsedTicket.png"
                                       className="used-ticket"
+                                      key=string_of_int(id)
                                       style=(ReactDOMRe.Style.make(~marginTop="15px",~marginBottom="10px",()))
                                     />
                                   }
-                                  | (_,None) => ReasonReact.null
-                                  | (_,Some(UnUsed(sha))) => {
+                                  | (false,Some(UnUsed(sha))) => {
                                     <QrView 
                                       style=(ReactDOMRe.Style.make(~marginTop="15px",~marginBottom="10px",()))
                                       key=string_of_int(id) text=Js.String.concatMany([|"|",string_of_int(id)|],sha )
                                     />
                                   }
                                 }
-                              }) |> ReasonReact.array)
+                              }))
                             </Carousel>
                           </div>
                       )
