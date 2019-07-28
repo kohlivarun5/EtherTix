@@ -88,6 +88,16 @@ body {
   margin: auto;
 }
 
+.user-tickets {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+
+  .user-ticket {
+    flex: 0 0 auto;
+  }
+}
+
 input[type='text'],textarea {font-size:1em;}
 
 /*

@@ -515,29 +515,27 @@ let make = (~web3,_children) => {
                     <div className="card">
                       (Js.Array.length(tickets) == 0
                        ? ReasonReact.null
-                       : <div className="card-body padding-vertical-less padding-horizontal-less" > 
-                            <Carousel> 
-                              (tickets |> Js.Array.map(({id,signature,used}) => {
-                                Js.log((id,signature,used));
-                                <div key=string_of_int(id)>
-                                  (switch(used,signature) {
-                                    | (false,None) => ReasonReact.null
-                                    | (true,_) => {
-                                      <img src="img/UsedTicket.png"
-                                        className="used-ticket"
-                                        style=(ReactDOMRe.Style.make(~marginTop="15px",~marginBottom="10px",()))
-                                      />
-                                    }
-                                    | (false,Some(UnUsed(sha))) => {
-                                      <QrView 
-                                        style=(ReactDOMRe.Style.make(~marginTop="15px",~marginBottom="10px",()))
-                                        text=Js.String.concatMany([|"|",string_of_int(id)|],sha)
-                                      />
-                                    }
-                                  })
-                                </div>
-                              }))
-                            </Carousel>
+                       : <div className="card-body padding-vertical-less padding-horizontal-less user-tickets" > 
+                            (Js.Array.concat(tickets,tickets) |> Js.Array.mapi(({id,signature,used},index) => {
+                              Js.log((id,signature,used));
+                              <div className="user-ticket" key=string_of_int(index)>
+                                (switch(used,signature) {
+                                  | (false,None) => ReasonReact.null
+                                  | (true,_) => {
+                                    <img src="img/UsedTicket.png"
+                                      className="user-ticket"
+                                      style=(ReactDOMRe.Style.make(~marginTop="15px",~marginBottom="10px",~maxWidth="200px",()))
+                                    />
+                                  }
+                                  | (false,Some(UnUsed(sha))) => {
+                                    <QrView 
+                                      style=(ReactDOMRe.Style.make(~marginTop="15px",~marginBottom="10px",()))
+                                      text=Js.String.concatMany([|"|",string_of_int(id)|],sha)
+                                    />
+                                  }
+                                })
+                              </div>
+                            }) |> ReasonReact.array)
                           </div>
                       )
                       <div className="card-body">
