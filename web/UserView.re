@@ -512,33 +512,31 @@ let make = (~web3,_children) => {
                     className=((show_details) ? "table-active bg-black" : "")>
                   <td colSpan=3 style=(ReactDOMRe.Style.make(~maxWidth="170px",())) >
                     <div className="card">
-                      <div className="card-body padding-vertical-less padding-horizontal-less" > 
-                        <Carousel> 
-                          <div>(text("sas"))</div>
-                          (tickets |> Js.Array.map(({id,signature,used}) => {
-                            Js.log((id,signature,used));
-                            switch(used,signature) {
-                              | (true,_) => {
-                                <img src="img/UsedTicket.png"
-                                  key=string_of_int(id)
-                                  className="used-ticket"
-                                  style=(ReactDOMRe.Style.make(~marginTop="15px",~marginBottom="10px",()))
-                                />
-                              }
-                              | (_,None) => ReasonReact.null
-                              | (_,Some(UnUsed(sha))) => {
-                                <div>
-                                <QrView 
-                                  style=(ReactDOMRe.Style.make(~marginTop="15px",~marginBottom="10px",()))
-                                  key=string_of_int(id) text=Js.String.concatMany([|"|",string_of_int(id)|],sha )
-                                />
-                                <p>(text("S"))</p>
-                                </div>
-                              }
-                            }
-                          }) |> ReasonReact.array)
-                        </Carousel>
-                      </div>
+                      (Js.Array.length(tickets) == 0
+                       ? ReasonReact.null
+                       : <div className="card-body padding-vertical-less padding-horizontal-less" > 
+                            <Carousel> 
+                              (tickets |> Js.Array.map(({id,signature,used}) => {
+                                Js.log((id,signature,used));
+                                switch(used,signature) {
+                                  | (true,_) => {
+                                    <img src="img/UsedTicket.png"
+                                      className="used-ticket"
+                                      style=(ReactDOMRe.Style.make(~marginTop="15px",~marginBottom="10px",()))
+                                    />
+                                  }
+                                  | (_,None) => ReasonReact.null
+                                  | (_,Some(UnUsed(sha))) => {
+                                    <QrView 
+                                      style=(ReactDOMRe.Style.make(~marginTop="15px",~marginBottom="10px",()))
+                                      key=string_of_int(id) text=Js.String.concatMany([|"|",string_of_int(id)|],sha )
+                                    />
+                                  }
+                                }
+                              }) |> ReasonReact.array)
+                            </Carousel>
+                          </div>
+                      )
                       <div className="card-body">
                        <button className="btn btn-success btn-send" onClick=(_ => send(SignTickets(i)))
                          style=(ReactDOMRe.Style.make(~width="100%",())) >
