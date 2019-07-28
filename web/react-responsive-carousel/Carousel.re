@@ -6,7 +6,6 @@ type jsProps = {
   showThumbs:bool,
   emulateTouch:bool,
   showIndicators:bool,
-  dynamicHeight:bool
 };
 
 
@@ -17,7 +16,6 @@ let make = (children) =>
       ~showArrows=true,
       ~showThumbs=false,
       ~emulateTouch=true,
-      ~dynamicHeight=false,
       ~showIndicators=false),
     children,
   );

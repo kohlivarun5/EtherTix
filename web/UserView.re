@@ -384,10 +384,11 @@ let make = (~web3,_children) => {
   },
   render: ({send,state}) =>
 <div className="row">
-
   <div className="col-md">
     <div className="card container-card">
       <h5 className="card-header card-title">(text("Buy Tickets"))</h5>
+
+
       <div className="card-body padding-vertical-less"> 
         <div className="form-group" style=(ReactDOMRe.Style.make(~margin="3%",()))>
           <div className="row">
@@ -518,22 +519,23 @@ let make = (~web3,_children) => {
                             <Carousel> 
                               (tickets |> Js.Array.map(({id,signature,used}) => {
                                 Js.log((id,signature,used));
-                                switch(used,signature) {
-                                  | (false,None) => ReasonReact.null
-                                  | (true,_) => {
-                                    <img src="img/UsedTicket.png"
-                                      className="used-ticket"
-                                      key=string_of_int(id)
-                                      style=(ReactDOMRe.Style.make(~marginTop="15px",~marginBottom="10px",()))
-                                    />
-                                  }
-                                  | (false,Some(UnUsed(sha))) => {
-                                    <QrView 
-                                      style=(ReactDOMRe.Style.make(~marginTop="15px",~marginBottom="10px",()))
-                                      key=string_of_int(id) text=Js.String.concatMany([|"|",string_of_int(id)|],sha )
-                                    />
-                                  }
-                                }
+                                <div key=string_of_int(id)>
+                                  (switch(used,signature) {
+                                    | (false,None) => ReasonReact.null
+                                    | (true,_) => {
+                                      <img src="img/UsedTicket.png"
+                                        className="used-ticket"
+                                        style=(ReactDOMRe.Style.make(~marginTop="15px",~marginBottom="10px",()))
+                                      />
+                                    }
+                                    | (false,Some(UnUsed(sha))) => {
+                                      <QrView 
+                                        style=(ReactDOMRe.Style.make(~marginTop="15px",~marginBottom="10px",()))
+                                        text=Js.String.concatMany([|"|",string_of_int(id)|],sha)
+                                      />
+                                    }
+                                  })
+                                </div>
                               }))
                             </Carousel>
                           </div>
