@@ -1,3 +1,6 @@
+type signature;
+[@bs.module "ethereumjs-utils"] external fromRpcSig : string => signature = "";
+
 type location;
 [@bs.val] external location : location = "location";
 
@@ -52,3 +55,4 @@ let createEventLinkUriComponent(~address,~description) =
   |> Js.String.concat("\n")
   |> Js.String.concat(description)
   |> encodeURIComponent
+

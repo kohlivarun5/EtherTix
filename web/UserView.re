@@ -274,22 +274,20 @@ let make = (~web3,_children) => {
                       |> Js.Promise.then_((code) =>
                         state.web3.web3 
                         |> BsWeb3.Web3.eth 
-                        |> BsWeb3.Eth.sign(code,state.web3.account)
-                        |> Js.Promise.then_((signature) => {
-                            Js.log(signature);
-                            state.web3.web3 
-                            |> BsWeb3.Web3.eth 
-                            |> BsWeb3.Eth.recover(code,signature)
-                            |> ((address) => {
-                              assert(address == state.web3.account);
+                        |> BsWeb3.Eth.sign(code,state.web3.account))
+                      |> Js.Promise.then_((signature) => {
+                          Js.log(signature);
+                          Event.isOwnerSig(event,id,signature)
+                          |> BsWeb3.Eth.call 
+                          |> Js.Promise.then_((isOwner) => {
+                              assert(isOwner);
                               Js.Promise.resolve(Array.append([|(UnUsed(signature),id)|],sigs))
                             })
-                        })
-                      )
+                      })
                       |> Js.Promise.catch((e) => {
                           Js.log(e);
                           Js.Promise.resolve(Array.append([|(Used,id)|],sigs));
-                      })
+                        })
                     }
                 });
             })
