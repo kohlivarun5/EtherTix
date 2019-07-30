@@ -5,6 +5,8 @@ type address = string;
 [@bs.get] external accounts : t => Js.Array.t(address) = "";
 [@bs.send] external getAccounts : t => Js.Promise.t(Js.Array.t(address)) = "";
 
+[@bs.scope "accounts"] [@bs.send.pipe : t] external recover : string => string => address = "";
+
 type balance = string;
 [@bs.send] external getBalance : t => address => balance = "";
 
