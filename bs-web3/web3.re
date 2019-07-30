@@ -3,21 +3,18 @@ type global;
 
 type provider;
 [@bs.get] external currentProvider : global => provider = "";
-[@bs.scope "window"] [@bs.val] external ethereum : Js.undefined(provider) = "";
 
+type address = string;
+[@bs.get] external getEnable: provider => Js.undefined(((.unit) => Js.Promise.t(Js.Undefined.t(Js.Array.t(address))))) = "enable";
 [@bs.send] external enable : provider => Js.Promise.t(unit) = "";
-
 
 type t;
 [@bs.new] [@bs.module] external makeWeb3 : provider => t = "web3";
+[@bs.get] external getCurrentProvider : t => provider = "currentProvider";
 
 [@bs.scope "currentProvider"] [@bs.send] external scanQRCode : t => Js.Re.t => Js.Promise.t(string) = "scanQRCode";
-
 type scanner = (Js.Re.t => Js.Promise.t(string));
 [@bs.scope "currentProvider"] [@bs.get] external getScanQrCode : t => Js.undefined(scanner) = "scanQRCode";
-
-
-[@bs.get] external getCurrentProvider : t => provider = "currentProvider";
 
 [@bs.get] external eth : t => Eth.t = "";
 
