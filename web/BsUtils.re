@@ -52,4 +52,3 @@ let createEventLinkUriComponent(~address,~description) =
   |> Js.String.concat("\n")
   |> Js.String.concat(description)
   |> encodeURIComponent
-
