@@ -50,7 +50,11 @@ let make = (_children) => {
               }
             );
 
-            BsWeb3.Eth.getAccounts(eth)
+            let enabler = BsWeb3.Web3.getEnable(BsWeb3.Web3.getCurrentProvider(w3));
+            (switch(enabler |> Js.Undefined.toOption) {
+            | None => BsWeb3.Eth.getAccounts(eth)
+            | Some(enabler) => enabler(.)
+            })
             |> Js.Promise.then_((accounts) => {
 
               /* Don't change code untill universe creation 
