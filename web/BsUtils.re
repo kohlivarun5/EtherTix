@@ -1,6 +1,3 @@
-type signature;
-[@bs.module "ethereumjs-utils"] external fromRpcSig : string => signature = "";
-
 type location;
 [@bs.val] external location : location = "location";
 
