@@ -1,4 +1,4 @@
-pragma solidity ^0.4.24;
+pragma solidity <=0.5.4;
 
 // import "./ERC721.sol";
 
@@ -17,8 +17,8 @@ contract Event /* is ERC721 */  {
  
   uint256 internal d_creator_commission_percent = 1;
  
-  address internal d_admin;
-  address public d_organizer;
+  address payable internal d_admin;
+  address payable public d_organizer;
   
   
   // Array with all token ids, used for enumeration
@@ -28,7 +28,7 @@ contract Event /* is ERC721 */  {
   mapping(address => uint256[]) internal d_owner_tokens;
   
   // Mapping from token id to owner address
-  mapping(uint256 => address) internal d_token_owner;
+  mapping(uint256 => address payable) internal d_token_owner;
   
   // For transfers 
   mapping(uint256 => uint256) internal d_token_ask;
@@ -36,7 +36,7 @@ contract Event /* is ERC721 */  {
 
   bool public d_mark_delete;
 
-  constructor(string _description, address _organizer,uint256 commission_percent) public { 
+  constructor(string memory _description, address payable _organizer,uint256 commission_percent) public { 
     description = _description;
     d_admin = msg.sender;
     d_organizer = _organizer;
@@ -45,12 +45,12 @@ contract Event /* is ERC721 */  {
     d_mark_delete=false;
   }
   
-  function setImg(string _imgSrc) public {
+  function setImg(string memory _imgSrc) public {
       require(msg.sender == d_organizer);
       imgSrc = _imgSrc;
   }
   
-  function setExternalLink(string _externalLink) public {
+  function setExternalLink(string memory _externalLink) public {
       require(msg.sender == d_organizer);
       externalLink = _externalLink;
   }
@@ -62,7 +62,7 @@ contract Event /* is ERC721 */  {
     }
   }
 
-  function getCostFor(uint256 _numTickets) public constant returns(uint256) {
+  function getCostFor(uint256 _numTickets) public view returns(uint256) {
     uint256 total_cost=0;
     uint256 bought=0;
     
@@ -111,7 +111,7 @@ contract Event /* is ERC721 */  {
     u.addUserEvent(address(this),msg.sender);
   }
   
-  function getBalance() public constant returns(uint) {
+  function getBalance() public view returns(uint) {
     require(msg.sender == d_admin || msg.sender == d_organizer);
     return address(this).balance;
   }
@@ -121,7 +121,7 @@ contract Event /* is ERC721 */  {
     address(d_organizer).transfer(getBalance());
   }
   
-  function numSold() public constant returns(uint256) {
+  function numSold() public view returns(uint256) {
     uint256 numSoldCount=0;
     for(uint256 i=0;i<d_tickets.length;++i) {
       if (d_token_owner[i] != address(0)) { numSoldCount++;}
@@ -129,7 +129,7 @@ contract Event /* is ERC721 */  {
     return numSoldCount;
   }
   
-  function numUnSold() public constant returns(uint256) {
+  function numUnSold() public view returns(uint256) {
     uint256 numUnSoldCount=0;
     for(uint256 i=0;i<d_tickets.length;++i) {
       if (d_token_owner[i] == address(0)) { numUnSoldCount++; }
@@ -137,7 +137,7 @@ contract Event /* is ERC721 */  {
     return numUnSoldCount;
   }
 
-  function numUsed() public constant returns(uint256) {
+  function numUsed() public view returns(uint256) {
     uint256 numUsedCount=0;
     for(uint256 i=0;i<d_tickets.length;++i) {
       if (d_tickets[i].d_used) { numUsedCount++; } 
@@ -145,7 +145,7 @@ contract Event /* is ERC721 */  {
     return numUsedCount;
   }
 
-  function numToBeUsed() public constant returns(uint256) {
+  function numToBeUsed() public view returns(uint256) {
     uint256 numToBeUsedCount=0;
     for(uint256 i=0;i<d_tickets.length;++i) {
       if (!d_tickets[i].d_used && d_token_owner[i] != address(0)) { numToBeUsedCount++; } 
@@ -153,19 +153,19 @@ contract Event /* is ERC721 */  {
     return numToBeUsedCount;
   }
   
-  function balanceOf(address _owner) public constant returns (uint256 _balance) {
+  function balanceOf(address _owner) public view returns (uint256 _balance) {
     return d_owner_tokens[_owner].length;    
   }
   
-  function ownerOf(uint256 _tokenId) public constant returns (address _owner) {
+  function ownerOf(uint256 _tokenId) public view returns (address _owner) {
     return d_token_owner[_tokenId];    
   }
   
-  function exists(uint256 _tokenId) public constant returns (bool _exists) {
+  function exists(uint256 _tokenId) public view returns (bool _exists) {
     return _tokenId >= 0 && _tokenId < d_tickets.length;
   }
   
-  function myTickets() public constant returns(uint256[],uint256[],bool[],bool[]) {
+  function myTickets() public view returns(uint256[] memory,uint256[] memory,bool[] memory,bool[] memory) {
     uint256[] storage tokens = d_owner_tokens[msg.sender];
     uint256[] memory prices = new uint256[](tokens.length);
     bool[] memory for_sale = new bool[](tokens.length);
@@ -195,7 +195,7 @@ contract Event /* is ERC721 */  {
     d_token_ask[_token] = _price;
   }
   
-  function proposeSales(uint256[] _tokens,uint256[] _prices) public {
+  function proposeSales(uint256[] memory _tokens,uint256[] memory _prices) public {
       require(_tokens.length == _prices.length);
       for(uint256 i=0;i<_tokens.length;++i) {
         proposeSale(_tokens[i],_prices[i]);
@@ -209,13 +209,13 @@ contract Event /* is ERC721 */  {
     d_token_ask_num--;
   }
   
-  function retractSales(uint256[] _tokens) public {
+  function retractSales(uint256[] memory _tokens) public {
     for(uint256 i=0;i<_tokens.length;++i) {
       retractSale(_tokens[i]);
     }
   }
 
-  function forSale() public constant returns(uint256,uint256[],uint256[]) {
+  function forSale() public view returns(uint256,uint256[] memory,uint256[] memory) {
     uint256[] memory tokens = new uint256[](d_token_ask_num);
     uint256[] memory asks = new uint256[](d_token_ask_num);
     uint256 iter=0;
@@ -236,7 +236,7 @@ contract Event /* is ERC721 */  {
     require(d_token_ask[_token] > 0 && msg.value >= d_token_ask[_token]);
       
     // Value provided, okay to transfer
-    address prev_owner = d_token_owner[_token];
+    address payable prev_owner = d_token_owner[_token];
     transferFromImpl(prev_owner,msg.sender,_token);
     
     // Take money
@@ -258,23 +258,25 @@ contract Event /* is ERC721 */  {
     }
   }
   
-  function ticketUsed(uint256 _tokenId) public constant returns(bool) {
+  function ticketUsed(uint256 _tokenId) public view returns(bool) {
       return d_tickets[_tokenId].d_used;
   }
 
   // https://medium.com/@libertylocked/ec-signatures-and-recovery-in-ethereum-smart-contracts-560b6dd8876
-  function ticketVerificationCode(uint256 _tokenId) public constant returns(bytes32) {
+  function ticketVerificationCode(uint256 _tokenId) public view returns(bytes32) {
     require(!ticketUsed(_tokenId), "Ticket already used!");
     return keccak256(abi.encodePacked(_tokenId,address(this)));
   }
   
-  function isOwnerSig(uint256 _tokenId, bytes memory signature) public constant returns(bool) {
+  function isOwnerSig(uint256 _tokenId, bytes memory signature) public view returns(bool) {
+    bytes memory prefix = "\x19Ethereum Signed Message:\n32";
+    bytes32 prefixedHash = keccak256(abi.encodePacked(prefix, ticketVerificationCode(_tokenId)));
     return d_token_owner[_tokenId] == 
-            recover(ticketVerificationCode(_tokenId),signature);
+            recover(prefixedHash,signature);
   }
 
-  function useTicket(uint256 _tokenId, bytes memory signature) public returns(bool) {
-    require(isOwnerSig(_tokenId,signature), "Incorrect usage signature!");
+  function useTicket(uint256 _tokenId) public returns(bool) {
+    require(msg.sender == d_organizer);
     require(!ticketUsed(_tokenId), "Ticket already used!");
     d_tickets[_tokenId].d_used = true;
     if (d_token_ask[_tokenId] != 0) {
@@ -282,6 +284,11 @@ contract Event /* is ERC721 */  {
         d_token_ask_num--;
     }
     return true;
+  }
+
+  function useTicket(uint256 _tokenId, bytes memory signature) public returns(bool) {
+    require(isOwnerSig(_tokenId,signature), "Incorrect usage signature!");
+    return useTicket(_tokenId);
   }
 
 /* TODO Cannot use since we cannot pass in bytes[] as an argument
@@ -313,7 +320,7 @@ contract Event /* is ERC721 */  {
     return (v, r, s);
   }
   
-  function transferFromImpl(address _from, address _to, uint256 _token) private {
+  function transferFromImpl(address _from, address payable _to, uint256 _token) private {
       require(d_token_owner[_token] == _from);
       
       // Value provided, okay to transfer
@@ -342,7 +349,7 @@ contract Event /* is ERC721 */  {
       u.addUserEvent(address(this),_to);
   }
 
-  function transferFrom(address _from, address _to, uint256 _token) public {
+  function transferFrom(address _from, address payable _to, uint256 _token) public {
       require(d_token_owner[_token] == _from);
       require(msg.sender == _from || tx.origin == _from);
       transferFromImpl(_from,_to,_token);
@@ -363,4 +370,5 @@ contract Event /* is ERC721 */  {
   function safeTransferFrom(address _from, address _to, uint256 _tokenId) public;
 */
 }
+
 

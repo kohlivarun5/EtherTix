@@ -1,10 +1,10 @@
-pragma solidity ^0.4.24;
+pragma solidity <=0.5.4;
 
 import "./Event.sol";
 
 contract Universe {
   
-  address private d_owner;
+  address payable private d_owner;
   uint256 d_commission_percent;
 
   mapping(address => string) d_verified_users;
@@ -26,13 +26,13 @@ contract Universe {
     d_commission_percent = commission_percent;
   }
   
-  function() public payable {}
+  function() external payable {}
   
-  function getBalance() public constant returns(uint) {
+  function getBalance() public view returns(uint) {
     return address(this).balance;
   }
 
-  function isOwner() public constant returns(bool) {
+  function isOwner() public view returns(bool) {
     return msg.sender == d_owner;
   }
   
@@ -41,10 +41,10 @@ contract Universe {
     address(d_owner).transfer(getBalance());
   }
   
-  function createEvent(string _description) public payable returns(address) {
-    address eventAddr = new Event(_description,msg.sender,d_commission_percent);
-    emit OrganizerEvents(eventAddr, msg.sender, true,_description);
-    return eventAddr;
+  function createEvent(string memory _description) public payable returns(address) {
+    Event eventAddr = new Event(_description,msg.sender,d_commission_percent);
+    emit OrganizerEvents(address(eventAddr), msg.sender, true,_description);
+    return address(eventAddr);
   }
   
   function addUserEvent(address _event,address _user) public {
@@ -60,13 +60,14 @@ contract Universe {
     d_commission_percent=commission_percent;
   }
 
-  function verifiedUser(address _user) public constant returns(string) {
+  function verifiedUser(address _user) public view returns(string memory) {
     return d_verified_users[_user];
   }
 
-  function verifyUser(address _user,string info) public {
+  function verifyUser(address _user,string memory info) public {
     require(msg.sender == d_owner);
     d_verified_users[_user] = info;
   }
   
 }
+
