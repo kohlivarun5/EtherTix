@@ -36,6 +36,7 @@ type action =
 | SubmitIssue
 | Withdraw 
 | ScanTickets
+| ClearCache 
 | UseTicket(string)
 
 let component = ReasonReact.reducerComponent("EventView");
@@ -99,6 +100,10 @@ let make = (~web3,~description, ~address,~event,_children) => {
         |> BsWeb3.Eth.send(BsWeb3.Eth.make_transaction(~from=state.web3.account))
         |> Js.Promise.then_ (_ => self.send(FetchData) |> Js.Promise.resolve);
         ()
+      })
+    | ClearCache => ReasonReact.UpdateWithSideEffects(state,(_) => {
+        Dom.Storage.clear(Dom.Storage.localStorage);
+        BsUtils.alert("Tickets cache cleared!");
       })
     | ScanTickets => ReasonReact.UpdateWithSideEffects(state,(self) => {
         BsWeb3.Web3.scanQRCode(state.web3.web3,[%bs.re "/.*/"])
@@ -261,11 +266,18 @@ let make = (~web3,~description, ~address,~event,_children) => {
           </button>
         )
         | Some(_) => (
-          <button className="btn btn-success btn-send" 
-                  onClick=(_ => send(ScanTickets))
-                  style=(ReactDOMRe.Style.make(~marginTop="20px",~width="100%",()))>
-            (text("Scan Tickets"))
-          </button>
+          <div>
+            <button className="btn btn-success btn-send" 
+                    onClick=(_ => send(ScanTickets))
+                    style=(ReactDOMRe.Style.make(~marginTop="20px",~width="100%",()))>
+              (text("Scan Tickets"))
+            </button>
+            <button className="btn btn-warning" 
+                    onClick=(_ => send(ClearCache))
+                    style=(ReactDOMRe.Style.make(~marginTop="20px",~width="100%",()))>
+              (text("Clear Cache"))
+            </button>
+          </div>
         )
       })
     </div>
