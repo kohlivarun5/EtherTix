@@ -5,7 +5,7 @@ type provider;
 [@bs.get] external currentProvider : global => provider = "";
 
 type address = string;
-[@bs.get] external getEnable: provider => Js.undefined(((.unit) => Js.Promise.t(Js.Array.t(address)))) = "enable";
+[@bs.get] external getEnable: provider => Js.undefined(((.unit) => Js.Promise.t(Js.Undefined.t(Js.Array.t(address))))) = "enable";
 [@bs.send] external enable : provider => Js.Promise.t(unit) = "";
 
 type t;

@@ -51,9 +51,27 @@ let make = (_children) => {
             );
 
             let enabler = BsWeb3.Web3.getEnable(BsWeb3.Web3.getCurrentProvider(w3));
+            Js.log(enabler);
             (switch(enabler |> Js.Undefined.toOption) {
             | None => BsWeb3.Eth.getAccounts(eth)
-            | Some(enabler) => enabler(.)
+            | Some(enabler) => {
+              enabler(.)
+              |> Js.Promise.then_((addresses) => {
+                 Js.log(addresses);
+                 (switch(addresses |> Js.Undefined.toOption) {
+                 | None => BsWeb3.Eth.getAccounts(eth)
+                 | Some(x) => Js.Promise.resolve(x)
+                 })
+              })
+              |> Js.Promise.catch((e) => { 
+                  Js.log(e);
+                  BsWeb3.Eth.getAccounts(eth)
+                 })
+              }
+            })
+            |> Js.Promise.catch((e) => {
+                Js.log(e);
+                Js.Promise.resolve([|"0x0"|])
             })
             |> Js.Promise.then_((accounts) => {
 
