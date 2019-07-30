@@ -506,62 +506,67 @@ let make = (~web3,_children) => {
                     className=((show_details) ? "table-active bg-black" : "")>
                   <td colSpan=3 style=(ReactDOMRe.Style.make(~maxWidth="170px",())) >
                     <div className="card">
-                      (Js.Array.length(ticket_signatures) <= 0 
-                       ? <div className="card-body">
-                          <button className="btn btn-success btn-send" onClick=(_ => send(SignTickets(i)))
-                            style=(ReactDOMRe.Style.make(~width="100%",())) >
-                            (text("Get Tickets"))
-                          </button>
-                         </div>
-                       : <div className="card-body padding-vertical-less padding-horizontal-less" > 
-                           <Carousel> 
-                             (ticket_signatures |> Js.Array.map( ((signature,id)) => {
-                               switch(signature) {
-                                 | Used => 
-                                   <img src="img/UsedTicket.png"
-                                     key=string_of_int(id)
-                                     className="used-ticket"
-                                   />
-                                 | UnUsed(sha) => {
-                                   <QrView 
-                                     style=(ReactDOMRe.Style.make(~marginTop="15px",~marginBottom="10px",()))
-                                     key=string_of_int(id) text=Js.String.concatMany([|"|",string_of_int(id)|],sha )
-                                   />
+                      ((tickets |> Js.Array.every(((_,(_,(_,used)))) => used))
+                       ?(<div className="card-header font-weight-bold padding-vertical-less bg-light">(text("All Tickets Used"))</div>)
+                       :<div>
+                        (Js.Array.length(ticket_signatures) <= 0 
+                         ? <div className="card-body">
+                            <button className="btn btn-success btn-send" onClick=(_ => send(SignTickets(i)))
+                              style=(ReactDOMRe.Style.make(~width="100%",())) >
+                              (text("Get Tickets"))
+                            </button>
+                           </div>
+                         : <div className="card-body padding-vertical-less padding-horizontal-less" > 
+                             <Carousel> 
+                               (ticket_signatures |> Js.Array.map( ((signature,id)) => {
+                                 switch(signature) {
+                                   | Used => 
+                                     <img src="img/UsedTicket.png"
+                                       key=string_of_int(id)
+                                       className="used-ticket"
+                                     />
+                                   | UnUsed(sha) => {
+                                     <QrView 
+                                       style=(ReactDOMRe.Style.make(~marginTop="15px",~marginBottom="10px",()))
+                                       key=string_of_int(id) text=Js.String.concatMany([|"|",string_of_int(id)|],sha )
+                                     />
+                                   }
                                  }
                                }
-                             }
-                             ))
-                           </Carousel>
-                         </div>
-                      )
-                      <div className="card-header font-weight-bold padding-vertical-less">(text("Resale Tickets"))</div>
-                      <div className="card-body padding-vertical-less" style=(ReactDOMRe.Style.make(~paddingLeft="14px",()))> 
-                        <div className="form-group" style=(ReactDOMRe.Style.make(~margin="3%",()))>
+                               ))
+                             </Carousel>
+                           </div>
+                        )
+                        <div className="card-header font-weight-bold padding-vertical-less">(text("Resale Tickets"))</div>
+                        <div className="card-body padding-vertical-less" style=(ReactDOMRe.Style.make(~paddingLeft="14px",()))> 
+                          <div className="form-group" style=(ReactDOMRe.Style.make(~margin="3%",()))>
 
-                          (tickets |> Js.Array.mapi(((_,(price,(for_sale,used))),token_index) => {
-                            <div key=(Js.String.concat("event_tickets",string_of_int(token_index))) className="row">
-                              (used 
-                               ? ReasonReact.null
-                               : ([|
-                                    <label key=("price_label"++(string_of_int(token_index))) className="col col-6 col-form-label text-muted padding-horizontal-less">(text("Price (milli ETH)"))</label>,
-                                    (for_sale 
-                                     ? <button key=("retract"++(string_of_int(token_index)))  className="col btn btn-success btn-danger padding-horizontal-less" style=(ReactDOMRe.Style.make(~width="100%",~marginBottom="10px",()))
-                                        onClick=(_ => send(RetractSale(i,token_index))) > (text("Retract Sale")) </button>
-                                     : ([|
-                                          <input key=("price_value"++(string_of_int(token_index))) className="col form-control" type_="text" placeholder=""
-                                           onChange=(event => send(SellingPricePerTicket(i,token_index,ReactEvent.Form.target(event)##value)))
-                                           value=(BsWeb3.Types.toString(10,price))
-                                          />,
-                                          <button key=("ProposeSale"++(string_of_int(token_index))) className="col btn btn-success btn-send padding-horizontal-less" style=(ReactDOMRe.Style.make(~width="100%",~marginBottom="10px",~marginLeft="10px",())) 
-                                                  onClick=(_ => send(ProposeSale(i,token_index))) > (text("Sell")) </button>
-                                        |] |> ReasonReact.array)
-                                    )
-                                  |] |> ReasonReact.array)
-                              )
-                            </div>
-                          }) |> ReasonReact.array)
+                            (tickets |> Js.Array.mapi(((_,(price,(for_sale,used))),token_index) => {
+                              <div key=(Js.String.concat("event_tickets",string_of_int(token_index))) className="row">
+                                (used 
+                                 ? ReasonReact.null
+                                 : ([|
+                                      <label key=("price_label"++(string_of_int(token_index))) className="col col-6 col-form-label text-muted padding-horizontal-less">(text("Price (milli ETH)"))</label>,
+                                      (for_sale 
+                                       ? <button key=("retract"++(string_of_int(token_index)))  className="col btn btn-success btn-danger padding-horizontal-less" style=(ReactDOMRe.Style.make(~width="100%",~marginBottom="10px",()))
+                                          onClick=(_ => send(RetractSale(i,token_index))) > (text("Retract Sale")) </button>
+                                       : ([|
+                                            <input key=("price_value"++(string_of_int(token_index))) className="col form-control" type_="text" placeholder=""
+                                             onChange=(event => send(SellingPricePerTicket(i,token_index,ReactEvent.Form.target(event)##value)))
+                                             value=(BsWeb3.Types.toString(10,price))
+                                            />,
+                                            <button key=("ProposeSale"++(string_of_int(token_index))) className="col btn btn-success btn-send padding-horizontal-less" style=(ReactDOMRe.Style.make(~width="100%",~marginBottom="10px",~marginLeft="10px",())) 
+                                                    onClick=(_ => send(ProposeSale(i,token_index))) > (text("Sell")) </button>
+                                          |] |> ReasonReact.array)
+                                      )
+                                    |] |> ReasonReact.array)
+                                )
+                              </div>
+                            }) |> ReasonReact.array)
+                          </div>
                         </div>
-                      </div>
+                       </div>
+                      )
                     </div>
                   </td>
                 </tr>
