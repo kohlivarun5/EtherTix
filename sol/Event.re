@@ -31,6 +31,9 @@ type t;
 [@bs.scope "methods"] [@bs.send] external forSale : t => BsWeb3.Eth.contract_method((int,Js.Array.t(int),Js.Array.t(BsWeb3.Types.big_number))) = "";
 [@bs.scope "methods"] [@bs.send] external hitAsk : t => int => BsWeb3.Eth.contract_method(unit) = "";
 
+[@bs.scope "methods"] [@bs.send] external imgSrc : t => BsWeb3.Eth.contract_method(string) = "";
+[@bs.scope "methods"] [@bs.send] external setImg : t => string => BsWeb3.Eth.contract_method(unit) = "";
+
 
 let ofAddress(web3,address) {
   let eth = BsWeb3.Web3.eth(web3);

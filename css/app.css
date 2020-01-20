@@ -75,6 +75,12 @@ body {
   height:36px; 
 }
 
+.event-img {
+  max-height: 100%;
+  max-width: 90%;
+  margin: auto;
+}
+
 .used-ticket {
   max-height: 100%;  
   max-width: 80%; 
