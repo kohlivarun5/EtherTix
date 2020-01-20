@@ -46,6 +46,7 @@ let make = (_children) => {
               | 1 => MainNet.t
               /* | 3 => Ropsten.t */
               | 4 => Rinkeby.t
+              | 1337 => DevNet.t
               | _ => Js.log(networkId);assert(false);
               }
             );

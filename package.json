@@ -11,6 +11,7 @@
     "clean": "bsb -clean-world",
     "webpack": "webpack -w --content-base=web",
     "server": "webpack-dev-server",
+    "geth": "geth --dev --datadir build/geth --rpc",
     "webpack:production": "NODE_ENV=production webpack",
     "release": "make release"
   },
@@ -28,8 +29,8 @@
     "bs-platform": "^4.0.3",
     "remixd": "^0.1.8-alpha.6",
     "solc": "^0.4.25",
-    "webpack": "^4.0.1",
-    "webpack-cli": "^2.0.10",
+    "webpack": "^4.20.2",
+    "webpack-cli": "^3.1.1",
     "webpack-dev-server": "^3.1.5"
   },
   "dependencies": {
