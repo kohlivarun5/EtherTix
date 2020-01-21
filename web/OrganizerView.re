@@ -4,6 +4,7 @@ type event_data = {
   address:BsWeb3.Eth.address,
   event:Event.t,
   description : string,
+  imgSrc: string,
   balance : BsWeb3.Types.big_number,
   show:bool
 };
@@ -155,10 +156,15 @@ let make = (_children) => {
               Event.description(event)
               |> BsWeb3.Eth.call_with(transaction_data)
               |> Js.Promise.then_ ((description) => {
-                  Js.log(description);
-                  Js.log(balance);
-                  self.send(EventData({event,description,balance,address,show:false}))
-                  |> Js.Promise.resolve
+                  Event.imgSrc(event)
+                  |> BsWeb3.Eth.call_with(transaction_data)
+                  |> Js.Promise.then_ ((imgSrc) => {
+
+                    Js.log(description);
+                    Js.log(balance);
+                    self.send(EventData({event,description,balance,imgSrc,address,show:false}))
+                    |> Js.Promise.resolve
+                  })
               })
           });
           ()
@@ -236,12 +242,12 @@ let make = (_children) => {
               <thead className="bg-secondary">
                 <tr>
                   <th scope="col">(text("Description"))</th>
-                  <th scope="col">(text("Address"))</th>
+                  <th scope="col">(text("ID"))</th>
                   <th scope="col">(text("Balance"))</th>
                 </tr>
               </thead>
               <tbody>
-                (state.myEvents |> Js.Array.map(({event,description,address,balance,show}) => {
+                (state.myEvents |> Js.Array.map(({event,description,address,balance,imgSrc,show}) => {
                   [|
                   <tr key=address 
                       className=((show) ? "table-active bg-black" : "")
@@ -254,7 +260,7 @@ let make = (_children) => {
                    | true => 
                       <tr className="table-active bg-black" key=(Js.String.concat(address,"View"))>
                         <td colSpan=3>
-                          <EventView description=description event=event address=address web3=Js.Option.getExn(state.web3) />
+                          <EventView imgSrc=imgSrc description=description event=event address=address web3=Js.Option.getExn(state.web3) />
                         </td>
                       </tr>
                    | false => ReasonReact.null 

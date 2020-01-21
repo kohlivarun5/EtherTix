@@ -22,6 +22,7 @@ type state = {
   web3 : Web3State.t,
   address : BsWeb3.Eth.address,
   description:string,
+  imgSrc:string,
   event: Event.t,
   sold_data:sold_data,
   used_data:used_data,
@@ -38,15 +39,18 @@ type action =
 | ScanTickets
 | ClearCache 
 | UseTicket(string)
+| Img(string)
+| SetImg
 
 let component = ReasonReact.reducerComponent("EventView");
 
-let make = (~web3,~description, ~address,~event,_children) => {
+let make = (~web3,~description, ~imgSrc, ~address,~event,_children) => {
   ...component,
   initialState: () => { 
     web3:web3,
     address:address,
     description:description,
+    imgSrc:imgSrc,
     event:event,
     sold_data:{numSold:0,numUnsold:0},
     used_data:{numUsed:0,numToBeUsed:0},
@@ -82,15 +86,23 @@ let make = (~web3,~description, ~address,~event,_children) => {
     | SoldData(sold_data) => ReasonReact.Update({...state,sold_data})
     | UsedData(used_data) => ReasonReact.Update({...state,used_data})
     | IssueNumber(number) => ReasonReact.Update({...state,issue_data:{...state.issue_data,number}})
+    | Img(imgSrc) => ReasonReact.Update({...state,imgSrc})
     | IssuePrice(price_milli) => ReasonReact.Update({...state,issue_data:{...state.issue_data,price_milli}})
+    | SetImg => ReasonReact.UpdateWithSideEffects(state,(_) => {
+        Event.setImg(state.event, state.imgSrc)
+        |> BsWeb3.Eth.send(BsWeb3.Eth.make_transaction(~from=state.web3.account))
+        |> Js.Promise.then_ (Js.Promise.resolve);
+        ()
+      })
+
     | SubmitIssue => ReasonReact.UpdateWithSideEffects(state,(self) => {
+        Js.log("SubmitIssue");
+        Js.log(state.issue_data.number);
+        Js.log(state.issue_data.price_milli);
+        Js.log(BsWeb3.Utils.toWei(state.issue_data.price_milli,"milliether"));
         Event.issue(state.event,
                     ~number=state.issue_data.number,
-                    ~price=(
-                      BsWeb3.Utils.toWei(
-                        BsWeb3.Utils.toBN(state.issue_data.price_milli),
-                        "milliether")
-                    ))
+                    ~price=(BsWeb3.Utils.toWei(state.issue_data.price_milli,"milliether")))
         |> BsWeb3.Eth.send(BsWeb3.Eth.make_transaction(~from=state.web3.account))
         |> Js.Promise.then_ (_ => self.send(FetchData) |> Js.Promise.resolve);
         ()
@@ -171,6 +183,29 @@ let make = (~web3,~description, ~address,~event,_children) => {
 <div className="card">
   
 
+  <div className="card-header padding-horizontal-less">
+    (switch(state.imgSrc) {
+      | "" => ReasonReact.null
+      | imgSrc => <img className="event-img" src=imgSrc />
+    })
+
+    <div className="form-group" style=(ReactDOMRe.Style.make(~margin="3%",()))>
+      <div className="row">
+        <label className="col col-4 col-form-label text-muted" > (text("Image")) </label>
+        <input className="col form-control" type_="text" placeholder="" id="inputLarge"
+               onChange=(event => send(Img(ReactEvent.Form.target(event)##value)))
+               value=state.imgSrc
+               style=(ReactDOMRe.Style.make(~marginRight="10px",()))
+        />
+        <button className="col col-3 btn btn-success btn-send" onClick=(_ => send(SetImg))
+                style=(ReactDOMRe.Style.make(~marginRight="20px",~width="100%",())) >
+          (text("Save"))
+        </button>
+
+      </div>
+    </div>
+  </div>
+
   <div className="card-body row" >
     <div className="col text-center font-weight-bold" 
          style=ReactDOMRe.Style.make(~alignSelf="center",()) >(text("Share Event"))
@@ -201,24 +236,12 @@ let make = (~web3,~description, ~address,~event,_children) => {
         <img className="share-icon" src="img/whatsapp_logo2.png" />
       </a>
     </div>
-    /*
-    <div className="col text-center" >
-      <a href=(
-            "fb-messenger://share/?link="
-            |> Js.String.concat(
-                BsUtils.createEventLinkUriComponent(~address=state.address,~description=state.description))
-            )>
-        <img className="share-icon" src="img/Messenger_Icon.png" />
-      </a>
-    </div>
-    */
   </div>
   
   <div className="card-header">
     <button className="btn btn-success btn-send" onClick=(_ => send(Withdraw))
             style=(ReactDOMRe.Style.make(~width="100%",())) 
       >
-
       (text("Withdraw"))
     </button>
   </div>
