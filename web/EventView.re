@@ -99,17 +99,10 @@ let make = (~web3,~description, ~imgSrc, ~address,~event,_children) => {
         Js.log("SubmitIssue");
         Js.log(state.issue_data.number);
         Js.log(state.issue_data.price_milli);
-        Js.log(BsWeb3.Types.toInt(10,BsWeb3.Utils.toWei(
-                        BsWeb3.Utils.toBN(state.issue_data.price_milli),
-                        "milliether")
-                  ));
+        Js.log(BsWeb3.Utils.toWei(state.issue_data.price_milli,"milliether"));
         Event.issue(state.event,
                     ~number=state.issue_data.number,
-                    ~price=(
-                      BsWeb3.Types.toInt(10,BsWeb3.Utils.toWei(
-                        BsWeb3.Utils.toBN(state.issue_data.price_milli),
-                        "milliether")
-                    )))
+                    ~price=(BsWeb3.Utils.toWei(state.issue_data.price_milli,"milliether")))
         |> BsWeb3.Eth.send(BsWeb3.Eth.make_transaction(~from=state.web3.account))
         |> Js.Promise.then_ (_ => self.send(FetchData) |> Js.Promise.resolve);
         ()

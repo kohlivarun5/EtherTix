@@ -369,7 +369,7 @@ let make = (~web3,_children) => {
         let {event,tickets} = state.myEvents[index];
         let (token,(price,(_,_))) = tickets[ticket_index];
         Event.proposeSale(event,token,
-                          ~price=(BsWeb3.Utils.toWei(price,"milliether")))
+                          ~price=(BsWeb3.Utils.toWeiBN(price,"milliether")))
         |> BsWeb3.Eth.send(
             BsWeb3.Eth.make_transaction(~from=state.web3.account))
         |> Js.Promise.then_ (_ => Js.Promise.resolve());
