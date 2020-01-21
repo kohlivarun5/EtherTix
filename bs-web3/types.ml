@@ -25,4 +25,3 @@ type batch =
 type big_number 
 
 external toString : int -> string = "" [@@bs.send.pipe : big_number]
-external toInt : int -> big_number = "toString" [@@bs.send.pipe : big_number]
