@@ -96,6 +96,13 @@ let make = (~web3,~description, ~imgSrc, ~address,~event,_children) => {
       })
 
     | SubmitIssue => ReasonReact.UpdateWithSideEffects(state,(self) => {
+        Js.log("SubmitIssue");
+        Js.log(state.issue_data.number);
+        Js.log(state.issue_data.price_milli);
+        Js.log(BsWeb3.Utils.toWei(
+                        BsWeb3.Utils.toBN(state.issue_data.price_milli),
+                        "milliether")
+                    );
         Event.issue(state.event,
                     ~number=state.issue_data.number,
                     ~price=(
@@ -183,20 +190,21 @@ let make = (~web3,~description, ~imgSrc, ~address,~event,_children) => {
 <div className="card">
   
 
-  <div className="card-header">
+  <div className="card-header padding-horizontal-less">
     (switch(state.imgSrc) {
       | "" => ReasonReact.null
       | imgSrc => <img className="event-img" src=imgSrc />
     })
+
     <div className="form-group" style=(ReactDOMRe.Style.make(~margin="3%",()))>
-      <div className="row row-margin">
-        <label className="col col-4 col-form-label text-muted" > (text("Update Image")) </label>
+      <div className="row">
+        <label className="col col-4 col-form-label text-muted" > (text("Image")) </label>
         <input className="col form-control" type_="text" placeholder="" id="inputLarge"
                onChange=(event => send(Img(ReactEvent.Form.target(event)##value)))
                value=state.imgSrc
                style=(ReactDOMRe.Style.make(~marginRight="10px",()))
         />
-        <button className="col col-2 btn btn-success btn-send" onClick=(_ => send(SetImg))
+        <button className="col col-3 btn btn-success btn-send" onClick=(_ => send(SetImg))
                 style=(ReactDOMRe.Style.make(~marginRight="20px",~width="100%",())) >
           (text("Save"))
         </button>
