@@ -305,7 +305,7 @@ let make = (~web3,_children) => {
             /* Cannot use eth_signTypedData on Toshi
             let msg_params = [|
               BsWeb3.Web3.msg_params(
-                ~name="Event Address",
+                ~name="Event ID",
                 ~type__="address",
                 ~value=event_address),
               BsWeb3.Web3.msg_params(
@@ -395,7 +395,7 @@ let make = (~web3,_children) => {
       <div className="card-body padding-vertical-less"> 
         <div className="form-group" style=(ReactDOMRe.Style.make(~margin="3%",()))>
           <div className="row">
-            <label className="col col-6 col-form-label text-muted">(text("Event Address"))</label>
+            <label className="col col-6 col-form-label text-muted">(text("Event ID"))</label>
             <input className="col form-control" type_="text" placeholder="" id="inputLarge"
                    onChange=(event => send(BuyEventAddress(ReactEvent.Form.target(event)##value)))
                    value=state.event_address
@@ -497,7 +497,7 @@ let make = (~web3,_children) => {
         <thead className="bg-secondary">
           <tr>
             <th scope="col">(text("Description"))</th>
-            <th scope="col">(text("Address"))</th>
+            <th scope="col">(text("ID"))</th>
             <th scope="col">(text("Tickets"))</th>
           </tr>
         </thead>

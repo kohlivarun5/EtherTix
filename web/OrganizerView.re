@@ -242,7 +242,7 @@ let make = (_children) => {
               <thead className="bg-secondary">
                 <tr>
                   <th scope="col">(text("Description"))</th>
-                  <th scope="col">(text("Address"))</th>
+                  <th scope="col">(text("ID"))</th>
                   <th scope="col">(text("Balance"))</th>
                 </tr>
               </thead>
