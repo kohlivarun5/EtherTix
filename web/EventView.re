@@ -37,6 +37,7 @@ type action =
 | SubmitIssue
 | Withdraw 
 | ScanTickets
+| ScanTicketsRpc
 | ClearCache 
 | UseTicket(string)
 | Img(string)
@@ -130,6 +131,23 @@ let make = (~web3,~description, ~imgSrc, ~address,~event,_children) => {
             |> Js.Promise.resolve
         })
         */
+        |> ignore
+
+      })
+    | ScanTicketsRpc => ReasonReact.UpdateWithSideEffects(state,(self) => {
+        BsWeb3.Web3.request(
+          state.web3.web3,
+          BsWeb3.Web3.rpc_params(~method__=("wallet_scanQRCode"),~params=([|"\\D"|])))
+        |> Js.Promise.then_((code) => {
+            self.send(UseTicket(code)) |> Js.Promise.resolve
+        })
+        |> Js.Promise.catch((error) => {
+            Js.Console.log(error);
+            BsUtils.alert(
+              "Invalid code:"
+              |> Js.String.concat(Js.Json.stringifyAny(error) |> Js.Option.getExn))
+            |> Js.Promise.resolve
+        })
         |> ignore
 
       })
@@ -283,10 +301,18 @@ let make = (~web3,~description, ~imgSrc, ~address,~event,_children) => {
               |> BsWeb3.Web3.getScanQrCode
               |> Js.Undefined.toOption) {
         | None => (
-          <button disabled=true className="btn btn-warning"
-                  style=(ReactDOMRe.Style.make(~marginTop="20px",~width="100%",())) >
-            (text("Scanner not available"))
-          </button>
+          <div>
+            <button className="btn btn-success btn-send"
+                    onClick=(_ => send(ScanTicketsRpc))
+                    style=(ReactDOMRe.Style.make(~marginTop="20px",~width="100%",()))>
+              (text("Scan Tickets"))
+            </button>
+            <button className="btn btn-warning"
+                    onClick=(_ => send(ClearCache))
+                    style=(ReactDOMRe.Style.make(~marginTop="20px",~width="100%",()))>
+              (text("Clear Cache"))
+            </button>
+          </div>
         )
         | Some(_) => (
           <div>

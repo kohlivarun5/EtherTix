@@ -16,6 +16,13 @@ type t;
 type scanner = (Js.Re.t => Js.Promise.t(string));
 [@bs.scope "currentProvider"] [@bs.get] external getScanQrCode : t => Js.undefined(scanner) = "scanQRCode";
 
+type rpc_params;
+[@bs.obj] external rpc_params:
+                      (~method__:string) =>
+                      (~params:'a) =>
+                      rpc_params = "";
+[@bs.scope "currentProvider"] [@bs.send] external request : t => rpc_params => Js.Promise.t(string) = "request";
+
 [@bs.get] external eth : t => Eth.t = "";
 
 type version;
