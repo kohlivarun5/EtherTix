@@ -34,9 +34,7 @@ let make = (_children) => {
   didMount: self => { 
     switch(BsUtils.getSearchValueByKey("about")) {
       | Some(_) => self.send(ShowAbout)
-      | None => 
-      if (true)
-      {
+      | None => {
         /* let w3_global = Js.Undefined.getExn(BsWeb3.Web3.get); */
         WalletConnect.(web3_provider(
           options(
@@ -111,10 +109,12 @@ let make = (_children) => {
               })
           });
         })
-        |> Js.Promise.catch((x) => { Js.log(x) |> Js.Promise.resolve });
-        ()
-      } else {
-        Js.log("Web3 is undefined!");
+        |> Js.Promise.catch((x) => { 
+          Js.log(x);
+          self.send(ShowAbout)
+          |> Js.Promise.resolve 
+        })
+        |> ignore
       }
     }
   },
