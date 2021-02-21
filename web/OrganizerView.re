@@ -34,71 +34,87 @@ let make = (_children) => {
   didMount: self => { 
     switch(BsUtils.getSearchValueByKey("about")) {
       | Some(_) => self.send(ShowAbout)
-      | None => 
-      if (Js.typeof(BsWeb3.Web3.get) !== "undefined") {
-        let w3_global = Js.Undefined.getExn(BsWeb3.Web3.get);
-        let w3 = BsWeb3.Web3.makeWeb3(BsWeb3.Web3.currentProvider(w3_global));
-        let eth = BsWeb3.Web3.eth(w3);
-        BsWeb3.Eth.net(eth)
-        |> BsWeb3.Net.getId
-        |> Js.Promise.then_ ((networkId) => {
-            let {NetworkInfo.universe,address_uri} = (
-              switch(networkId) {
-              | 1 => MainNet.t
-              /* | 3 => Ropsten.t */
-              | 4 => Rinkeby.t
-              | 1337 => DevNet.t
-              | _ => Js.log(networkId);assert(false);
-              }
-            );
+      | None => {
+        /* let w3_global = Js.Undefined.getExn(BsWeb3.Web3.get); */
+        WalletConnect.(web3_provider(
+          options(
+            ~providerOptions=provider_options(
+              ~walletconnect=wallet_connect_options(
+                ~package=WalletConnect.wallet_connect,
+                ~options=WalletConnect.wallet_connect_params(
+                  ~infuraId="b4287cfd0a6b4849bd0ca79e144d3921")))
+          )
+        ))
+        |> WalletConnect.connect
+        |> Js.Promise.then_((provider) => {
+          let w3 = BsWeb3.Web3.makeWeb3(provider);
 
-            let enabler = BsWeb3.Web3.getEnable(BsWeb3.Web3.getCurrentProvider(w3));
-            Js.log(enabler);
-            (switch(enabler |> Js.Undefined.toOption) {
-            | None => BsWeb3.Eth.getAccounts(eth)
-            | Some(enabler) => {
-              enabler(.)
-              |> Js.Promise.then_((addresses) => {
-                 Js.log(addresses);
-                 (switch(addresses |> Js.Undefined.toOption) {
-                 | None => BsWeb3.Eth.getAccounts(eth)
-                 | Some(x) => Js.Promise.resolve(x)
-                 })
+          /* BsWeb3.Web3.makeWeb3(BsWeb3.Web3.currentProvider(w3_global)); */
+          let eth = BsWeb3.Web3.eth(w3);
+          BsWeb3.Eth.net(eth)
+          |> BsWeb3.Net.getId
+          |> Js.Promise.then_ ((networkId) => {
+              let {NetworkInfo.universe,address_uri} = (
+                switch(networkId) {
+                | 1 => MainNet.t
+                /* | 3 => Ropsten.t */
+                | 4 => Rinkeby.t
+                | 1337 => DevNet.t
+                | _ => Js.log(networkId);Js.Exn.raiseError("Unknown net`work id="++(string_of_int(networkId)));
+                }
+              );
+
+              let enabler = BsWeb3.Web3.getEnable(BsWeb3.Web3.getCurrentProvider(w3));
+              Js.log(enabler);
+              (switch(enabler |> Js.Undefined.toOption) {
+              | None => BsWeb3.Eth.getAccounts(eth)
+              | Some(enabler) => {
+                enabler(.)
+                |> Js.Promise.then_((addresses) => {
+                   Js.log(addresses);
+                   (switch(addresses |> Js.Undefined.toOption) {
+                   | None => BsWeb3.Eth.getAccounts(eth)
+                   | Some(x) => Js.Promise.resolve(x)
+                   })
+                })
+                |> Js.Promise.catch((e) => { 
+                    Js.log(e);
+                    BsWeb3.Eth.getAccounts(eth)
+                   })
+                }
               })
-              |> Js.Promise.catch((e) => { 
+              |> Js.Promise.catch((e) => {
                   Js.log(e);
-                  BsWeb3.Eth.getAccounts(eth)
-                 })
-              }
-            })
-            |> Js.Promise.catch((e) => {
-                Js.log(e);
-                Js.Promise.resolve([|"0x0"|])
-            })
-            |> Js.Promise.then_((accounts) => {
+                  Js.Promise.resolve([|"0x0"|])
+              })
+              |> Js.Promise.then_((accounts) => {
 
-              /* Don't change code untill universe creation 
-                 As Bs does not support send with new 
-                 */
-              let universe_address = Js.String.concat("",universe);
-              Js.log(eth);
-              Js.log(universe_address);
-              Js.log(Universe.abi);
-              let universe:Universe.t = [%bs.raw{| new eth.Contract(UniverseAbiJson.default,universe_address) |}];
+                /* Don't change code untill universe creation 
+                   As Bs does not support send with new 
+                   */
+                let universe_address = Js.String.concat("",universe);
+                Js.log(eth);
+                Js.log(universe_address);
+                Js.log(Universe.abi);
+                let universe:Universe.t = [%bs.raw{| new eth.Contract(UniverseAbiJson.default,universe_address) |}];
 
-              Js.log("GetOrganizerEvents");
-              self.send(GetOrganizerEvents({
-                  web3:w3,
-                  account:accounts[0],
-                  universe,
-                  address_uri 
-              }))
-              |> Js.Promise.resolve
-            })
-        });
-        ()
-      } else {
-        Js.log("Web3 is undefined!");
+                Js.log("GetOrganizerEvents");
+                self.send(GetOrganizerEvents({
+                    web3:w3,
+                    account:accounts[0],
+                    universe,
+                    address_uri 
+                }))
+                |> Js.Promise.resolve
+              })
+          });
+        })
+        |> Js.Promise.catch((x) => { 
+          Js.log(x);
+          self.send(ShowAbout)
+          |> Js.Promise.resolve 
+        })
+        |> ignore
       }
     }
   },
