@@ -12,6 +12,9 @@ module.exports = {
     publicPath: outputDir,
     filename: 'Index.js',
   },
+  node: {
+    fs: 'empty'
+  },
   resolve: {
     modules: [
       path.resolve(__dirname, './node_modules'),
