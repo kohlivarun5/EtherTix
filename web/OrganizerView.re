@@ -35,17 +35,23 @@ let make = (_children) => {
     switch(BsUtils.getSearchValueByKey("about")) {
       | Some(_) => self.send(ShowAbout)
       | None => {
-        /* let w3_global = Js.Undefined.getExn(BsWeb3.Web3.get); */
-        WalletConnect.(web3_provider(
-          options(
-            ~providerOptions=provider_options(
-              ~walletconnect=wallet_connect_options(
-                ~package=WalletConnect.wallet_connect,
-                ~options=WalletConnect.wallet_connect_params(
-                  ~infuraId="b4287cfd0a6b4849bd0ca79e144d3921")))
-          )
-        ))
-        |> WalletConnect.connect
+        switch(Js.typeof(BsWeb3.Web3.get) !== "undefined") {
+        | true => 
+          Js.Undefined.getExn(BsWeb3.Web3.get)
+          |> BsWeb3.Web3.currentProvider 
+          |> Js.Promise.resolve
+        | false => 
+          WalletConnect.(web3_provider(
+            options(
+              ~providerOptions=provider_options(
+                ~walletconnect=wallet_connect_options(
+                  ~package=WalletConnect.wallet_connect,
+                  ~options=WalletConnect.wallet_connect_params(
+                    ~infuraId="b4287cfd0a6b4849bd0ca79e144d3921")))
+            )
+          ))
+          |> WalletConnect.connect
+        }
         |> Js.Promise.then_((provider) => {
           let w3 = BsWeb3.Web3.makeWeb3(provider);
 
