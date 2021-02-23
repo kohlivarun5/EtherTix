@@ -13,6 +13,8 @@ S bs-web3
 B lib/bs/bs-web3
 S web
 B lib/bs/web
+S web/walletconnect
+B lib/bs/web/walletconnect
 S web/qrcode
 B lib/bs/web/qrcode
 S web/react-responsive-carousel
