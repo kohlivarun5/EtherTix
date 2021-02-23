@@ -54,8 +54,6 @@ let make = (_children) => {
         }
         |> Js.Promise.then_((provider) => {
           let w3 = BsWeb3.Web3.makeWeb3(provider);
-
-          /* BsWeb3.Web3.makeWeb3(BsWeb3.Web3.currentProvider(w3_global)); */
           let eth = BsWeb3.Web3.eth(w3);
           BsWeb3.Eth.net(eth)
           |> BsWeb3.Net.getId
