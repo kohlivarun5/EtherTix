@@ -16,16 +16,12 @@ contract Event is IERC721 {
   using EventImpl for EventData;
   EventData internal d_data;
 
-  constructor(string memory _description, address payable _organizer,uint256 commission_percent) public { 
-    TicketInfo[] memory tickets;
+  constructor(string memory _description, address payable _organizer,uint256 commission_percent) { 
     description = _description;
-    d_data = EventData({
-      d_admin:msg.sender,
-      d_organizer:_organizer,
-      d_token_ask_num:0,
-      d_creator_commission_percent:commission_percent,
-      d_tickets:tickets
-    });
+    d_data.d_admin = msg.sender;
+    d_data.d_organizer=_organizer;
+    d_data.d_token_ask_num=0;
+    d_data.d_creator_commission_percent=commission_percent;
     d_mark_delete=false;
   }
   

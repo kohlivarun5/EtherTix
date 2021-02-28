@@ -4,7 +4,7 @@
   "description": "Smart Tix Dapp",
   "main": "index.js",
   "scripts": {
-    "remix": "remixd -s $PWD/ --remix-ide https://remix.ethereum.org",
+    "remix": "remixd -s $PWD/sol/ --remix-ide https://remix.ethereum.org",
     "solc": "solcjs --abi sol/*.sol -o build && solcjs --optimize --bin sol/*.sol -o build",
     "build": "bsb -make-world",
     "start": "bsb -make-world -w",
