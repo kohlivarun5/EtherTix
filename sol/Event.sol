@@ -1,3 +1,4 @@
+// SPDX-License-Identifier: UNLICENSED
 pragma solidity >=0.6.0 <0.8.0;
 
 import "./IERC721.sol";
@@ -104,23 +105,7 @@ contract Event is IERC721 {
   }
   
   function myTickets() public view returns(uint256[] memory,uint256[] memory,bool[] memory,bool[] memory) {
-    uint256[] storage tokens = d_owner_tokens[msg.sender];
-    uint256[] memory prices = new uint256[](tokens.length);
-    bool[] memory for_sale = new bool[](tokens.length);
-    bool[] memory used = new bool[](tokens.length);
-    for(uint256 i=0;i<tokens.length;++i)
-    {
-        uint256 token=tokens[i];
-        if (d_token_ask[token] != 0) {
-            prices[i] = d_token_ask[token];
-            for_sale[i] = true;
-        } else {
-            prices[i] = d_tickets[token].d_prev_price;
-            for_sale[i] = false;
-        }
-        used[i] = d_tickets[token].d_used;
-    }
-    return (tokens,prices,for_sale,used);
+    return EventImpl.myTickets(d_owner_tokens,d_token_ask,d_tickets);
   }
   
   function proposeSale(uint256 _token,uint256 _price) public {
@@ -154,19 +139,7 @@ contract Event is IERC721 {
   }
 
   function forSale() public view returns(uint256,uint256[] memory,uint256[] memory) {
-    uint256[] memory tokens = new uint256[](d_token_ask_num);
-    uint256[] memory asks = new uint256[](d_token_ask_num);
-    uint256 iter=0;
-    for(uint256 i=0;i<d_tickets.length;++i)
-    {
-        if (d_token_ask[i] > 0) { 
-            tokens[iter] = i;
-            asks[iter] = d_token_ask[i];
-            iter++;
-        }
-    }
-    require(iter == d_token_ask_num);
-    return (iter,tokens,asks);
+    return EventImpl.forSale(d_tickets, d_token_ask, d_token_ask_num);
   }
   
   function hitAsk(uint256 _token) public payable {
@@ -202,15 +175,11 @@ contract Event is IERC721 {
 
   // https://medium.com/@libertylocked/ec-signatures-and-recovery-in-ethereum-smart-contracts-560b6dd8876
   function ticketVerificationCode(uint256 _tokenId) public view returns(bytes32) {
-    require(!ticketUsed(_tokenId), "Ticket already used!");
-    return keccak256(abi.encodePacked(_tokenId,address(this)));
+    return EventImpl.ticketVerificationCode(_tokenId, d_tickets);
   }
   
   function isOwnerSig(uint256 _tokenId, bytes memory signature) public view returns(bool) {
-    bytes memory prefix = "\x19Ethereum Signed Message:\n32";
-    bytes32 prefixedHash = keccak256(abi.encodePacked(prefix, ticketVerificationCode(_tokenId)));
-    return d_token_owner[_tokenId] == 
-            recover(prefixedHash,signature);
+    return EventImpl.isOwnerSig(_tokenId, signature, d_tickets,d_token_owner);
   }
 
   function useTicket(uint256 _tokenId) public returns(bool) {
@@ -239,25 +208,6 @@ contract Event is IERC721 {
   }
 */
 
-  function recover(bytes32 message, bytes memory signature) internal pure returns (address) {
-      (uint8 v, bytes32 r, bytes32 s) = splitSignature(signature);
-      return ecrecover(message,v, r, s);
-  }
-  
-  function splitSignature(bytes memory sig) internal pure returns (uint8 v, bytes32 r, bytes32 s)
-  {
-    require(sig.length == 65);
-    assembly {
-      // first 32 bytes, after the length prefix
-      r := mload(add(sig, 32))
-      // second 32 bytes
-      s := mload(add(sig, 64))
-      // final byte (first byte of the next 32 bytes)
-      v := byte(0, mload(add(sig, 96)))
-    }
-    return (v, r, s);
-  }
-  
   function transferFromImpl(address _from, address payable _to, uint256 _token) private {
       require(d_token_owner[_token] == _from);
       
@@ -281,23 +231,27 @@ contract Event is IERC721 {
         
       d_token_owner[_token] = _to;
       d_owner_tokens[_to].push(_token);
+      emit Transfer(_from,_to,_token);
         
       Universe u = Universe(d_admin);
       u.addUserEvent(address(this),_to);
   }
 
-  function transferFrom(address _from, address _to, uint256 _token) public override {
+  function transferFrom(address _from, address payable _to, uint256 _token) public override {
       require(d_token_owner[_token] == _from);
       require(msg.sender == _from || tx.origin == _from);
-      transferFromImpl(_from,payable(_to),_token);
+      transferFromImpl(_from,_to,_token);
   }
+
+  function safeTransferFrom(address _from, address payable _to, uint256 _tokenId) public override
+  { return transferFrom(_from,_to,_tokenId);}
 
   function markDelete(bool mark_delete) public {
     require(msg.sender == d_organizer);
     d_mark_delete=mark_delete;
   }
 
-  function approve(address _to, uint256 _tokenId) public override 
+  function approve(address _to, uint256 _tokenId) public payable override 
   { require(false,"Unsupported"); }
   function getApproved(uint256 _tokenId) public view override returns (address _operator) 
   { require(false,"Unsupported"); }
@@ -307,13 +261,12 @@ contract Event is IERC721 {
   function isApprovedForAll(address _owner, address _operator) public view override returns (bool) 
   { require(false,"Unsupported"); }
 
-  function safeTransferFrom(address _from, address _to, uint256 _tokenId) public override
+
+  function safeTransferFrom(address from, address to, uint256 tokenId, bytes calldata data) public payable override
   { require(false,"Unsupported"); }
 
-  function safeTransferFrom(address from, address to, uint256 tokenId, bytes calldata data) public override
-  { require(false,"Unsupported"); }
   function supportsInterface(bytes4 interfaceId) external view override returns (bool)
-  { require(false,"Unsupported"); }
+  { return EventImpl.supportsInterface(interfaceId); }
 
 }
 
