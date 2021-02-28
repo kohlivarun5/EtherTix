@@ -5,7 +5,8 @@
   "main": "index.js",
   "scripts": {
     "remix": "remixd -s $PWD/sol/ --remix-ide https://remix.ethereum.org",
-    "solc": "solcjs --abi sol/*.sol -o build && solcjs --optimize --bin sol/*.sol -o build",
+    "solcjs": "solcjs --abi sol/*.sol -o build && solcjs --optimize --bin sol/*.sol -o build",
+    "solc": "solc --overwrite --abi sol/*.sol -o build && solc --optimize --bin --overwrite sol/*.sol -o build && solc --link --libraries sol/libraries.txt build/*.bin",
     "build": "bsb -make-world",
     "start": "bsb -make-world -w",
     "clean": "bsb -clean-world",

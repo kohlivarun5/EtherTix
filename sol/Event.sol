@@ -16,7 +16,7 @@ contract Event is IERC721 {
   using EventImpl for EventData;
   EventData internal d_data;
 
-  constructor(string memory _description, address payable _organizer,uint256 commission_percent) { 
+  constructor(string memory _description, address payable _organizer,uint256 commission_percent) public { 
     description = _description;
     d_data.d_admin = msg.sender;
     d_data.d_organizer=_organizer;
@@ -76,11 +76,11 @@ contract Event is IERC721 {
     return d_data.numToBeUsed();
   }
   
-  function balanceOf(address _owner) public view override returns (uint256 _balance) {
+  function balanceOf(address _owner) public view override returns (uint256) {
     return d_data.d_owner_tokens[_owner].length;    
   }
   
-  function ownerOf(uint256 _tokenId) public view override returns (address _owner) {
+  function ownerOf(uint256 _tokenId) public view override returns (address) {
     return d_data.d_token_owner[_tokenId];    
   }
   
@@ -234,21 +234,6 @@ contract Event is IERC721 {
     require(msg.sender == d_data.d_organizer);
     d_mark_delete=mark_delete;
   }
-
-  function approve(address _to, uint256 _tokenId) public payable override 
-  { require(false,"Unsupported"); }
-  function getApproved(uint256 _tokenId) public view override returns (address _operator) 
-  { require(false,"Unsupported"); }
-
-  function setApprovalForAll(address _operator, bool _approved) public override
-  { require(false,"Unsupported"); }
-  function isApprovedForAll(address _owner, address _operator) public view override returns (bool) 
-  { require(false,"Unsupported"); }
-
-
-  function safeTransferFrom(address from, address to, uint256 tokenId, bytes calldata _data) public payable override
-  { require(false,"Unsupported"); }
-
   function supportsInterface(bytes4 interfaceId) external view override returns (bool)
   { return EventImpl.supportsInterface(interfaceId); }
 
