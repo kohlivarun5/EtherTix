@@ -4,7 +4,7 @@
   "description": "Smart Tix Dapp",
   "main": "index.js",
   "scripts": {
-    "remix": "remixd -s sol --remix-ide https://remix.ethereum.org",
+    "remix": "remixd -s $PWD/ --remix-ide https://remix.ethereum.org",
     "solc": "solcjs --abi sol/*.sol -o build && solcjs --optimize --bin sol/*.sol -o build",
     "build": "bsb -make-world",
     "start": "bsb -make-world -w",
@@ -26,18 +26,19 @@
   },
   "homepage": "https://github.com/kohlivarun5/SmartTix#readme",
   "devDependencies": {
+    "@remix-project/remixd": "^0.3.2",
     "bs-platform": "^4.0.3",
     "eth-json-rpc-filters": "^4.1.1",
     "json-rpc-engine": "^5.4.0",
     "readable-stream": "^2.3.7",
-    "remixd": "^0.2.4-alpha.0",
-    "solc": "^0.4.25",
+    "solc": "^0.5.4",
     "stream-browserify": "^3.0.0",
     "webpack": "^4.20.2",
     "webpack-cli": "^3.1.1",
     "webpack-dev-server": "^3.1.5"
   },
   "dependencies": {
+    "@openzeppelin/contracts": "^3.4.0",
     "@walletconnect/web3-provider": "^1.3.6",
     "qrcode": "^1.2.2",
     "react": "^16.2.0",

@@ -1,10 +1,10 @@
 pragma solidity <=0.5.4;
 
-// import "./ERC721.sol";
+import "./IERC721.sol";
 
 import "./Universe.sol";
 
-contract Event /* is ERC721 */  {
+contract Event is ERC721 {
     
   struct TicketInfo {
     uint256 d_prev_price;

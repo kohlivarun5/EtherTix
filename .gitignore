@@ -65,3 +65,4 @@ lib
 .bsb.lock
 build
 .DS_Store
+sol/artifacts
