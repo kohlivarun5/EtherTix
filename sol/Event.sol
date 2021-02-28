@@ -3,14 +3,10 @@ pragma solidity >=0.6.0 <0.8.0;
 import "./IERC721.sol";
 
 import "./Universe.sol";
+import "./EventImpl.sol";
 
 contract Event is IERC721 {
     
-  struct TicketInfo {
-    uint256 d_prev_price;
-    bool    d_used;
-  }
- 
   string public description;
   string public imgSrc; // Can be data or link
   string public externalLink;
@@ -20,9 +16,8 @@ contract Event is IERC721 {
   address payable internal d_admin;
   address payable public d_organizer;
   
-  
   // Array with all token ids, used for enumeration
-  TicketInfo[] internal d_tickets;
+  EventImpl.TicketInfo[] internal d_tickets;
   
   // Mapping from owner to list of owned token IDs
   mapping(address => uint256[]) internal d_owner_tokens;
@@ -58,57 +53,16 @@ contract Event is IERC721 {
   function issue(uint256 _numTickets,uint256 _price) public {
     require(msg.sender == d_organizer);
     for(uint256 i=0;i<_numTickets;++i) {
-      d_tickets.push(TicketInfo({d_prev_price:_price,d_used:false}));
+      d_tickets.push(EventImpl.TicketInfo({d_prev_price:_price,d_used:false}));
     }
   }
 
   function getCostFor(uint256 _numTickets) public view returns(uint256) {
-    uint256 total_cost=0;
-    uint256 bought=0;
-    
-    // We will buy 1 ticket at a time
-    // If while buying, we do not find enough tickets, 
-    // or we did not get enough money, we throw
-    for(uint256 i=0;i<d_tickets.length && bought < _numTickets;++i) {
-      if (d_token_owner[i] != address(0)) { continue; }
-        
-      // Ticket can be bought 
-      total_cost+=d_tickets[i].d_prev_price;
-      bought++;
-    }
-    
-    require(bought == _numTickets, "Not enough tickets!");
-
-    return total_cost;
+    return EventImpl.getCostFor(_numTickets, d_tickets, d_token_owner);
   }
   
   function buy(uint256 _numTickets) public payable {
-    uint256 total_cost=0;
-    uint256 bought=0;
-    
-    // We will buy 1 ticket at a time
-    // If while buying, we do not find enough tickets, 
-    // or we did not get enough money, we throw
-    for(uint256 i=0;i<d_tickets.length && bought < _numTickets;++i) {
-      if (d_token_owner[i] != address(0)) { continue; }
-        
-      // Ticket can be bought 
-      total_cost+=d_tickets[i].d_prev_price;
-      d_owner_tokens[msg.sender].push(i);
-      d_token_owner[i] = msg.sender;
-      bought++;
-  
-    }
-    
-    require(bought == _numTickets, "Not enough tickets!");
-    require(total_cost <= msg.value, "Cost is more than transaction value.");
-    
-    // Take admin cut
-    uint256 commission = (msg.value / 100) * d_creator_commission_percent;
-    d_admin.transfer(commission);
-    
-    Universe u = Universe(d_admin);
-    u.addUserEvent(address(this),msg.sender);
+    EventImpl.buy(_numTickets,d_tickets,d_token_owner,d_owner_tokens,d_admin,d_creator_commission_percent);
   }
   
   function getBalance() public view returns(uint) {
@@ -122,35 +76,19 @@ contract Event is IERC721 {
   }
   
   function numSold() public view returns(uint256) {
-    uint256 numSoldCount=0;
-    for(uint256 i=0;i<d_tickets.length;++i) {
-      if (d_token_owner[i] != address(0)) { numSoldCount++;}
-    }
-    return numSoldCount;
+    return EventImpl.numSold(d_tickets,d_token_owner);
   }
   
   function numUnSold() public view returns(uint256) {
-    uint256 numUnSoldCount=0;
-    for(uint256 i=0;i<d_tickets.length;++i) {
-      if (d_token_owner[i] == address(0)) { numUnSoldCount++; }
-    }
-    return numUnSoldCount;
+    return EventImpl.numUnSold(d_tickets,d_token_owner);
   }
 
   function numUsed() public view returns(uint256) {
-    uint256 numUsedCount=0;
-    for(uint256 i=0;i<d_tickets.length;++i) {
-      if (d_tickets[i].d_used) { numUsedCount++; } 
-    }
-    return numUsedCount;
+    return EventImpl.numUsed(d_tickets);
   }
 
   function numToBeUsed() public view returns(uint256) {
-    uint256 numToBeUsedCount=0;
-    for(uint256 i=0;i<d_tickets.length;++i) {
-      if (!d_tickets[i].d_used && d_token_owner[i] != address(0)) { numToBeUsedCount++; } 
-    }
-    return numToBeUsedCount;
+    return EventImpl.numToBeUsed(d_tickets,d_token_owner);
   }
   
   function balanceOf(address _owner) public view override returns (uint256 _balance) {
