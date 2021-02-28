@@ -31,7 +31,7 @@
     "eth-json-rpc-filters": "^4.1.1",
     "json-rpc-engine": "^5.4.0",
     "readable-stream": "^2.3.7",
-    "solc": "^0.5.4",
+    "solc": "^0.6.12",
     "stream-browserify": "^3.0.0",
     "webpack": "^4.20.2",
     "webpack-cli": "^3.1.1",

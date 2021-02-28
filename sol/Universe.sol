@@ -1,4 +1,4 @@
-pragma solidity <=0.5.4;
+pragma solidity >=0.6.0 <0.8.0;
 
 import "./Event.sol";
 
@@ -26,7 +26,7 @@ contract Universe {
     d_commission_percent = commission_percent;
   }
   
-  function() external payable {}
+  receive() external payable {}
   
   function getBalance() public view returns(uint) {
     return address(this).balance;
@@ -38,7 +38,7 @@ contract Universe {
   
   function withdraw() public {
     require(msg.sender == d_owner);
-    address(d_owner).transfer(getBalance());
+    d_owner.transfer(getBalance());
   }
   
   function createEvent(string memory _description) public payable returns(address) {

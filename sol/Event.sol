@@ -1,10 +1,10 @@
-pragma solidity <=0.5.4;
+pragma solidity >=0.6.0 <0.8.0;
 
 import "./IERC721.sol";
 
 import "./Universe.sol";
 
-contract Event is ERC721 {
+contract Event is IERC721 {
     
   struct TicketInfo {
     uint256 d_prev_price;
@@ -105,7 +105,7 @@ contract Event is ERC721 {
     
     // Take admin cut
     uint256 commission = (msg.value / 100) * d_creator_commission_percent;
-    address(d_admin).transfer(commission);
+    d_admin.transfer(commission);
     
     Universe u = Universe(d_admin);
     u.addUserEvent(address(this),msg.sender);
@@ -118,7 +118,7 @@ contract Event is ERC721 {
   
   function withdraw() public {
     require(msg.sender == d_organizer);
-    address(d_organizer).transfer(getBalance());
+    d_organizer.transfer(getBalance());
   }
   
   function numSold() public view returns(uint256) {
@@ -153,11 +153,11 @@ contract Event is ERC721 {
     return numToBeUsedCount;
   }
   
-  function balanceOf(address _owner) public view returns (uint256 _balance) {
+  function balanceOf(address _owner) public view override returns (uint256 _balance) {
     return d_owner_tokens[_owner].length;    
   }
   
-  function ownerOf(uint256 _tokenId) public view returns (address _owner) {
+  function ownerOf(uint256 _tokenId) public view override returns (address _owner) {
     return d_token_owner[_tokenId];    
   }
   
@@ -242,17 +242,17 @@ contract Event is ERC721 {
     // Take money
     if (d_tickets[_token].d_prev_price > msg.value) {
       // Selling for less, all money to seller 
-      address(prev_owner).transfer(msg.value);
+      prev_owner.transfer(msg.value);
     } else {
       uint256 premium = msg.value - d_tickets[_token].d_prev_price;
       uint256 seller_premium = premium / 2;
       
       // TODO Review
-      address(prev_owner).transfer(seller_premium + d_tickets[_token].d_prev_price);
+      prev_owner.transfer(seller_premium + d_tickets[_token].d_prev_price);
       
       // Other half premium is for the event, and commission out of it 
       uint256 commission = (seller_premium / 100) * d_creator_commission_percent;
-      address(d_admin).transfer(commission);
+      d_admin.transfer(commission);
       
       d_tickets[_token].d_prev_price = msg.value;
     }
@@ -336,8 +336,7 @@ contract Event is ERC721 {
         if (prev_owner_tokens[i] == _token) {
             uint256 lenBefore = prev_owner_tokens.length;
             prev_owner_tokens[i] = prev_owner_tokens[lenBefore-1];
-            delete prev_owner_tokens[lenBefore-1];
-            prev_owner_tokens.length = lenBefore-1;
+            prev_owner_tokens.pop();
             break;
         }
       }
@@ -349,10 +348,10 @@ contract Event is ERC721 {
       u.addUserEvent(address(this),_to);
   }
 
-  function transferFrom(address _from, address payable _to, uint256 _token) public {
+  function transferFrom(address _from, address _to, uint256 _token) public override {
       require(d_token_owner[_token] == _from);
       require(msg.sender == _from || tx.origin == _from);
-      transferFromImpl(_from,_to,_token);
+      transferFromImpl(_from,payable(_to),_token);
   }
 
   function markDelete(bool mark_delete) public {
@@ -360,15 +359,24 @@ contract Event is ERC721 {
     d_mark_delete=mark_delete;
   }
 
-/*
-  function approve(address _to, uint256 _tokenId) public;
-  function getApproved(uint256 _tokenId) public constant returns (address _operator);
+  function approve(address _to, uint256 _tokenId) public override 
+  { require(false,"Unsupported"); }
+  function getApproved(uint256 _tokenId) public view override returns (address _operator) 
+  { require(false,"Unsupported"); }
 
-  function setApprovalForAll(address _operator, bool _approved) public;
-  function isApprovedForAll(address _owner, address _operator) public constant returns (bool);
+  function setApprovalForAll(address _operator, bool _approved) public override
+  { require(false,"Unsupported"); }
+  function isApprovedForAll(address _owner, address _operator) public view override returns (bool) 
+  { require(false,"Unsupported"); }
 
-  function safeTransferFrom(address _from, address _to, uint256 _tokenId) public;
-*/
+  function safeTransferFrom(address _from, address _to, uint256 _tokenId) public override
+  { require(false,"Unsupported"); }
+
+  function safeTransferFrom(address from, address to, uint256 tokenId, bytes calldata data) public override
+  { require(false,"Unsupported"); }
+  function supportsInterface(bytes4 interfaceId) external view override returns (bool)
+  { require(false,"Unsupported"); }
+
 }
 
 
