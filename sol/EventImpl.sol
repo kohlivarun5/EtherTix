@@ -13,6 +13,10 @@ struct EventData {
     address payable d_admin;
     address payable d_organizer;
     
+    uint8 d_creator_commission_percent;
+    
+    uint256 d_token_ask_num;
+
     // Array with all token ids, used for enumeration
     TicketInfo[] d_tickets;
     
@@ -24,15 +28,14 @@ struct EventData {
     
     // For transfers 
     mapping(uint256 => uint256) d_token_ask;
-    uint256 d_token_ask_num;
-    uint256 d_creator_commission_percent;
+
 }
 
 library EventImpl {
 
     function getCostFor(EventData storage self,uint256 _numTickets) public view returns(uint256) {
-      uint256 total_cost=0;
-      uint256 bought=0;
+      uint256 total_cost;//=0;
+      uint256 bought;//=0;
 
       // We will buy 1 ticket at a time
       // If while buying, we do not find enough tickets, 

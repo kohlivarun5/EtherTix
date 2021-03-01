@@ -16,13 +16,11 @@ contract Event is IERC721 {
   using EventImpl for EventData;
   EventData internal d_data;
 
-  constructor(string memory _description, address payable _organizer,uint256 commission_percent) public { 
+  constructor(string memory _description, address payable _organizer,uint8 commission_percent) public { 
     description = _description;
     d_data.d_admin = msg.sender;
     d_data.d_organizer=_organizer;
-    d_data.d_token_ask_num=0;
     d_data.d_creator_commission_percent=commission_percent;
-    d_mark_delete=false;
   }
   
   function setImg(string memory _imgSrc) public {
@@ -234,7 +232,7 @@ contract Event is IERC721 {
     require(msg.sender == d_data.d_organizer);
     d_mark_delete=mark_delete;
   }
-  function supportsInterface(bytes4 interfaceId) external view override returns (bool)
+  function supportsInterface(bytes4 interfaceId) public pure override returns (bool)
   { return EventImpl.supportsInterface(interfaceId); }
 
 }

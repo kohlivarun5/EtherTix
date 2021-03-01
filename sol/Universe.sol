@@ -6,7 +6,7 @@ import "./Event.sol";
 contract Universe {
   
   address payable private d_owner;
-  uint256 d_commission_percent;
+  uint8 d_commission_percent;
 
   mapping(address => string) d_verified_users;
   
@@ -22,7 +22,7 @@ contract Universe {
         address indexed userAddr,
         bool    indexed active);
   
-  constructor(uint256 commission_percent) public payable {
+  constructor(uint8 commission_percent) public payable {
     d_owner = msg.sender;
     d_commission_percent = commission_percent;
   }
@@ -42,10 +42,9 @@ contract Universe {
     d_owner.transfer(getBalance());
   }
   
-  function createEvent(string memory _description) public payable returns(address) {
+  function createEvent(string memory _description) public payable {
     Event eventAddr = new Event(_description,msg.sender,d_commission_percent);
     emit OrganizerEvents(address(eventAddr), msg.sender, true,_description);
-    return address(eventAddr);
   }
   
   function addUserEvent(address _event,address _user) public {
@@ -56,7 +55,7 @@ contract Universe {
       emit UserEvents(_event,_user,false);
   }
 
-  function updateCommission(uint256 commission_percent) public {
+  function updateCommission(uint8 commission_percent) public {
     require(msg.sender == d_owner,"Owner can update commission");
     d_commission_percent=commission_percent;
   }
