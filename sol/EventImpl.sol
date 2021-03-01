@@ -18,8 +18,7 @@ struct EventData {
     uint256 d_token_ask_num;
 
     // Array with all token ids, used for enumeration
-    uint256[] d_ticket_prev_prices;
-    bool[]    d_ticket_used;
+    TicketInfo[] d_tickets;
     
     // Mapping from owner to list of owned token IDs
     mapping(address => uint256[]) d_owner_tokens;
@@ -41,11 +40,11 @@ library EventImpl {
       // We will buy 1 ticket at a time
       // If while buying, we do not find enough tickets, 
       // or we did not get enough money, we throw
-      for(uint256 i=0;i<self.d_ticket_prev_prices.length && bought < _numTickets;++i) {
+      for(uint256 i=0;i<self.d_tickets.length && bought < _numTickets;++i) {
         if (self.d_token_owner[i] != address(0)) { continue; }
 
         // Ticket can be bought 
-        total_cost+=self.d_ticket_prev_prices[i];
+        total_cost+=self.d_tickets[i].d_prev_price;
         bought++;
       }
 
@@ -61,11 +60,11 @@ library EventImpl {
       // We will buy 1 ticket at a time
       // If while buying, we do not find enough tickets, 
       // or we did not get enough money, we throw
-      for(uint256 i=0;i<self.d_ticket_prev_prices.length && bought < _numTickets;++i) {
+      for(uint256 i=0;i<self.d_tickets.length && bought < _numTickets;++i) {
         if (self.d_token_owner[i] != address(0)) { continue; }
 
         // Ticket can be bought 
-        total_cost+=self.d_ticket_prev_prices[i];
+        total_cost+=self.d_tickets[i].d_prev_price;
         self.d_owner_tokens[to].push(i);
         self.d_token_owner[i] = to;
         bought++;
@@ -85,7 +84,7 @@ library EventImpl {
 
     function numSold(EventData storage self) public view returns(uint256) {
       uint256 numSoldCount=0;
-      for(uint256 i=0;i<self.d_ticket_prev_prices.length;++i) {
+      for(uint256 i=0;i<self.d_tickets.length;++i) {
         if (self.d_token_owner[i] != address(0)) { numSoldCount++;}
       }
       return numSoldCount;
@@ -93,7 +92,7 @@ library EventImpl {
 
     function numUnSold(EventData storage self) public view returns(uint256) {
       uint256 numUnSoldCount=0;
-      for(uint256 i=0;i<self.d_ticket_prev_prices.length;++i) {
+      for(uint256 i=0;i<self.d_tickets.length;++i) {
         if (self.d_token_owner[i] == address(0)) { numUnSoldCount++; }
       }
       return numUnSoldCount;
@@ -101,16 +100,16 @@ library EventImpl {
 
     function numUsed(EventData storage self) public view returns(uint256) {
       uint256 numUsedCount=0;
-      for(uint256 i=0;i<self.d_ticket_used.length;++i) {
-        if (self.d_ticket_used[i]) { numUsedCount++; } 
+      for(uint256 i=0;i<self.d_tickets.length;++i) {
+        if (self.d_tickets[i].d_used) { numUsedCount++; } 
       }
       return numUsedCount;
     }
 
     function numToBeUsed(EventData storage self) public view returns(uint256) {
       uint256 numToBeUsedCount=0;
-      for(uint256 i=0;i<self.d_ticket_used.length;++i) {
-        if (!self.d_ticket_used[i] && self.d_token_owner[i] != address(0)) { numToBeUsedCount++; } 
+      for(uint256 i=0;i<self.d_tickets.length;++i) {
+        if (!self.d_tickets[i].d_used && self.d_token_owner[i] != address(0)) { numToBeUsedCount++; } 
       }
       return numToBeUsedCount;
     }
@@ -127,10 +126,10 @@ library EventImpl {
                 prices[i] = self.d_token_ask[token];
                 for_sale[i] = true;
             } else {
-                prices[i] = self.d_ticket_prev_prices[token];
+                prices[i] = self.d_tickets[token].d_prev_price;
                 for_sale[i] = false;
             }
-            used[i] = self.d_ticket_used[i];
+            used[i] = self.d_tickets[token].d_used;
         }
         return (tokens,prices,for_sale,used);
     }
@@ -139,7 +138,7 @@ library EventImpl {
         uint256[] memory tokens = new uint256[](self.d_token_ask_num);
         uint256[] memory asks = new uint256[](self.d_token_ask_num);
         uint256 iter=0;
-        for(uint256 i=0;i<self.d_ticket_prev_prices.length;++i)
+        for(uint256 i=0;i<self.d_tickets.length;++i)
         {
             if (self.d_token_ask[i] > 0) { 
                 tokens[iter] = i;
@@ -152,7 +151,7 @@ library EventImpl {
     }
 
     function ticketUsed(EventData storage self, uint256 _tokenId) public view returns(bool) {
-        return self.d_ticket_used[_tokenId];
+        return self.d_tickets[_tokenId].d_used;
     }
 
     function ticketVerificationCode(EventData storage self,uint256 _tokenId) public view returns(bytes32) {
