@@ -216,4 +216,49 @@ library EventImpl {
       self.d_owner_tokens[_to].push(_token);
   }
 
+  function proposeSaleUnsafe(EventData storage self,uint24 _token,uint _price) public {
+    require(self.d_tickets[_token].d_used == false, "Ticket already used!");
+    require(_price > 0, "Please set non-zero price");
+    if (self.d_token_ask[_token] == 0) {
+        self.d_token_ask_num++;
+    }
+    self.d_token_ask[_token] = _price;
+  }
+
+  function retractSaleUnsafe(EventData storage self,uint24 _token) public {
+    require(self.d_token_ask[_token] != 0);
+    delete self.d_token_ask[_token];
+    self.d_token_ask_num--;
+  }
+
+  function useTicketUnsafe(EventData storage self,uint24 _tokenId) public returns(bool) {
+    require(!ticketUsed(self,_tokenId), "Ticket already used!");
+    self.d_tickets[_tokenId].d_used = true;
+    if (self.d_token_ask[_tokenId] != 0) {
+        delete self.d_token_ask[_tokenId]; // Just in case
+        self.d_token_ask_num--;
+    }
+    return true;
+  }
+
+  function hitAskPostTransfer(EventData storage self,uint24 _token,address payable prev_owner) public {
+    // Take money
+    if (self.d_tickets[_token].d_prev_price > msg.value) {
+      // Selling for less, all money to seller 
+      prev_owner.transfer(msg.value);
+    } else {
+      uint premium = msg.value - self.d_tickets[_token].d_prev_price;
+      uint seller_premium = premium / 2;
+      
+      // TODO Review
+      prev_owner.transfer(seller_premium + self.d_tickets[_token].d_prev_price);
+      
+      // Other half premium is for the event, and commission out of it 
+      uint commission = (seller_premium / 100) * self.d_creator_commission_percent;
+      self.d_admin.transfer(commission);
+      
+      self.d_tickets[_token].d_prev_price = msg.value;
+    }
+  }
+
 }

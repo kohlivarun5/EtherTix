@@ -88,13 +88,8 @@ contract Event is ERC721,ERC721Metadata,ERC721Enumerable {
   }
   
   function proposeSale(uint24 _token,uint _price) public {
-    require(d_data.d_tickets[_token].d_used == false, "Ticket already used!");
     require(d_data.d_token_owner[_token] == msg.sender);
-    require(_price > 0, "Please set non-zero price");
-    if (d_data.d_token_ask[_token] == 0) {
-        d_data.d_token_ask_num++;
-    }
-    d_data.d_token_ask[_token] = _price;
+    return d_data.proposeSaleUnsafe(_token,_price);
   }
   
   function proposeSales(uint24[] memory _tokens,uint[] memory _prices) public {
@@ -106,9 +101,7 @@ contract Event is ERC721,ERC721Metadata,ERC721Enumerable {
   
   function retractSale(uint24 _token) public {
     require(d_data.d_token_owner[_token] == msg.sender);
-    require(d_data.d_token_ask[_token] != 0);
-    delete d_data.d_token_ask[_token];
-    d_data.d_token_ask_num--;
+    return d_data.retractSaleUnsafe(_token);
   }
   
   function retractSales(uint24[] memory _tokens) public {
@@ -128,24 +121,7 @@ contract Event is ERC721,ERC721Metadata,ERC721Enumerable {
     // Value provided, okay to transfer
     address payable prev_owner = d_data.d_token_owner[_token];
     transferFromImpl(prev_owner,msg.sender,_token);
-    
-    // Take money
-    if (d_data.d_tickets[_token].d_prev_price > msg.value) {
-      // Selling for less, all money to seller 
-      prev_owner.transfer(msg.value);
-    } else {
-      uint premium = msg.value - d_data.d_tickets[_token].d_prev_price;
-      uint seller_premium = premium / 2;
-      
-      // TODO Review
-      prev_owner.transfer(seller_premium + d_data.d_tickets[_token].d_prev_price);
-      
-      // Other half premium is for the event, and commission out of it 
-      uint commission = (seller_premium / 100) * d_data.d_creator_commission_percent;
-      d_data.d_admin.transfer(commission);
-      
-      d_data.d_tickets[_token].d_prev_price = msg.value;
-    }
+    return d_data.hitAskPostTransfer(_token, prev_owner);
   }
   
   function ticketUsed(uint24 _tokenId) public view returns(bool) {
@@ -161,20 +137,10 @@ contract Event is ERC721,ERC721Metadata,ERC721Enumerable {
     return d_data.isOwnerSig(_tokenId, signature);
   }
 
-  function useTicket(uint24 _tokenId) public returns(bool) {
-    require(msg.sender == d_data.d_organizer);
-    require(!ticketUsed(_tokenId), "Ticket already used!");
-    d_data.d_tickets[_tokenId].d_used = true;
-    if (d_data.d_token_ask[_tokenId] != 0) {
-        delete d_data.d_token_ask[_tokenId]; // Just in case
-        d_data.d_token_ask_num--;
-    }
-    return true;
-  }
-
   function useTicket(uint24 _tokenId, bytes memory signature) public returns(bool) {
     require(isOwnerSig(_tokenId,signature), "Incorrect signature!");
-    return useTicket(_tokenId);
+    require(msg.sender == d_data.d_organizer);
+    return d_data.useTicketUnsafe(_tokenId);
   }
 
   function transferFromImpl(address _from, address payable _to, uint24 _token) private {
