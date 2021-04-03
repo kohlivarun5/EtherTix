@@ -2,13 +2,15 @@
 pragma solidity >=0.6.0 <0.8.0;
 
 import "./IERC721.sol";
+import "./IERC721Metadata.sol";
+import "./IERC721Enumerable.sol";
 
 import "./Universe.sol";
 import "./EventImpl.sol";
 
-contract Event is IERC721 {
+contract Event is ERC721,ERC721Metadata,ERC721Enumerable {
     
-  string public description;
+  string private d_description;
   string public imgSrc; // Can be data or link
   string public externalLink;
   bool public d_mark_delete;
@@ -17,7 +19,7 @@ contract Event is IERC721 {
   EventData internal d_data;
 
   constructor(string memory _description, address payable _organizer,uint8 commission_percent) public { 
-    description = _description;
+    d_description = _description;
     d_data.d_admin = msg.sender;
     d_data.d_organizer=_organizer;
     d_data.d_creator_commission_percent=commission_percent;
@@ -234,6 +236,30 @@ contract Event is IERC721 {
   }
   function supportsInterface(bytes4 interfaceId) public pure override returns (bool)
   { return EventImpl.supportsInterface(interfaceId); }
+
+  // ERC721MetaData
+  function name() external view override returns (string memory _name)
+  { return d_description; }
+
+  function symbol() external pure override returns (string memory _symbol)
+  { return "ETIX"; }
+
+  function tokenURI(uint256) external view override returns (string memory)
+  { return imgSrc; }
+
+  // ERC721Enumerable
+  function totalSupply() public view override returns (uint256)
+  { return d_data.d_tickets.length; }
+
+  function tokenByIndex(uint256 _index) external view override returns (uint256)
+  { return _index; }
+
+  function tokenOfOwnerByIndex(address _owner, uint256 _index) external view override returns (uint256 _tokenId)
+  {
+    require(_index < d_data.d_owner_tokens[_owner].length);
+    return d_data.d_owner_tokens[_owner][_index];
+  }
+
 
 }
 
