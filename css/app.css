@@ -42,6 +42,10 @@
   border-bottom-color:transparent;
 }
 
+.row-margin-top {
+  margin-top:2px;
+}
+
 .card-header {
   text-align:center;
 }

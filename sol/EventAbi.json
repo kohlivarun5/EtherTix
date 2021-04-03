@@ -2,11 +2,6 @@
 	{
 		"inputs": [
 			{
-				"internalType": "string",
-				"name": "_description",
-				"type": "string"
-			},
-			{
 				"internalType": "address payable",
 				"name": "_organizer",
 				"type": "address"
@@ -15,6 +10,16 @@
 				"internalType": "uint8",
 				"name": "commission_percent",
 				"type": "uint8"
+			},
+			{
+				"internalType": "string",
+				"name": "_description",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_imgSrc",
+				"type": "string"
 			}
 		],
 		"stateMutability": "nonpayable",

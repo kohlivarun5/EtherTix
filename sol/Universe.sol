@@ -42,8 +42,8 @@ contract Universe {
     d_owner.transfer(getBalance());
   }
   
-  function createEvent(string memory _description) public payable {
-    Event eventAddr = new Event(_description,msg.sender,d_commission_percent);
+  function createEvent(string memory _description,string memory _imgSrc) public payable {
+    Event eventAddr = new Event(msg.sender,d_commission_percent,_description,_imgSrc);
     emit OrganizerEvents(address(eventAddr), msg.sender, true,_description);
   }
   

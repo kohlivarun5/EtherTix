@@ -18,8 +18,9 @@ contract Event is ERC721,ERC721Metadata,ERC721Enumerable {
   using EventImpl for EventData;
   EventData internal d_data;
 
-  constructor(string memory _description, address payable _organizer,uint8 commission_percent) public { 
+  constructor(address payable _organizer,uint8 commission_percent,string memory _description,string memory _imgSrc) public { 
     d_description = _description;
+    imgSrc = _imgSrc;
     d_data.d_admin = msg.sender;
     d_data.d_organizer=_organizer;
     d_data.d_creator_commission_percent=commission_percent;

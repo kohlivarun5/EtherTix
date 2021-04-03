@@ -13,12 +13,14 @@ type state = {
   show_about:bool,
   web3 : option(Web3State.t),
   new_event_description : string,
+  new_event_img_src : string,
   myEvents : Js.Array.t(event_data)
 };
 
 type action =
   | Submit
   | Change(string)
+  | Change_img(string)
   | GetOrganizerEvents(Web3State.t)
   | AddEvent(BsWeb3.Eth.address)
   | EventData(event_data)
@@ -124,6 +126,7 @@ let make = (_children) => {
   },
   initialState: () => {
     new_event_description : "",
+    new_event_img_src : "",
     web3:None,
     myEvents:[||],
     show_about:false
@@ -135,7 +138,7 @@ let make = (_children) => {
         Js.log(state);
         ReasonReact.UpdateWithSideEffects(state, (self) => {
           let {Web3State.account,universe} = Js.Option.getExn(state.web3);
-          Universe.createEvent(universe,state.new_event_description)
+          Universe.createEvent(universe,~description=state.new_event_description,~imgSrc=state.new_event_img_src)
           |> BsWeb3.Eth.send(BsWeb3.Eth.make_transaction(~from=account))
           |> Js.Promise.then_((_) => {
               BsUtils.alert("Event Created!");
@@ -155,6 +158,7 @@ let make = (_children) => {
         ReasonReact.Update(state)
       })
     | Change(text) => (state => ReasonReact.Update({...state,new_event_description: text}))
+    | Change_img(text) => (state => ReasonReact.Update({...state,new_event_img_src: text}))
     | EventData(data) => (state => { 
       let index = Js.Array.findIndex((({address}) => address == data.address),state.myEvents);
       if (index > -1) {
@@ -231,6 +235,15 @@ let make = (_children) => {
         <div className="col-md">
           <div className="card container-card">
             <h5 className="card-header card-title">(text("Create Event"))</h5>
+
+            (switch(state.new_event_img_src) {
+             | "" => ReasonReact.null
+             | imgSrc => 
+                <div className="card-header">
+                  <img className="event-img" src=imgSrc />
+                </div>
+            })
+
             <div className="card-body padding-vertical-less">
 
               <div className="form-group" style=(ReactDOMRe.Style.make(~margin="3%",()))>
@@ -239,6 +252,13 @@ let make = (_children) => {
                   <input className="col form-control" type_="text" placeholder="" id="inputLarge" 
                          value=state.new_event_description
                          onChange=(event => send(Change(ReactEvent.Form.target(event)##value)))
+                  />
+                </div>
+                <div className="row row-margin-top">
+                  <label className="col col-5 col-form-label text-muted">(text("Image"))</label>
+                  <input className="col form-control" type_="text" placeholder="" id="inputLarge" 
+                         value=state.new_event_img_src
+                         onChange=(event => send(Change_img(ReactEvent.Form.target(event)##value)))
                   />
                 </div>
               </div>
