@@ -16,9 +16,6 @@ struct EventData {
     uint8 d_creator_commission_percent;
     
     uint256 d_token_ask_num;
-
-    // Array with all token ids, used for enumeration
-    TicketInfo[] d_tickets;
     
     // Mapping from owner to list of owned token IDs
     mapping(address => uint256[]) d_owner_tokens;
@@ -28,6 +25,9 @@ struct EventData {
     
     // For transfers 
     mapping(uint256 => uint256) d_token_ask;
+
+    // Array with all token ids, used for enumeration
+    TicketInfo[] d_tickets;
 
 }
 
