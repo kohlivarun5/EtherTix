@@ -10,13 +10,14 @@ import "./EventImpl.sol";
 
 contract Event is ERC721,ERC721Metadata,ERC721Enumerable {
     
-  string private d_description;
-  string public imgSrc; // Can be data or link
-  string public externalLink;
   bool public d_mark_delete;
 
   using EventImpl for EventData;
   EventData internal d_data;
+  
+  string private d_description;
+  string public imgSrc; // Can be data or link
+  string public externalLink;
 
   constructor(address payable _organizer,uint8 commission_percent,string memory _description,string memory _imgSrc) public { 
     d_description = _description;
@@ -263,5 +264,3 @@ contract Event is ERC721,ERC721Metadata,ERC721Enumerable {
 
 
 }
-
-
