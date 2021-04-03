@@ -178,29 +178,8 @@ contract Event is ERC721,ERC721Metadata,ERC721Enumerable {
   }
 
   function transferFromImpl(address _from, address payable _to, uint24 _token) private {
-      require(d_data.d_token_owner[_token] == _from);
-      
-      // Value provided, okay to transfer
-      if (d_data.d_token_ask[_token] != 0) {
-        delete d_data.d_token_ask[_token]; // No more ask 
-        d_data.d_token_ask_num--;
-      }
-        
-      address prev_owner = d_data.d_token_owner[_token];
-        
-      uint24[] storage prev_owner_tokens = d_data.d_owner_tokens[prev_owner];
-      for (uint24 i = 0;i<prev_owner_tokens.length; ++i) {
-        if (prev_owner_tokens[i] == _token) {
-            prev_owner_tokens[i] = prev_owner_tokens[prev_owner_tokens.length-1];
-            prev_owner_tokens.pop();
-            break;
-        }
-      }
-        
-      d_data.d_token_owner[_token] = _to;
-      d_data.d_owner_tokens[_to].push(_token);
+      d_data.transferFromImpl(_from, _to, _token);
       emit Transfer(_from,_to,_token);
-        
       Universe u = Universe(d_data.d_admin);
       u.addUserEvent(address(this),_to);
   }

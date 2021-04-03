@@ -192,4 +192,28 @@ library EventImpl {
     function supportsInterface(bytes4 interfaceId) public pure returns (bool)
     { return interfaceId == 0x80ac58cd; }
 
+    function transferFromImpl(EventData storage self,address _from, address payable _to, uint24 _token) public {
+      require(self.d_token_owner[_token] == _from);
+      
+      // Value provided, okay to transfer
+      if (self.d_token_ask[_token] != 0) {
+        delete self.d_token_ask[_token]; // No more ask 
+        self.d_token_ask_num--;
+      }
+        
+      address prev_owner = self.d_token_owner[_token];
+        
+      uint24[] storage prev_owner_tokens = self.d_owner_tokens[prev_owner];
+      for (uint24 i = 0;i<prev_owner_tokens.length; ++i) {
+        if (prev_owner_tokens[i] == _token) {
+            prev_owner_tokens[i] = prev_owner_tokens[prev_owner_tokens.length-1];
+            prev_owner_tokens.pop();
+            break;
+        }
+      }
+        
+      self.d_token_owner[_token] = _to;
+      self.d_owner_tokens[_to].push(_token);
+  }
+
 }
