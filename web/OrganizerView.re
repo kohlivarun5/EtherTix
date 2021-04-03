@@ -173,7 +173,7 @@ let make = (_children) => {
           Event.getBalance(event)
           |> BsWeb3.Eth.call_with(transaction_data)
           |> Js.Promise.then_ ((balance) => {
-              Event.description(event)
+              Event.name(event)
               |> BsWeb3.Eth.call_with(transaction_data)
               |> Js.Promise.then_ ((description) => {
                   Event.imgSrc(event)

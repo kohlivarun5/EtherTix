@@ -122,7 +122,7 @@ let make = (~web3,_children) => {
         ReasonReact.UpdateWithSideEffects(state,(self) => {
           let event = Event.ofAddress(state.web3.web3,address);
           let transaction_data = BsWeb3.Eth.make_transaction(~from=state.web3.account);
-          Event.description(event)
+          Event.name(event)
           |> BsWeb3.Eth.call_with(transaction_data)
           |> Js.Promise.then_ ((description) => {
               Event.imgSrc(event)
@@ -179,7 +179,7 @@ let make = (~web3,_children) => {
           | Some({numTickets}) => 
             self.send(NumTickets(numTickets))
           };
-          Event.description(event)
+          Event.name(event)
           |> BsWeb3.Eth.call 
           |> Js.Promise.then_ ((description) => 
               Event.imgSrc(event)

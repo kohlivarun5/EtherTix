@@ -27,7 +27,7 @@
   },
   "homepage": "https://github.com/kohlivarun5/SmartTix#readme",
   "devDependencies": {
-    "@remix-project/remixd": "^0.3.2",
+    "@remix-project/remixd": "^0.3.4",
     "bs-platform": "^4.0.3",
     "eth-json-rpc-filters": "^4.1.1",
     "json-rpc-engine": "^5.4.0",
