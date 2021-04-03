@@ -15,7 +15,7 @@ contract Event is ERC721,ERC721Metadata,ERC721Enumerable {
   
   string private d_description;
   string public imgSrc; // Can be data or link
-  string public externalLink;
+  // string public externalLink;
 
   constructor(address payable _organizer,uint8 commission_percent,string memory _description,string memory _imgSrc) public { 
     d_description = _description;
@@ -30,10 +30,10 @@ contract Event is ERC721,ERC721Metadata,ERC721Enumerable {
       imgSrc = _imgSrc;
   }
   
-  function setExternalLink(string memory _externalLink) public {
+  /* function setExternalLink(string memory _externalLink) public {
       require(msg.sender == d_data.d_organizer);
       externalLink = _externalLink;
-  }
+  } */
   
   function issue(uint24 _numTickets,uint _price) public {
     require(msg.sender == d_data.d_organizer);
@@ -50,14 +50,9 @@ contract Event is ERC721,ERC721Metadata,ERC721Enumerable {
     return d_data.buy(_numTickets,msg.sender);
   }
   
-  function getBalance() public view returns(uint) {
-    require(msg.sender == d_data.d_admin || msg.sender == d_data.d_organizer);
-    return address(this).balance;
-  }
-  
   function withdraw() public {
     require(msg.sender == d_data.d_organizer);
-    return d_data.d_organizer.transfer(getBalance());
+    return d_data.d_organizer.transfer(address(this).balance);
   }
   
   function numSold() public view returns(uint24) {
@@ -95,7 +90,7 @@ contract Event is ERC721,ERC721Metadata,ERC721Enumerable {
   function proposeSale(uint24 _token,uint _price) public {
     require(d_data.d_tickets[_token].d_used == false, "Ticket already used!");
     require(d_data.d_token_owner[_token] == msg.sender);
-    require(_price > 0, "Please set a valid non-zero price");
+    require(_price > 0, "Please set non-zero price");
     if (d_data.d_token_ask[_token] == 0) {
         d_data.d_token_ask_num++;
     }
@@ -178,7 +173,7 @@ contract Event is ERC721,ERC721Metadata,ERC721Enumerable {
   }
 
   function useTicket(uint24 _tokenId, bytes memory signature) public returns(bool) {
-    require(isOwnerSig(_tokenId,signature), "Incorrect usage signature!");
+    require(isOwnerSig(_tokenId,signature), "Incorrect signature!");
     return useTicket(_tokenId);
   }
 
@@ -219,10 +214,10 @@ contract Event is ERC721,ERC721Metadata,ERC721Enumerable {
   function safeTransferFrom(address _from, address payable _to, uint24 _tokenId) public override
   { return transferFrom(_from,_to,_tokenId);}
 
-  // function markDelete(bool mark_delete) public {
-  //   require(msg.sender == d_data.d_organizer);
-  //   d_data.d_mark_delete=mark_delete;
-  // }
+  /* function markDelete(bool mark_delete) public {
+    require(msg.sender == d_data.d_organizer);
+    d_data.d_mark_delete=mark_delete;
+  } */
 
   function supportsInterface(bytes4 interfaceId) public pure override returns (bool)
   { return EventImpl.supportsInterface(interfaceId); }

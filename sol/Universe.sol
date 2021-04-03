@@ -28,10 +28,6 @@ contract Universe {
   }
   
   receive() external payable {}
-  
-  function getBalance() public view returns(uint) {
-    return address(this).balance;
-  }
 
   function isOwner() public view returns(bool) {
     return msg.sender == d_owner;
@@ -39,7 +35,7 @@ contract Universe {
   
   function withdraw() public {
     require(msg.sender == d_owner);
-    d_owner.transfer(getBalance());
+    d_owner.transfer(address(this).balance);
   }
   
   function createEvent(string memory _description,string memory _imgSrc) public payable {

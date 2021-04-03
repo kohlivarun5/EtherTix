@@ -11,12 +11,13 @@ struct TicketInfo {
 // We use uint24 as the unit for storing NUMBER of tickets
 struct EventData {
 
-    // below 
-    address payable d_admin;
-    address payable d_organizer;
+    // These are packed together
+    uint8 d_creator_commission_percent;
     uint24 d_token_ask_num;
     
-    uint8 d_creator_commission_percent;
+    // These are packed
+    address payable d_admin;
+    address payable d_organizer;
     // bool d_mark_delete;
     
     // Mapping from owner to list of owned token IDs
