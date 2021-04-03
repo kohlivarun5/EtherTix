@@ -42,9 +42,9 @@
 			},
 			{
 				"indexed": true,
-				"internalType": "uint256",
+				"internalType": "uint24",
 				"name": "_tokenId",
-				"type": "uint256"
+				"type": "uint24"
 			}
 		],
 		"name": "Approval",
@@ -92,9 +92,9 @@
 			},
 			{
 				"indexed": true,
-				"internalType": "uint256",
+				"internalType": "uint24",
 				"name": "_tokenId",
-				"type": "uint256"
+				"type": "uint24"
 			}
 		],
 		"name": "Transfer",
@@ -122,9 +122,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint256",
+				"internalType": "uint24",
 				"name": "_numTickets",
-				"type": "uint256"
+				"type": "uint24"
 			}
 		],
 		"name": "buy",
@@ -133,24 +133,11 @@
 		"type": "function"
 	},
 	{
-		"inputs": [],
-		"name": "d_mark_delete",
-		"outputs": [
-			{
-				"internalType": "bool",
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
 		"inputs": [
 			{
-				"internalType": "uint256",
+				"internalType": "uint24",
 				"name": "_tokenId",
-				"type": "uint256"
+				"type": "uint24"
 			}
 		],
 		"name": "exists",
@@ -166,48 +153,22 @@
 	},
 	{
 		"inputs": [],
-		"name": "externalLink",
-		"outputs": [
-			{
-				"internalType": "string",
-				"name": "",
-				"type": "string"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
 		"name": "forSale",
 		"outputs": [
 			{
-				"internalType": "uint256",
+				"internalType": "uint24",
 				"name": "",
-				"type": "uint256"
+				"type": "uint24"
+			},
+			{
+				"internalType": "uint24[]",
+				"name": "",
+				"type": "uint24[]"
 			},
 			{
 				"internalType": "uint256[]",
 				"name": "",
 				"type": "uint256[]"
-			},
-			{
-				"internalType": "uint256[]",
-				"name": "",
-				"type": "uint256[]"
-			}
-		],
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"inputs": [],
-		"name": "getBalance",
-		"outputs": [
-			{
-				"internalType": "uint256",
-				"name": "",
-				"type": "uint256"
 			}
 		],
 		"stateMutability": "view",
@@ -216,9 +177,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint256",
+				"internalType": "uint24",
 				"name": "_numTickets",
-				"type": "uint256"
+				"type": "uint24"
 			}
 		],
 		"name": "getCostFor",
@@ -235,9 +196,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint256",
+				"internalType": "uint24",
 				"name": "_token",
-				"type": "uint256"
+				"type": "uint24"
 			}
 		],
 		"name": "hitAsk",
@@ -261,9 +222,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint256",
+				"internalType": "uint24",
 				"name": "_tokenId",
-				"type": "uint256"
+				"type": "uint24"
 			},
 			{
 				"internalType": "bytes",
@@ -285,9 +246,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint256",
+				"internalType": "uint24",
 				"name": "_numTickets",
-				"type": "uint256"
+				"type": "uint24"
 			},
 			{
 				"internalType": "uint256",
@@ -301,26 +262,13 @@
 		"type": "function"
 	},
 	{
-		"inputs": [
-			{
-				"internalType": "bool",
-				"name": "mark_delete",
-				"type": "bool"
-			}
-		],
-		"name": "markDelete",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
 		"inputs": [],
 		"name": "myTickets",
 		"outputs": [
 			{
-				"internalType": "uint256[]",
+				"internalType": "uint24[]",
 				"name": "",
-				"type": "uint256[]"
+				"type": "uint24[]"
 			},
 			{
 				"internalType": "uint256[]",
@@ -359,9 +307,9 @@
 		"name": "numSold",
 		"outputs": [
 			{
-				"internalType": "uint256",
+				"internalType": "uint24",
 				"name": "",
-				"type": "uint256"
+				"type": "uint24"
 			}
 		],
 		"stateMutability": "view",
@@ -372,9 +320,9 @@
 		"name": "numToBeUsed",
 		"outputs": [
 			{
-				"internalType": "uint256",
+				"internalType": "uint24",
 				"name": "",
-				"type": "uint256"
+				"type": "uint24"
 			}
 		],
 		"stateMutability": "view",
@@ -385,9 +333,9 @@
 		"name": "numUnSold",
 		"outputs": [
 			{
-				"internalType": "uint256",
+				"internalType": "uint24",
 				"name": "",
-				"type": "uint256"
+				"type": "uint24"
 			}
 		],
 		"stateMutability": "view",
@@ -398,9 +346,9 @@
 		"name": "numUsed",
 		"outputs": [
 			{
-				"internalType": "uint256",
+				"internalType": "uint24",
 				"name": "",
-				"type": "uint256"
+				"type": "uint24"
 			}
 		],
 		"stateMutability": "view",
@@ -409,9 +357,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint256",
+				"internalType": "uint24",
 				"name": "_tokenId",
-				"type": "uint256"
+				"type": "uint24"
 			}
 		],
 		"name": "ownerOf",
@@ -428,9 +376,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint256",
+				"internalType": "uint24",
 				"name": "_token",
-				"type": "uint256"
+				"type": "uint24"
 			},
 			{
 				"internalType": "uint256",
@@ -446,9 +394,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint256[]",
+				"internalType": "uint24[]",
 				"name": "_tokens",
-				"type": "uint256[]"
+				"type": "uint24[]"
 			},
 			{
 				"internalType": "uint256[]",
@@ -464,9 +412,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint256",
+				"internalType": "uint24",
 				"name": "_token",
-				"type": "uint256"
+				"type": "uint24"
 			}
 		],
 		"name": "retractSale",
@@ -477,9 +425,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint256[]",
+				"internalType": "uint24[]",
 				"name": "_tokens",
-				"type": "uint256[]"
+				"type": "uint24[]"
 			}
 		],
 		"name": "retractSales",
@@ -500,25 +448,12 @@
 				"type": "address"
 			},
 			{
-				"internalType": "uint256",
+				"internalType": "uint24",
 				"name": "_tokenId",
-				"type": "uint256"
+				"type": "uint24"
 			}
 		],
 		"name": "safeTransferFrom",
-		"outputs": [],
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"inputs": [
-			{
-				"internalType": "string",
-				"name": "_externalLink",
-				"type": "string"
-			}
-		],
-		"name": "setExternalLink",
 		"outputs": [],
 		"stateMutability": "nonpayable",
 		"type": "function"
@@ -571,9 +506,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint256",
+				"internalType": "uint24",
 				"name": "_tokenId",
-				"type": "uint256"
+				"type": "uint24"
 			}
 		],
 		"name": "ticketUsed",
@@ -590,9 +525,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint256",
+				"internalType": "uint24",
 				"name": "_tokenId",
-				"type": "uint256"
+				"type": "uint24"
 			}
 		],
 		"name": "ticketVerificationCode",
@@ -609,17 +544,17 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint256",
+				"internalType": "uint24",
 				"name": "_index",
-				"type": "uint256"
+				"type": "uint24"
 			}
 		],
 		"name": "tokenByIndex",
 		"outputs": [
 			{
-				"internalType": "uint256",
+				"internalType": "uint24",
 				"name": "",
-				"type": "uint256"
+				"type": "uint24"
 			}
 		],
 		"stateMutability": "view",
@@ -633,17 +568,17 @@
 				"type": "address"
 			},
 			{
-				"internalType": "uint256",
+				"internalType": "uint24",
 				"name": "_index",
-				"type": "uint256"
+				"type": "uint24"
 			}
 		],
 		"name": "tokenOfOwnerByIndex",
 		"outputs": [
 			{
-				"internalType": "uint256",
+				"internalType": "uint24",
 				"name": "_tokenId",
-				"type": "uint256"
+				"type": "uint24"
 			}
 		],
 		"stateMutability": "view",
@@ -652,9 +587,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint256",
+				"internalType": "uint24",
 				"name": "",
-				"type": "uint256"
+				"type": "uint24"
 			}
 		],
 		"name": "tokenURI",
@@ -694,9 +629,9 @@
 				"type": "address"
 			},
 			{
-				"internalType": "uint256",
+				"internalType": "uint24",
 				"name": "_token",
-				"type": "uint256"
+				"type": "uint24"
 			}
 		],
 		"name": "transferFrom",
@@ -707,9 +642,14 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint256",
+				"internalType": "uint24",
 				"name": "_tokenId",
-				"type": "uint256"
+				"type": "uint24"
+			},
+			{
+				"internalType": "bytes",
+				"name": "signature",
+				"type": "bytes"
 			}
 		],
 		"name": "useTicket",
@@ -726,14 +666,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint256",
+				"internalType": "uint24",
 				"name": "_tokenId",
-				"type": "uint256"
-			},
-			{
-				"internalType": "bytes",
-				"name": "signature",
-				"type": "bytes"
+				"type": "uint24"
 			}
 		],
 		"name": "useTicket",

@@ -5,7 +5,6 @@ type t;
 [@bs.send] external contract : BsWeb3.Eth.t => abi => BsWeb3.Eth.address => t = "Contract";
 
 [@bs.scope "methods"] [@bs.send] external name : t => BsWeb3.Eth.contract_method(string) = "";
-[@bs.scope "methods"] [@bs.send] external getBalance : t => BsWeb3.Eth.contract_method(BsWeb3.Types.big_number) = "";
 [@bs.scope "methods"] [@bs.send] external withdraw : t => BsWeb3.Eth.contract_method(unit) = "";
 
 [@bs.scope "methods"] [@bs.send] external numSold : t => BsWeb3.Eth.contract_method(int) = "";

@@ -108,7 +108,10 @@ let make = (_children) => {
                 self.send(GetOrganizerEvents({
                     web3:w3,
                     account:accounts[0],
-                    universe,
+                    universe : {
+                      address:universe_address,
+                      contract:universe
+                    },
                     address_uri 
                 }))
                 |> Js.Promise.resolve
@@ -138,7 +141,7 @@ let make = (_children) => {
         Js.log(state);
         ReasonReact.UpdateWithSideEffects(state, (self) => {
           let {Web3State.account,universe} = Js.Option.getExn(state.web3);
-          Universe.createEvent(universe,~description=state.new_event_description,~imgSrc=state.new_event_img_src)
+          Universe.createEvent(universe.contract,~description=state.new_event_description,~imgSrc=state.new_event_img_src)
           |> BsWeb3.Eth.send(BsWeb3.Eth.make_transaction(~from=account))
           |> Js.Promise.then_((_) => {
               BsUtils.alert("Event Created!");
@@ -174,8 +177,7 @@ let make = (_children) => {
           let event = Event.ofAddress(web3_state.web3,address);
           let transaction_data = BsWeb3.Eth.make_transaction(~from=web3_state.account);
 
-          Event.getBalance(event)
-          |> BsWeb3.Eth.call_with(transaction_data)
+          BsWeb3.Eth.getBalance(BsWeb3.Web3.eth(web3_state.web3),address)
           |> Js.Promise.then_ ((balance) => {
               Event.name(event)
               |> BsWeb3.Eth.call_with(transaction_data)
@@ -199,7 +201,7 @@ let make = (_children) => {
         ReasonReact.UpdateWithSideEffects({...state,web3:Some(web3_state)}, (self) => {
           Js.log("Calling myEvents");
           Universe.organizerEvents(
-            web3_state.universe,
+            web3_state.universe.contract,
             Universe.filter_options(
               ~filter=Universe.organizerEventsQuery(~organizerAddr=web3_state.account,~active=true,()),
               ~fromBlock=0,~toBlock="latest",())

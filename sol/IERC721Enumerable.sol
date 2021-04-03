@@ -15,7 +15,7 @@ interface ERC721Enumerable /* is ERC721 */ {
     /// @param _index A counter less than `totalSupply()`
     /// @return The token identifier for the `_index`th NFT,
     ///  (sort order not specified)
-    function tokenByIndex(uint256 _index) external view returns (uint256);
+    function tokenByIndex(uint24 _index) external view returns (uint24);
 
     /// @notice Enumerate NFTs assigned to an owner
     /// @dev Throws if `_index` >= `balanceOf(_owner)` or if
@@ -24,5 +24,5 @@ interface ERC721Enumerable /* is ERC721 */ {
     /// @param _index A counter less than `balanceOf(_owner)`
     /// @return _tokenId The token identifier for the `_index` NFT assigned to `_owner`,
     ///   (sort order not specified)
-    function tokenOfOwnerByIndex(address _owner, uint256 _index) external view returns (uint256 _tokenId);
+    function tokenOfOwnerByIndex(address _owner, uint24 _index) external view returns (uint24 _tokenId);
 }
