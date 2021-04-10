@@ -3,11 +3,6 @@ pragma solidity >=0.6.0 <0.8.0;
 
 import "./Universe.sol";
 
-struct TicketInfo {
-  uint    d_prev_price;
-  bool    d_used;
-}
-
 // We use uint as the unit for storing NUMBER of tickets
 struct EventData {
 
@@ -30,8 +25,9 @@ struct EventData {
     mapping(uint => uint) d_token_ask;
 
     // Array with all token ids, used for enumeration
-    TicketInfo[] d_tickets;
-
+    uint d_tickets_num;
+    mapping(uint => uint) d_tickets_prev_price;
+    mapping(uint => bool) d_tickets_used;
 }
 
 library EventImpl {
@@ -43,11 +39,11 @@ library EventImpl {
       // We will buy 1 ticket at a time
       // If while buying, we do not find enough tickets, 
       // or we did not get enough money, we throw
-      for(uint i=0;i<self.d_tickets.length && bought < _numTickets;++i) {
+      for(uint i=0;i<self.d_tickets_num && bought < _numTickets;++i) {
         if (self.d_token_owner[i] != address(0)) { continue; }
 
         // Ticket can be bought 
-        total_cost+=self.d_tickets[i].d_prev_price;
+        total_cost+=self.d_tickets_prev_price[i];
         bought++;
       }
 
@@ -63,11 +59,11 @@ library EventImpl {
       // We will buy 1 ticket at a time
       // If while buying, we do not find enough tickets, 
       // or we did not get enough money, we throw
-      for(uint i=0;i<self.d_tickets.length && bought < _numTickets;++i) {
+      for(uint i=0;i<self.d_tickets_num && bought < _numTickets;++i) {
         if (self.d_token_owner[i] != address(0)) { continue; }
 
         // Ticket can be bought 
-        total_cost+=self.d_tickets[i].d_prev_price;
+        total_cost+=self.d_tickets_prev_price[i];
         self.d_owner_tokens[to].push(i);
         self.d_token_owner[i] = to;
         bought++;
@@ -86,16 +82,16 @@ library EventImpl {
     }
 
     function numSoldUsed(EventData storage self) public view returns(uint numSold, uint numUsed) {
-      for(uint i=0;i<self.d_tickets.length;++i) {
+      for(uint i=0;i<self.d_tickets_num;++i) {
         if (self.d_token_owner[i] != address(0)) { numSold++; }
-        if (self.d_tickets[i].d_used) { numUsed++; } 
+        if (self.d_tickets_used[i]) { numUsed++; } 
       }
     }
 
     function ticketInfo(EventData storage self,uint index) public view returns(bool used, uint prev_price, address owner,bool forSale, uint ask) {
-      require(index >=0 && index < self.d_tickets.length);
-      used = self.d_tickets[index].d_used;
-      prev_price = self.d_tickets[index].d_prev_price;
+      require(index >=0 && index < self.d_tickets_num);
+      used = self.d_tickets_used[index];
+      prev_price = self.d_tickets_prev_price[index];
       forSale = self.d_token_ask[index] > 0;
       ask = self.d_token_ask[index];
       owner = self.d_token_owner[index];
@@ -105,7 +101,7 @@ library EventImpl {
         uint[] memory tokens = new uint[](self.d_token_ask_num);
         uint[] memory asks = new uint[](self.d_token_ask_num);
         uint iter=0;
-        for(uint i=0;i<self.d_tickets.length;++i)
+        for(uint i=0;i<self.d_tickets_num;++i)
         {
             if (self.d_token_ask[i] > 0) { 
                 tokens[iter] = i;
@@ -117,8 +113,8 @@ library EventImpl {
         return (iter,tokens,asks);
     }
 
-    function ticketUsed(EventData storage self, uint _tokenId) public view returns(bool) {
-        return self.d_tickets[_tokenId].d_used;
+    function ticketUsed(EventData storage self, uint _tokenId) internal view returns(bool) {
+        return self.d_tickets_used[_tokenId];
     }
 
     function ticketVerificationCode(EventData storage self,uint _tokenId) public view returns(bytes32) {
@@ -181,7 +177,7 @@ library EventImpl {
   }
 
   function proposeSaleUnsafe(EventData storage self,uint _token,uint _price) public {
-    require(self.d_tickets[_token].d_used == false, "Ticket already used!");
+    require(self.d_tickets_used[_token] == false, "Ticket already used!");
     require(_price > 0, "Please set non-zero price");
     if (self.d_token_ask[_token] == 0) {
         self.d_token_ask_num++;
@@ -197,7 +193,7 @@ library EventImpl {
 
   function useTicketUnsafe(EventData storage self,uint _tokenId) public returns(bool) {
     require(!ticketUsed(self,_tokenId), "Ticket already used!");
-    self.d_tickets[_tokenId].d_used = true;
+    self.d_tickets_used[_tokenId] = true;
     if (self.d_token_ask[_tokenId] != 0) {
         delete self.d_token_ask[_tokenId]; // Just in case
         self.d_token_ask_num--;
@@ -207,21 +203,21 @@ library EventImpl {
 
   function hitAskPostTransfer(EventData storage self,uint _token,address payable prev_owner) public {
     // Take money
-    if (self.d_tickets[_token].d_prev_price > msg.value) {
+    if (self.d_tickets_prev_price[_token] > msg.value) {
       // Selling for less, all money to seller 
       prev_owner.transfer(msg.value);
     } else {
-      uint premium = msg.value - self.d_tickets[_token].d_prev_price;
+      uint premium = msg.value - self.d_tickets_prev_price[_token];
       uint seller_premium = premium / 2;
       
       // TODO Review
-      prev_owner.transfer(seller_premium + self.d_tickets[_token].d_prev_price);
+      prev_owner.transfer(seller_premium + self.d_tickets_prev_price[_token]);
       
       // Other half premium is for the event, and commission out of it 
       uint commission = (seller_premium / 100) * self.d_creator_commission_percent;
       self.d_admin.transfer(commission);
       
-      self.d_tickets[_token].d_prev_price = msg.value;
+      self.d_tickets_prev_price[_token] = msg.value;
     }
   }
 

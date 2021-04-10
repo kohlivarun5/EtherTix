@@ -59,7 +59,7 @@ contract Event is ERC721,ERC721Metadata,ERC721Enumerable {
 
   // ERC721Enumerable
   function totalSupply() public view override returns (uint256)
-  { return d_data.d_tickets.length; }
+  { return d_data.d_tickets_num; }
 
   function tokenByIndex(uint index) external view override returns (uint)
   { return index; }
@@ -77,8 +77,9 @@ contract Event is ERC721,ERC721Metadata,ERC721Enumerable {
   function issue(uint _numTickets,uint _price) public {
     require(msg.sender == d_data.d_organizer);
     for(uint i=0;i<_numTickets;++i) {
-      d_data.d_tickets.push(TicketInfo({d_prev_price:_price,d_used:false}));
+      d_data.d_tickets_prev_price[d_data.d_tickets_num+i] = _price;
     }
+    d_data.d_tickets_num+=_numTickets;
   }
 
   function getCostFor(uint _numTickets) public view returns(uint) {
@@ -119,7 +120,7 @@ contract Event is ERC721,ERC721Metadata,ERC721Enumerable {
   }
 
   function hitAsk(uint _token) public payable {
-    require(!d_data.d_tickets[_token].d_used, "Ticket already used!");
+    require(!d_data.d_tickets_used[_token], "Ticket already used!");
     require(d_data.d_token_ask[_token] > 0 && msg.value >= d_data.d_token_ask[_token]);
       
     // Value provided, okay to transfer
