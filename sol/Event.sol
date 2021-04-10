@@ -66,7 +66,7 @@ contract Event is ERC721,ERC721Metadata,ERC721Enumerable {
 
   function tokenOfOwnerByIndex(address owner, uint24 index) external view override returns (uint24)
   {
-    require(index >=0 && index < d_data.d_owner_tokens[owner].length);
+    require(index < d_data.d_owner_tokens[owner].length);
     return d_data.d_owner_tokens[owner][index];
   }
   
