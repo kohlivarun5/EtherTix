@@ -13,7 +13,7 @@ contract Event is ERC721,ERC721Metadata,ERC721Enumerable {
   using EventImpl for EventData;
   EventData internal d_data;
   
-  event EventAsk(address indexed updator,uint24 indexed token,uint indexed ask);
+  event EventAsk(address indexed updator,uint indexed token,uint indexed ask);
 
   string private d_description;
   string public imgSrc;
@@ -31,17 +31,17 @@ contract Event is ERC721,ERC721Metadata,ERC721Enumerable {
     return d_data.d_owner_tokens[_owner].length;    
   }
   
-  function ownerOf(uint24 _tokenId) public view override returns (address) {
+  function ownerOf(uint _tokenId) public view override returns (address) {
     return d_data.d_token_owner[_tokenId];    
   }
 
-  function transferFrom(address _from, address payable _to, uint24 _token) public override {
+  function transferFrom(address _from, address payable _to, uint _token) public override {
       require(d_data.d_token_owner[_token] == _from);
       require(msg.sender == _from || tx.origin == _from);
       transferFromImpl(_from,_to,_token);
   }
 
-  function safeTransferFrom(address _from, address payable _to, uint24 _tokenId) public override
+  function safeTransferFrom(address _from, address payable _to, uint _tokenId) public override
   { return transferFrom(_from,_to,_tokenId);}
 
   function supportsInterface(bytes4 interfaceId) public pure override returns (bool)
@@ -54,17 +54,17 @@ contract Event is ERC721,ERC721Metadata,ERC721Enumerable {
   function symbol() external pure override returns (string memory)
   { return "ETIX"; }
 
-  function tokenURI(uint24) external view override returns (string memory)
+  function tokenURI(uint) external view override returns (string memory)
   { return imgSrc; }
 
   // ERC721Enumerable
   function totalSupply() public view override returns (uint256)
   { return d_data.d_tickets.length; }
 
-  function tokenByIndex(uint24 index) external view override returns (uint24)
+  function tokenByIndex(uint index) external view override returns (uint)
   { return index; }
 
-  function tokenOfOwnerByIndex(address owner, uint24 index) external view override returns (uint24)
+  function tokenOfOwnerByIndex(address owner, uint index) external view override returns (uint)
   {
     require(index < d_data.d_owner_tokens[owner].length);
     return d_data.d_owner_tokens[owner][index];
@@ -74,18 +74,18 @@ contract Event is ERC721,ERC721Metadata,ERC721Enumerable {
     imgSrc = _imgSrc;
   }
 
-  function issue(uint24 _numTickets,uint _price) public {
+  function issue(uint _numTickets,uint _price) public {
     require(msg.sender == d_data.d_organizer);
-    for(uint24 i=0;i<_numTickets;++i) {
+    for(uint i=0;i<_numTickets;++i) {
       d_data.d_tickets.push(TicketInfo({d_prev_price:_price,d_used:false}));
     }
   }
 
-  function getCostFor(uint24 _numTickets) public view returns(uint) {
+  function getCostFor(uint _numTickets) public view returns(uint) {
     return d_data.getCostFor(_numTickets);
   }
 
-  function buy(uint24 _numTickets) public payable {
+  function buy(uint _numTickets) public payable {
     return d_data.buy(_numTickets,msg.sender);
   }
 
@@ -94,31 +94,31 @@ contract Event is ERC721,ERC721Metadata,ERC721Enumerable {
     return d_data.d_organizer.transfer(address(this).balance);
   }
 
-  function numSoldUsed() public view returns(uint24 ,uint24 ) {
+  function numSoldUsed() public view returns(uint ,uint ) {
     return d_data.numSoldUsed();
   }
   
-  function ticketInfo(uint24 index) public view returns(bool used, uint prev_price, address owner, bool forSale,uint ask) {
+  function ticketInfo(uint index) public view returns(bool used, uint prev_price, address owner, bool forSale,uint ask) {
     return d_data.ticketInfo(index);
   }
   
-  function proposeSales(uint24[] memory tokens,uint[] memory prices) public {
+  function proposeSales(uint[] memory tokens,uint[] memory prices) public {
       require(tokens.length == prices.length);
-      for(uint24 i=0;i<tokens.length;++i) {
+      for(uint i=0;i<tokens.length;++i) {
         require(d_data.d_token_owner[tokens[i]] == msg.sender);
         d_data.proposeSaleUnsafe(tokens[i],prices[i]);
         emit EventAsk(msg.sender,tokens[i],prices[i]);
       }
   }
 
-  function retractSales(uint24[] memory tokens) public {
-    for(uint24 i=0;i<tokens.length;++i) {
+  function retractSales(uint[] memory tokens) public {
+    for(uint i=0;i<tokens.length;++i) {
       require(d_data.d_token_owner[tokens[i]] == msg.sender);
       d_data.retractSaleUnsafe(tokens[i]);
     }
   }
 
-  function hitAsk(uint24 _token) public payable {
+  function hitAsk(uint _token) public payable {
     require(!d_data.d_tickets[_token].d_used, "Ticket already used!");
     require(d_data.d_token_ask[_token] > 0 && msg.value >= d_data.d_token_ask[_token]);
       
@@ -129,15 +129,15 @@ contract Event is ERC721,ERC721Metadata,ERC721Enumerable {
   }
   
   // https://medium.com/@libertylocked/ec-signatures-and-recovery-in-ethereum-smart-contracts-560b6dd8876
-  function ticketVerificationCode(uint24 _tokenId) public view returns(bytes32) {
+  function ticketVerificationCode(uint _tokenId) public view returns(bytes32) {
     return d_data.ticketVerificationCode(_tokenId);
   }
   
-  function isOwnerSig(uint24 _tokenId, bytes memory signature) public view returns(bool) {
+  function isOwnerSig(uint _tokenId, bytes memory signature) public view returns(bool) {
     return d_data.isOwnerSig(_tokenId, signature);
   }
 
-  function useTicket(uint24 _tokenId, bytes memory signature) public returns(bool) {
+  function useTicket(uint _tokenId, bytes memory signature) public returns(bool) {
     require(isOwnerSig(_tokenId,signature), "Incorrect signature!");
     require(msg.sender == d_data.d_organizer);
     return d_data.useTicketUnsafe(_tokenId);
@@ -148,7 +148,7 @@ contract Event is ERC721,ERC721Metadata,ERC721Enumerable {
   //   d_data.d_mark_delete=mark_delete;
   // }
 
-  function transferFromImpl(address _from, address payable _to, uint24 _token) private {
+  function transferFromImpl(address _from, address payable _to, uint _token) private {
       d_data.transferFromImpl(_from, _to, _token);
       emit Transfer(_from,_to,_token);
       Universe u = Universe(d_data.d_admin);

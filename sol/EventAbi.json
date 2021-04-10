@@ -42,9 +42,9 @@
 			},
 			{
 				"indexed": true,
-				"internalType": "uint24",
+				"internalType": "uint256",
 				"name": "_tokenId",
-				"type": "uint24"
+				"type": "uint256"
 			}
 		],
 		"name": "Approval",
@@ -86,9 +86,9 @@
 			},
 			{
 				"indexed": true,
-				"internalType": "uint24",
+				"internalType": "uint256",
 				"name": "token",
-				"type": "uint24"
+				"type": "uint256"
 			},
 			{
 				"indexed": true,
@@ -117,9 +117,9 @@
 			},
 			{
 				"indexed": true,
-				"internalType": "uint24",
+				"internalType": "uint256",
 				"name": "_tokenId",
-				"type": "uint24"
+				"type": "uint256"
 			}
 		],
 		"name": "Transfer",
@@ -147,9 +147,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint24",
+				"internalType": "uint256",
 				"name": "_numTickets",
-				"type": "uint24"
+				"type": "uint256"
 			}
 		],
 		"name": "buy",
@@ -160,9 +160,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint24",
+				"internalType": "uint256",
 				"name": "_numTickets",
-				"type": "uint24"
+				"type": "uint256"
 			}
 		],
 		"name": "getCostFor",
@@ -179,9 +179,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint24",
+				"internalType": "uint256",
 				"name": "_token",
-				"type": "uint24"
+				"type": "uint256"
 			}
 		],
 		"name": "hitAsk",
@@ -205,9 +205,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint24",
+				"internalType": "uint256",
 				"name": "_tokenId",
-				"type": "uint24"
+				"type": "uint256"
 			},
 			{
 				"internalType": "bytes",
@@ -229,9 +229,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint24",
+				"internalType": "uint256",
 				"name": "_numTickets",
-				"type": "uint24"
+				"type": "uint256"
 			},
 			{
 				"internalType": "uint256",
@@ -262,14 +262,14 @@
 		"name": "numSoldUsed",
 		"outputs": [
 			{
-				"internalType": "uint24",
+				"internalType": "uint256",
 				"name": "",
-				"type": "uint24"
+				"type": "uint256"
 			},
 			{
-				"internalType": "uint24",
+				"internalType": "uint256",
 				"name": "",
-				"type": "uint24"
+				"type": "uint256"
 			}
 		],
 		"stateMutability": "view",
@@ -278,9 +278,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint24",
+				"internalType": "uint256",
 				"name": "_tokenId",
-				"type": "uint24"
+				"type": "uint256"
 			}
 		],
 		"name": "ownerOf",
@@ -297,9 +297,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint24[]",
+				"internalType": "uint256[]",
 				"name": "tokens",
-				"type": "uint24[]"
+				"type": "uint256[]"
 			},
 			{
 				"internalType": "uint256[]",
@@ -315,9 +315,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint24[]",
+				"internalType": "uint256[]",
 				"name": "tokens",
-				"type": "uint24[]"
+				"type": "uint256[]"
 			}
 		],
 		"name": "retractSales",
@@ -338,9 +338,9 @@
 				"type": "address"
 			},
 			{
-				"internalType": "uint24",
+				"internalType": "uint256",
 				"name": "_tokenId",
-				"type": "uint24"
+				"type": "uint256"
 			}
 		],
 		"name": "safeTransferFrom",
@@ -396,9 +396,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint24",
+				"internalType": "uint256",
 				"name": "index",
-				"type": "uint24"
+				"type": "uint256"
 			}
 		],
 		"name": "ticketInfo",
@@ -435,9 +435,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint24",
+				"internalType": "uint256",
 				"name": "_tokenId",
-				"type": "uint24"
+				"type": "uint256"
 			}
 		],
 		"name": "ticketVerificationCode",
@@ -454,17 +454,17 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint24",
+				"internalType": "uint256",
 				"name": "index",
-				"type": "uint24"
+				"type": "uint256"
 			}
 		],
 		"name": "tokenByIndex",
 		"outputs": [
 			{
-				"internalType": "uint24",
+				"internalType": "uint256",
 				"name": "",
-				"type": "uint24"
+				"type": "uint256"
 			}
 		],
 		"stateMutability": "view",
@@ -478,17 +478,36 @@
 				"type": "address"
 			},
 			{
-				"internalType": "uint24",
+				"internalType": "uint256",
 				"name": "index",
-				"type": "uint24"
+				"type": "uint256"
 			}
 		],
 		"name": "tokenOfOwnerByIndex",
 		"outputs": [
 			{
-				"internalType": "uint24",
+				"internalType": "uint256",
 				"name": "",
-				"type": "uint24"
+				"type": "uint256"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "",
+				"type": "uint256"
+			}
+		],
+		"name": "tokenURI",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
 			}
 		],
 		"stateMutability": "view",
@@ -520,9 +539,9 @@
 				"type": "address"
 			},
 			{
-				"internalType": "uint24",
+				"internalType": "uint256",
 				"name": "_token",
-				"type": "uint24"
+				"type": "uint256"
 			}
 		],
 		"name": "transferFrom",
@@ -546,9 +565,9 @@
 	{
 		"inputs": [
 			{
-				"internalType": "uint24",
+				"internalType": "uint256",
 				"name": "_tokenId",
-				"type": "uint24"
+				"type": "uint256"
 			},
 			{
 				"internalType": "bytes",
