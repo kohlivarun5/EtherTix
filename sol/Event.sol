@@ -54,8 +54,8 @@ contract Event is ERC721,ERC721Metadata,ERC721Enumerable {
   function symbol() external pure override returns (string memory)
   { return "ETIX"; }
 
-  // function tokenURI(uint24) external view override returns (string memory)
-  // { return imgSrc; }
+  function tokenURI(uint24) external view override returns (string memory)
+  { return imgSrc; }
 
   // ERC721Enumerable
   function totalSupply() public view override returns (uint256)
