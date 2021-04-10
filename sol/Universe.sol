@@ -38,10 +38,10 @@ contract Universe {
     d_owner.transfer(address(this).balance);
   }
   
-  // function createEvent(string memory _description,string memory _imgSrc) public payable {
-  //   Event eventAddr = new Event(msg.sender,d_commission_percent,_description,_imgSrc);
-  //   emit OrganizerEvents(address(eventAddr), msg.sender, true,_description);
-  // }
+  function createEvent(string memory _description,string memory _imgSrc) public payable {
+    Event eventAddr = new Event(msg.sender,d_commission_percent,_description,_imgSrc);
+    emit OrganizerEvents(address(eventAddr), msg.sender, true,_description);
+  }
   
   function addUserEvent(address _event,address _user) public {
       emit UserEvents(_event,_user,true);

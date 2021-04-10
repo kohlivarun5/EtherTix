@@ -81,10 +81,14 @@ contract Event is ERC721,ERC721Metadata,ERC721Enumerable {
     }
   }
 
-  function buy(uint24[] calldata tickets) public payable {
-    return d_data.buy(tickets,msg.sender);
+  function getCostFor(uint24 _numTickets) public view returns(uint) {
+    return d_data.getCostFor(_numTickets);
   }
-  
+
+  function buy(uint24 _numTickets) public payable {
+    return d_data.buy(_numTickets,msg.sender);
+  }
+
   function withdraw() public {
     require(msg.sender == d_data.d_organizer);
     return d_data.d_organizer.transfer(address(this).balance);
@@ -110,7 +114,7 @@ contract Event is ERC721,ERC721Metadata,ERC721Enumerable {
   function retractSales(uint24[] memory tokens) public {
     for(uint24 i=0;i<tokens.length;++i) {
       require(d_data.d_token_owner[tokens[i]] == msg.sender);
-      return d_data.retractSaleUnsafe(tokens[i]);
+      d_data.retractSaleUnsafe(tokens[i]);
     }
   }
 

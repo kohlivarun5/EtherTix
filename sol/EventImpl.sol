@@ -36,7 +36,7 @@ struct EventData {
 
 library EventImpl {
 
-    function getCostFor(EventData storage self,uint24 _numTickets) public view returns(uint) {
+  function getCostFor(EventData storage self,uint24 _numTickets) public view returns(uint) {
       uint total_cost;
       uint24 bought;
 
@@ -56,20 +56,25 @@ library EventImpl {
       return total_cost;
     }
 
-    function buy(EventData storage self,uint24[] calldata tickets,address payable to) public {
-      uint total_cost;
+    function buy(EventData storage self,uint24 _numTickets,address payable to) public {
+      uint  total_cost;
+      uint24 bought;
 
       // We will buy 1 ticket at a time
       // If while buying, we do not find enough tickets, 
       // or we did not get enough money, we throw
-      for(uint24 i=0;i<tickets.length;++i) {
-        uint24 token = tickets[i];
-        require(self.d_token_owner[token] == address(0), "Token already sold");
-        total_cost += self.d_tickets[token].d_prev_price;
-        self.d_owner_tokens[to].push(token);
-        self.d_token_owner[token] = to;
+      for(uint24 i=0;i<self.d_tickets.length && bought < _numTickets;++i) {
+        if (self.d_token_owner[i] != address(0)) { continue; }
+
+        // Ticket can be bought 
+        total_cost+=self.d_tickets[i].d_prev_price;
+        self.d_owner_tokens[to].push(i);
+        self.d_token_owner[i] = to;
+        bought++;
+  
       }
 
+      require(bought == _numTickets, "Not enough tickets!");
       require(total_cost <= msg.value, "Cost is more than transaction value.");
 
       // Take admin cut
