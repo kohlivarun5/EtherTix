@@ -1,6 +1,13 @@
 let text = ReasonReact.string;
 let int(i) = i |> string_of_int |> ReasonReact.string;
 
+let eventOfAddress(web3,address) {
+  let eth = BsWeb3.Web3.eth(web3);
+  Js.log((eth,address,Event.abi));
+  let event:Event.t = [%bs.raw{| new eth.Contract(EventAbiJson.default,address) |}];
+  event 
+};
+
 type buy_data = {
   event:Event.t,
   description:string,
@@ -17,12 +24,19 @@ type ticket_sig =
 | UnUsed(string)
 
 type ticket_id_sig = (ticket_sig,int)
+type ticket_info = {
+  token:int,
+  price:BsWeb3.Types.big_number,
+  for_sale:bool,
+  used:bool
+}
+
 type my_event_data = {
   address:BsWeb3.Eth.address,
   event:Event.t,
   description : string,
   imgSrc: string,
-  tickets:Js.Array.t((int,(BsWeb3.Types.big_number,(bool,bool)))),
+  tickets:Js.Array.t(ticket_info),
   show_details:bool,
   ticket_signatures:Js.Array.t(ticket_id_sig)
 }
@@ -120,23 +134,42 @@ let make = (~web3,_children) => {
       }
     | AddEvent(address) => {
         ReasonReact.UpdateWithSideEffects(state,(self) => {
-          let event = Event.ofAddress(state.web3.web3,address);
-          let transaction_data = BsWeb3.Eth.make_transaction(~from=state.web3.account);
-          Event.name(event)
-          |> BsWeb3.Eth.call_with(transaction_data)
+          let event = eventOfAddress(state.web3.web3,address);
+          Event.ERC721MetaData.name(event)
+          |> BsWeb3.Eth.call
           |> Js.Promise.then_ ((description) => {
-              Event.imgSrc(event)
-              |> BsWeb3.Eth.call_with(transaction_data)
+              Event.Info.imgSrc(event)
+              |> BsWeb3.Eth.call
               |> Js.Promise.then_ ((imgSrc) => {
-                Event.myTickets(event)
-                |> BsWeb3.Eth.call_with(transaction_data)
-                |> Js.Promise.then_ (((tokens,prices,for_sale,used)) => {
-                    Js.log(description);
-                    self.send(MyEventData({
-                      tickets:(Belt.Array.zip(for_sale,used) |> Belt.Array.zip(Js.Array.map(((price) => BsWeb3.Utils.fromWei(price,"milliether")), prices)) |> Belt.Array.zip(tokens) ),
-                      event,imgSrc,description,address,show_details:false,ticket_signatures:[||]
-                    }))
-                    |> Js.Promise.resolve
+                Event.ERC721.balanceOf(event,state.web3.account)
+                |> BsWeb3.Eth.call
+                |> Js.Promise.then_ ((tokens) => {
+                    Js.log(tokens);
+                    [%bs.raw {| new Array(parseInt(tokens)).fill(0) |}]
+                    |> Js.Array.mapi((_,index) => {
+                        Js.log(("Index=",index));
+                        Event.ERC721Enumerable.tokenOfOwnerByIndex(event,state.web3.account,index)
+                        |> BsWeb3.Eth.call
+                        |> Js.Promise.then_ ((token) => {
+                          Js.log((index,token));
+
+                          Event.Info.ticketInfo(event,token)
+                          |> BsWeb3.Eth.call
+                          |> Js.Promise.then_ (((used,prev_price,owner,for_sale,ask)) => {
+                            Js.log((used,prev_price,owner,for_sale,ask));
+                            { token,used, price:BsWeb3.Utils.fromWei(for_sale ? ask : prev_price,"milliether"), for_sale }
+                            |> Js.Promise.resolve
+                          })
+                        })
+                    })
+                    |> Js.Promise.all
+                    |> Js.Promise.then_ ((tickets) => {
+                      Js.log(tickets);
+                      self.send(MyEventData({
+                        tickets,event,imgSrc,description,address,show_details:false,ticket_signatures:[||]
+                      }))
+                      |> Js.Promise.resolve
+                    })
                 })
               })
           });
@@ -164,7 +197,7 @@ let make = (~web3,_children) => {
     }
 
     | BuyEventAddress(event_address) => 
-        let event = Event.ofAddress(state.web3.web3,event_address);
+        let event = eventOfAddress(state.web3.web3,event_address);
         ReasonReact.UpdateWithSideEffects({
           ...state,
           event_address,buy_data:Some({
@@ -179,34 +212,47 @@ let make = (~web3,_children) => {
           | Some({numTickets}) => 
             self.send(NumTickets(numTickets))
           };
-          Event.name(event)
+          Event.ERC721MetaData.name(event)
           |> BsWeb3.Eth.call 
           |> Js.Promise.then_ ((description) => 
-              Event.imgSrc(event)
+              Event.Info.imgSrc(event)
               |> BsWeb3.Eth.call
               |> Js.Promise.then_ ((imgSrc) =>
                 self.send(BuyEventDescription(description,imgSrc))
                 |> Js.Promise.resolve)
               );
-          let tx = BsWeb3.Eth.make_transaction(~from=state.web3.account);
-          Event.numSold(event)
-          |> BsWeb3.Eth.call_with(tx)
-          |> Js.Promise.then_ ((numSold) => {
-              Event.numUnSold(event)
-              |> BsWeb3.Eth.call_with(tx)
-              |> Js.Promise.then_ ((numUnSold) => {
+          Event.ERC721Enumerable.totalSupply(event)
+          |> BsWeb3.Eth.call
+          |> Js.Promise.then_ ((numTotal) => {
 
-                  Event.forSale(event)
-                  |> BsWeb3.Eth.call_with(tx)
-                  |> Js.Promise.then_ (((_,tokens,asks)) => {
-                      Js.log((tokens,asks));
+            Event.Info.numSoldUsed(event)
+            |> BsWeb3.Eth.call
+            |> Js.Promise.then_ (((numSold,_)) => {
+                let numUnSold = numTotal - numSold;
+
+                Event.Market.askEvents(event, Event.Market.filter_options(~fromBlock=0,~toBlock="latest"))
+                |> Js.Promise.then_ ((ask_events) => {
+                    ask_events
+                    |> Js.Array.map(Event.Market.ask_event_token)
+                    |> Js.Array.map ((token) => {
+                        Event.Info.ticketInfo(event,token)
+                        |> BsWeb3.Eth.call
+                        |> Js.Promise.then_ (((used,_,_,for_sale,ask)) => {
+                          (token,used,for_sale,ask)
+                          |> Js.Promise.resolve
+                        })
+                    })
+                    |> Js.Promise.all
+                    |> Js.Promise.then_ ((tickets) => {
                       let resale_tickets = 
-                        Belt.Array.zip(tokens,asks)
-                        |> Js.Array.filter(((_,price)) => "0" != (price |> BsWeb3.Types.toString(10)));
-                      Js.log((numSold,numUnSold,resale_tickets));
-                      self.send(NumSoldUnsoldResale(numSold,numUnSold,resale_tickets))
-                      |> Js.Promise.resolve 
-                  })
+                        tickets
+                        |> Js.Array.filter (((_,used,for_sale,_)) => !used && for_sale)
+                        |> Js.Array.map(((token,_,_,ask)) => (token,ask));
+                        Js.log((numSold,numUnSold,resale_tickets));
+                        self.send(NumSoldUnsoldResale(numSold,numUnSold,resale_tickets))
+                        |> Js.Promise.resolve 
+                    })
+                })
               })
           });
           ()
@@ -222,7 +268,7 @@ let make = (~web3,_children) => {
         assert(state.buy_data != None);
         let buy_data = Js.Option.getExn(state.buy_data);
         ReasonReact.UpdateWithSideEffects({...state,buy_data:Some({...buy_data,numTickets})},(self) => {
-          Event.getCostFor(Js.Option.getExn(state.buy_data).event,~numTickets)
+          Event.Info.getCostFor(Js.Option.getExn(state.buy_data).event,numTickets)
           |> BsWeb3.Eth.call 
           |> Js.Promise.then_ ((totalCost) => { 
               Js.log(totalCost); 
@@ -249,7 +295,7 @@ let make = (~web3,_children) => {
         assert(state.buy_data != None);
         let {event,numTickets,totalCost} = Js.Option.getExn(state.buy_data);
         Js.log(state.buy_data);
-        Event.buy(event,~numTickets=numTickets)
+        Event.Edit.buy(event,numTickets)
         |> BsWeb3.Eth.send(
             BsWeb3.Eth.make_transaction_with_value(
               ~value=totalCost,~from=state.web3.account))
@@ -257,7 +303,7 @@ let make = (~web3,_children) => {
         ()
       })
     | BuyResale(event,token,price) => ReasonReact.UpdateWithSideEffects(state,(self) => {
-        Event.hitAsk(event,token)
+        Event.Market.hitAsk(event,token)
         |> BsWeb3.Eth.send(
             BsWeb3.Eth.make_transaction_with_value(
               ~value=price,~from=state.web3.account))
@@ -267,19 +313,19 @@ let make = (~web3,_children) => {
     | SignTickets(index) => ReasonReact.UpdateWithSideEffects(state,(self) => {
         let event = state.myEvents[index].event;
         state.myEvents[index].tickets
-        |> Js.Array.reduce((sigs,(id,(_,(_,_)))) => {
+        |> Js.Array.reduce((sigs,{token}) => {
 
             sigs
             |> Js.Promise.then_ ((sigs) => {
                 Js.log("Asking for sign");
 
-                Event.ticketUsed(event,id)
+                Event.Info.ticketInfo(event,token)
                 |> BsWeb3.Eth.call 
-                |> Js.Promise.then_((isUsed) => {
+                |> Js.Promise.then_(((isUsed,_,_,_,_)) => {
                     if (isUsed) {
-                      Js.Promise.resolve(Array.append([|(Used,id)|],sigs))
+                      Js.Promise.resolve(Array.append([|(Used,token)|],sigs))
                     } else {
-                      Event.ticketVerificationCode(event,id)
+                      Event.Use.verificationCode(event,token)
                       |> BsWeb3.Eth.call 
                       |> Js.Promise.then_((code) =>
                         state.web3.web3 
@@ -287,16 +333,16 @@ let make = (~web3,_children) => {
                         |> BsWeb3.Eth.sign(code,state.web3.account))
                       |> Js.Promise.then_((signature) => {
                           Js.log(signature);
-                          Event.isOwnerSig(event,id,signature)
+                          Event.Use.isOwnerSig(event,token,signature)
                           |> BsWeb3.Eth.call 
                           |> Js.Promise.then_((isOwner) => {
                               assert(isOwner);
-                              Js.Promise.resolve(Array.append([|(UnUsed(signature),id)|],sigs))
+                              Js.Promise.resolve(Array.append([|(UnUsed(signature),token)|],sigs))
                             })
                       })
                       |> Js.Promise.catch((e) => {
                           Js.log(e);
-                          Js.Promise.resolve(Array.append([|(Used,id)|],sigs));
+                          Js.Promise.resolve(Array.append([|(Used,token)|],sigs));
                         })
                     }
                 });
@@ -362,14 +408,13 @@ let make = (~web3,_children) => {
       }
     | SellingPricePerTicket(event_index,ticket_index,price) => 
         let {tickets} = state.myEvents[event_index];
-        let (token,(_,(for_sale,used))) = tickets[ticket_index];
-        tickets[ticket_index] = (token,(price,(for_sale,used)));
+        let ticket = tickets[ticket_index];
+        tickets[ticket_index] = {...ticket,price};
         ReasonReact.Update(state);
     | ProposeSale(index,ticket_index) => ReasonReact.UpdateWithSideEffects(state,(_) => {
         let {event,tickets} = state.myEvents[index];
-        let (token,(price,(_,_))) = tickets[ticket_index];
-        Event.proposeSale(event,token,
-                          ~price=(BsWeb3.Utils.toWeiBN(price,"milliether")))
+        let {token,price}= tickets[ticket_index];
+        Event.Market.proposeSales(event,[|token|],[|BsWeb3.Utils.toWeiBN(price,"milliether")|])
         |> BsWeb3.Eth.send(
             BsWeb3.Eth.make_transaction(~from=state.web3.account))
         |> Js.Promise.then_ (_ => Js.Promise.resolve());
@@ -377,8 +422,8 @@ let make = (~web3,_children) => {
       })
     | RetractSale(index,ticket_index) => ReasonReact.UpdateWithSideEffects(state,(_) => {
         let {event,tickets} = state.myEvents[index];
-        let (token,(_,(_,_))) = tickets[ticket_index];
-        Event.retractSale(event,token)
+        let {token} = tickets[ticket_index];
+        Event.Market.retractSales(event,[|token|])
         |> BsWeb3.Eth.send(
             BsWeb3.Eth.make_transaction(~from=state.web3.account))
         |> Js.Promise.then_ (_ => Js.Promise.resolve());
@@ -517,7 +562,7 @@ let make = (~web3,_children) => {
                     className=((show_details) ? "table-active bg-black" : "")>
                   <td colSpan=3 style=(ReactDOMRe.Style.make(~maxWidth="170px",())) >
                     <div className="card">
-                      ((tickets |> Js.Array.every(((_,(_,(_,used)))) => used))
+                      ((tickets |> Js.Array.every(({used}) => used))
                        ?(<div className="card-header font-weight-bold padding-vertical-less bg-light">(text("All Tickets Used"))</div>)
                        :<div>
                         (Js.Array.length(ticket_signatures) <= 0 
@@ -552,7 +597,7 @@ let make = (~web3,_children) => {
                         <div className="card-body padding-vertical-less" style=(ReactDOMRe.Style.make(~paddingLeft="14px",()))> 
                           <div className="form-group" style=(ReactDOMRe.Style.make(~margin="3%",()))>
 
-                            (tickets |> Js.Array.mapi(((_,(price,(for_sale,used))),token_index) => {
+                            (tickets |> Js.Array.mapi(({price,for_sale,used},token_index) => {
                               <div key=(Js.String.concat("event_tickets",string_of_int(token_index))) className="row">
                                 (used 
                                  ? ReasonReact.null
