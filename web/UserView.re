@@ -325,7 +325,7 @@ let make = (~web3,_children) => {
                     if (isUsed) {
                       Js.Promise.resolve(Array.append([|(Used,token)|],sigs))
                     } else {
-                      Event.Use.verificationCode(event,328)
+                      Event.Use.verificationCode(event,token)
                       |> BsWeb3.Eth.call 
                       |> Js.Promise.then_((code) =>
                         state.web3.web3 
