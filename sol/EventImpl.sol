@@ -56,25 +56,20 @@ library EventImpl {
       return total_cost;
     }
 
-    function buy(EventData storage self,uint24 _numTickets,address payable to) public {
-      uint  total_cost;
-      uint24 bought;
+    function buy(EventData storage self,uint24[] calldata tickets,address payable to) public {
+      uint total_cost;
 
       // We will buy 1 ticket at a time
       // If while buying, we do not find enough tickets, 
       // or we did not get enough money, we throw
-      for(uint24 i=0;i<self.d_tickets.length && bought < _numTickets;++i) {
-        if (self.d_token_owner[i] != address(0)) { continue; }
-
-        // Ticket can be bought 
-        total_cost+=self.d_tickets[i].d_prev_price;
-        self.d_owner_tokens[to].push(i);
-        self.d_token_owner[i] = to;
-        bought++;
-  
+      for(uint24 i=0;i<tickets.length;++i) {
+        uint24 token = tickets[i];
+        require(self.d_token_owner[token] == address(0), "Token already sold");
+        total_cost += self.d_tickets[token].d_prev_price;
+        self.d_owner_tokens[to].push(token);
+        self.d_token_owner[token] = to;
       }
 
-      require(bought == _numTickets, "Not enough tickets!");
       require(total_cost <= msg.value, "Cost is more than transaction value.");
 
       // Take admin cut
@@ -85,56 +80,19 @@ library EventImpl {
       u.addUserEvent(address(this),to);
     }
 
-    function numSold(EventData storage self) public view returns(uint24) {
-      uint24 numSoldCount=0;
+    function numSoldUsed(EventData storage self) public view returns(uint24 numSold, uint24 numUsed) {
       for(uint24 i=0;i<self.d_tickets.length;++i) {
-        if (self.d_token_owner[i] != address(0)) { numSoldCount++;}
+        if (self.d_token_owner[i] != address(0)) { numSold++; }
+        if (self.d_tickets[i].d_used) { numUsed++; } 
       }
-      return numSoldCount;
     }
 
-    function numUnSold(EventData storage self) public view returns(uint24) {
-      uint24 numUnSoldCount=0;
-      for(uint24 i=0;i<self.d_tickets.length;++i) {
-        if (self.d_token_owner[i] == address(0)) { numUnSoldCount++; }
-      }
-      return numUnSoldCount;
-    }
-
-    function numUsed(EventData storage self) public view returns(uint24) {
-      uint24 numUsedCount=0;
-      for(uint24 i=0;i<self.d_tickets.length;++i) {
-        if (self.d_tickets[i].d_used) { numUsedCount++; } 
-      }
-      return numUsedCount;
-    }
-
-    function numToBeUsed(EventData storage self) public view returns(uint24) {
-      uint24 numToBeUsedCount=0;
-      for(uint24 i=0;i<self.d_tickets.length;++i) {
-        if (!self.d_tickets[i].d_used && self.d_token_owner[i] != address(0)) { numToBeUsedCount++; } 
-      }
-      return numToBeUsedCount;
-    }
-
-    function myTickets(EventData storage self, address owner) public view returns(uint24[] memory,uint[] memory,bool[] memory,bool[] memory) {
-        uint24[] storage tokens = self.d_owner_tokens[owner];
-        uint[] memory prices = new uint[](tokens.length);
-        bool[] memory for_sale = new bool[](tokens.length);
-        bool[] memory used = new bool[](tokens.length);
-        for(uint24 i=0;i<tokens.length;++i)
-        {
-            uint24 token=tokens[i];
-            if (self.d_token_ask[token] != 0) {
-                prices[i] = self.d_token_ask[token];
-                for_sale[i] = true;
-            } else {
-                prices[i] = self.d_tickets[token].d_prev_price;
-                for_sale[i] = false;
-            }
-            used[i] = self.d_tickets[token].d_used;
-        }
-        return (tokens,prices,for_sale,used);
+    function ticketInfo(EventData storage self,uint24 index) public view returns(bool used, uint prev_price, address owner, uint ask) {
+      require(index >=0 && index < self.d_tickets.length);
+      used = self.d_tickets[index].d_used;
+      prev_price = self.d_tickets[index].d_prev_price;
+      ask = self.d_token_ask[index];
+      owner = self.d_token_owner[index];
     }
 
     function forSale(EventData storage self) public view returns(uint24,uint24[] memory,uint[] memory) {

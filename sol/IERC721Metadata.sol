@@ -15,5 +15,5 @@ interface ERC721Metadata /* is ERC721 */ {
     /// @dev Throws if `_tokenId` is not a valid NFT. URIs are defined in RFC
     ///  3986. The URI may point to a JSON file that conforms to the "ERC721
     ///  Metadata JSON Schema".
-    function tokenURI(uint24 _tokenId) external view returns (string memory);
+    // function tokenURI(uint24 _tokenId) external view returns (string memory);
 }
