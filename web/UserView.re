@@ -8,8 +8,6 @@ let eventOfAddress(web3,address) {
   event 
 };
 
-[@bs.new] external new_array : int => Js.Array.t(unit) = "Array";
-
 type buy_data = {
   event:Event.t,
   description:string,
@@ -147,7 +145,8 @@ let make = (~web3,_children) => {
                 Event.ERC721.balanceOf(event,state.web3.account)
                 |> BsWeb3.Eth.call_with(transaction_data)
                 |> Js.Promise.then_ ((tokens) => {
-                    new_array(tokens)
+                    Js.log(tokens);
+                    [%bs.raw {| new Array(parseInt(tokens)).fill(0) |}]
                     |> Js.Array.mapi((_,index) => {
                         Event.ERC721Enumerable.tokenOfOwnerByIndex(event,state.web3.account,index)
                         |> BsWeb3.Eth.call_with(transaction_data)
@@ -163,6 +162,7 @@ let make = (~web3,_children) => {
                     })
                     |> Js.Promise.all
                     |> Js.Promise.then_ ((tickets) => {
+                      Js.log(tickets);
                       self.send(MyEventData({
                         tickets,event,imgSrc,description,address,show_details:false,ticket_signatures:[||]
                       }))
