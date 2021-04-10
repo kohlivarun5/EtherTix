@@ -155,4 +155,8 @@ contract Event is ERC721,ERC721Metadata,ERC721Enumerable {
       u.addUserEvent(address(this),_to);
   }
 
+  function setImg(string calldata _imgSrc) public {
+    imgSrc = _imgSrc;
+  }
+
 }
