@@ -135,27 +135,29 @@ let make = (~web3,_children) => {
     | AddEvent(address) => {
         ReasonReact.UpdateWithSideEffects(state,(self) => {
           let event = eventOfAddress(state.web3.web3,address);
-          let transaction_data = BsWeb3.Eth.make_transaction(~from=state.web3.account);
           Event.ERC721MetaData.name(event)
-          |> BsWeb3.Eth.call_with(transaction_data)
+          |> BsWeb3.Eth.call
           |> Js.Promise.then_ ((description) => {
               Event.Info.imgSrc(event)
-              |> BsWeb3.Eth.call_with(transaction_data)
+              |> BsWeb3.Eth.call
               |> Js.Promise.then_ ((imgSrc) => {
                 Event.ERC721.balanceOf(event,state.web3.account)
-                |> BsWeb3.Eth.call_with(transaction_data)
+                |> BsWeb3.Eth.call
                 |> Js.Promise.then_ ((tokens) => {
                     Js.log(tokens);
                     [%bs.raw {| new Array(parseInt(tokens)).fill(0) |}]
                     |> Js.Array.mapi((_,index) => {
+                        Js.log(("Index=",index));
                         Event.ERC721Enumerable.tokenOfOwnerByIndex(event,state.web3.account,index)
-                        |> BsWeb3.Eth.call_with(transaction_data)
+                        |> BsWeb3.Eth.call
                         |> Js.Promise.then_ ((token) => {
+                          Js.log((index,token));
 
                           Event.Info.ticketInfo(event,token)
-                          |> BsWeb3.Eth.call_with(transaction_data)
-                          |> Js.Promise.then_ (((used,prev_price,_,for_sale,ask)) => {
-                            { token,used, price:for_sale ? ask : prev_price, for_sale }
+                          |> BsWeb3.Eth.call
+                          |> Js.Promise.then_ (((used,prev_price,owner,for_sale,ask)) => {
+                            Js.log((used,prev_price,owner,for_sale,ask));
+                            { token,used, price:BsWeb3.Utils.fromWei(for_sale ? ask : prev_price,"milliether"), for_sale }
                             |> Js.Promise.resolve
                           })
                         })
@@ -219,13 +221,12 @@ let make = (~web3,_children) => {
                 self.send(BuyEventDescription(description,imgSrc))
                 |> Js.Promise.resolve)
               );
-          let tx = BsWeb3.Eth.make_transaction(~from=state.web3.account);
           Event.ERC721Enumerable.totalSupply(event)
-          |> BsWeb3.Eth.call_with(tx)
+          |> BsWeb3.Eth.call
           |> Js.Promise.then_ ((numTotal) => {
 
             Event.Info.numSoldUsed(event)
-            |> BsWeb3.Eth.call_with(tx)
+            |> BsWeb3.Eth.call
             |> Js.Promise.then_ (((numSold,_)) => {
                 let numUnSold = numTotal - numSold;
 
@@ -235,7 +236,7 @@ let make = (~web3,_children) => {
                     |> Js.Array.map(Event.Market.ask_event_token)
                     |> Js.Array.map ((token) => {
                         Event.Info.ticketInfo(event,token)
-                        |> BsWeb3.Eth.call_with(tx)
+                        |> BsWeb3.Eth.call
                         |> Js.Promise.then_ (((used,_,_,for_sale,ask)) => {
                           (token,used,for_sale,ask)
                           |> Js.Promise.resolve
