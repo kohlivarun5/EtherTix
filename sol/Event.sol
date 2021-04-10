@@ -13,21 +13,21 @@ contract Event is ERC721,ERC721Metadata,ERC721Enumerable {
   using EventImpl for EventData;
   EventData internal d_data;
   
-  event EventImgSrc(address indexed updator, string imgSrc);
-  event EventAsk(address indexed updator,uint24 indexed index,uint indexed price);
+  event EventAsk(address indexed updator,uint24 indexed token,uint indexed ask);
 
   string private d_description;
+  string public imgSrc;
 
-  constructor(address payable _organizer,uint8 commission_percent,string memory description,string memory imgSrc) public { 
+  constructor(address payable _organizer,uint8 commission_percent,string memory description,string memory _imgSrc) public { 
     d_description = description;
-    emit EventImgSrc(_organizer, imgSrc);
+    imgSrc = _imgSrc;
     d_data.d_admin = msg.sender;
     d_data.d_organizer=_organizer;
     d_data.d_creator_commission_percent=commission_percent;
   }
 
   // ERC 721
-  function balanceOf(address _owner) public view override returns (uint256) {
+  function balanceOf(address _owner) public view override returns (uint) {
     return d_data.d_owner_tokens[_owner].length;    
   }
   
@@ -70,8 +70,8 @@ contract Event is ERC721,ERC721Metadata,ERC721Enumerable {
     return d_data.d_owner_tokens[owner][index];
   }
   
-  function updateImg(string memory imgSrc) public {
-    emit EventImgSrc(msg.sender, imgSrc);
+  function updateImg(string memory _imgSrc) public {
+    imgSrc = _imgSrc;
   }
 
   function issue(uint24 _numTickets,uint _price) public {
@@ -94,7 +94,7 @@ contract Event is ERC721,ERC721Metadata,ERC721Enumerable {
     return d_data.numSoldUsed();
   }
   
-  function ticketInfo(uint24 index) public view returns(bool used, uint prev_price, address owner, uint ask) {
+  function ticketInfo(uint24 index) public view returns(bool used, uint prev_price, address owner, bool forSale,uint ask) {
     return d_data.ticketInfo(index);
   }
   

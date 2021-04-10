@@ -87,10 +87,11 @@ library EventImpl {
       }
     }
 
-    function ticketInfo(EventData storage self,uint24 index) public view returns(bool used, uint prev_price, address owner, uint ask) {
+    function ticketInfo(EventData storage self,uint24 index) public view returns(bool used, uint prev_price, address owner,bool forSale, uint ask) {
       require(index >=0 && index < self.d_tickets.length);
       used = self.d_tickets[index].d_used;
       prev_price = self.d_tickets[index].d_prev_price;
+      forSale = self.d_token_ask[index] > 0;
       ask = self.d_token_ask[index];
       owner = self.d_token_owner[index];
     }
