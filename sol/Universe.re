@@ -7,7 +7,7 @@ type t;
 [@bs.scope "methods"] [@bs.send] external getBalance : t => BsWeb3.Eth.contract_method(BsWeb3.Types.big_number) = "";
 [@bs.scope "methods"] [@bs.send] external withdraw : t => BsWeb3.Eth.contract_method(unit) = "";
 
-[@bs.scope "methods"] [@bs.send] external createEvent : t => string => BsWeb3.Eth.contract_method(unit) = "";
+[@bs.scope "methods"] [@bs.send] external createEvent : t => (~description:string) => (~imgSrc:string) => BsWeb3.Eth.contract_method(unit) = "";
 
 [@bs.deriving abstract]
 type organizerEventsQuery = {

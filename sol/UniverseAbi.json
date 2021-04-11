@@ -1,183 +1,75 @@
 [
 	{
-		"constant": true,
-		"inputs": [],
-		"name": "getBalance",
-		"outputs": [
-			{
-				"name": "",
-				"type": "uint256"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": false,
 		"inputs": [
 			{
+				"internalType": "address",
 				"name": "_event",
 				"type": "address"
 			},
 			{
-				"name": "_user",
-				"type": "address"
-			}
-		],
-		"name": "removeUserEvent",
-		"outputs": [],
-		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"constant": false,
-		"inputs": [],
-		"name": "withdraw",
-		"outputs": [],
-		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"constant": false,
-		"inputs": [
-			{
-				"name": "_user",
-				"type": "address"
-			},
-			{
-				"name": "info",
-				"type": "string"
-			}
-		],
-		"name": "verifyUser",
-		"outputs": [],
-		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [
-			{
-				"name": "_user",
-				"type": "address"
-			}
-		],
-		"name": "verifiedUser",
-		"outputs": [
-			{
-				"name": "",
-				"type": "string"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": true,
-		"inputs": [],
-		"name": "isOwner",
-		"outputs": [
-			{
-				"name": "",
-				"type": "bool"
-			}
-		],
-		"payable": false,
-		"stateMutability": "view",
-		"type": "function"
-	},
-	{
-		"constant": false,
-		"inputs": [
-			{
-				"name": "_description",
-				"type": "string"
-			}
-		],
-		"name": "createEvent",
-		"outputs": [
-			{
-				"name": "",
-				"type": "address"
-			}
-		],
-		"payable": true,
-		"stateMutability": "payable",
-		"type": "function"
-	},
-	{
-		"constant": false,
-		"inputs": [
-			{
-				"name": "commission_percent",
-				"type": "uint256"
-			}
-		],
-		"name": "updateCommission",
-		"outputs": [],
-		"payable": false,
-		"stateMutability": "nonpayable",
-		"type": "function"
-	},
-	{
-		"constant": false,
-		"inputs": [
-			{
-				"name": "_event",
-				"type": "address"
-			},
-			{
+				"internalType": "address",
 				"name": "_user",
 				"type": "address"
 			}
 		],
 		"name": "addUserEvent",
 		"outputs": [],
-		"payable": false,
 		"stateMutability": "nonpayable",
 		"type": "function"
 	},
 	{
 		"inputs": [
 			{
-				"name": "commission_percent",
-				"type": "uint256"
+				"internalType": "string",
+				"name": "_description",
+				"type": "string"
+			},
+			{
+				"internalType": "string",
+				"name": "_imgSrc",
+				"type": "string"
 			}
 		],
-		"payable": true,
+		"name": "createEvent",
+		"outputs": [],
 		"stateMutability": "payable",
-		"type": "constructor"
+		"type": "function"
 	},
 	{
-		"payable": true,
+		"inputs": [
+			{
+				"internalType": "uint8",
+				"name": "commission_percent",
+				"type": "uint8"
+			}
+		],
 		"stateMutability": "payable",
-		"type": "fallback"
+		"type": "constructor"
 	},
 	{
 		"anonymous": false,
 		"inputs": [
 			{
 				"indexed": true,
+				"internalType": "address",
 				"name": "eventAddr",
 				"type": "address"
 			},
 			{
 				"indexed": true,
+				"internalType": "address",
 				"name": "organizerAddr",
 				"type": "address"
 			},
 			{
 				"indexed": true,
+				"internalType": "bool",
 				"name": "active",
 				"type": "bool"
 			},
 			{
 				"indexed": false,
+				"internalType": "string",
 				"name": "description",
 				"type": "string"
 			}
@@ -186,25 +78,120 @@
 		"type": "event"
 	},
 	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_event",
+				"type": "address"
+			},
+			{
+				"internalType": "address",
+				"name": "_user",
+				"type": "address"
+			}
+		],
+		"name": "removeUserEvent",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint8",
+				"name": "commission_percent",
+				"type": "uint8"
+			}
+		],
+		"name": "updateCommission",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
 		"anonymous": false,
 		"inputs": [
 			{
 				"indexed": true,
+				"internalType": "address",
 				"name": "eventAddr",
 				"type": "address"
 			},
 			{
 				"indexed": true,
+				"internalType": "address",
 				"name": "userAddr",
 				"type": "address"
 			},
 			{
 				"indexed": true,
+				"internalType": "bool",
 				"name": "active",
 				"type": "bool"
 			}
 		],
 		"name": "UserEvents",
 		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_user",
+				"type": "address"
+			},
+			{
+				"internalType": "string",
+				"name": "info",
+				"type": "string"
+			}
+		],
+		"name": "verifyUser",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"inputs": [],
+		"name": "withdraw",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	},
+	{
+		"stateMutability": "payable",
+		"type": "receive"
+	},
+	{
+		"inputs": [],
+		"name": "isOwner",
+		"outputs": [
+			{
+				"internalType": "bool",
+				"name": "",
+				"type": "bool"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "address",
+				"name": "_user",
+				"type": "address"
+			}
+		],
+		"name": "verifiedUser",
+		"outputs": [
+			{
+				"internalType": "string",
+				"name": "",
+				"type": "string"
+			}
+		],
+		"stateMutability": "view",
+		"type": "function"
 	}
 ]

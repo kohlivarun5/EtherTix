@@ -2,6 +2,6 @@ let address_uri(address) =
   Js.String.concat(address,"https://etherscan.io/address/")
 
 let t : NetworkInfo.t = {
-  universe:"0xa87D9e0fC7A9fFaa9aa0A5077df97a6b8aE0cC2D",
+  universe:"0xb803ea85F1B56e5C6442fb931496Bb261158118a",
   address_uri
 }

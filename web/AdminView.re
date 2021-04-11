@@ -33,10 +33,9 @@ let make = (~web3,_children) => {
         ReasonReact.UpdateWithSideEffects(state, (self) => {
           let transaction_data = BsWeb3.Eth.make_transaction(~from=state.web3.account);
 
-          Universe.getBalance(state.web3.universe)
-          |> BsWeb3.Eth.call_with(transaction_data)
+          BsWeb3.Eth.getBalance(BsWeb3.Web3.eth(state.web3.web3),state.web3.universe.address)
           |> Js.Promise.then_ ((balance) => {
-              Universe.isOwner(state.web3.universe)
+              Universe.isOwner(state.web3.universe.contract)
               |> BsWeb3.Eth.call_with(transaction_data)
               |> Js.Promise.then_ ((isOwner) => {
                   self.send(UniverseInfo({balance,isOwner}))
@@ -49,7 +48,7 @@ let make = (~web3,_children) => {
     | UniverseInfo(universe_info) => { ReasonReact.Update({...state,universe_info}) }
 
     | Withdraw => ReasonReact.UpdateWithSideEffects(state,(self) => {
-        Universe.withdraw(state.web3.universe)
+        Universe.withdraw(state.web3.universe.contract)
         |> BsWeb3.Eth.send(BsWeb3.Eth.make_transaction(~from=state.web3.account))
         |> Js.Promise.then_ (_ => self.send(Init) |> Js.Promise.resolve);
         ()

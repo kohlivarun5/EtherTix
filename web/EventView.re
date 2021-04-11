@@ -61,25 +61,18 @@ let make = (~web3,~description, ~imgSrc, ~address,~event,_children) => {
     switch (action) {
     | FetchData => ReasonReact.UpdateWithSideEffects(state,(self) => {
         let tx = BsWeb3.Eth.make_transaction(~from=state.web3.account);
-        Event.numSold(state.event)
+        Event.ERC721Enumerable.totalSupply(state.event)
         |> BsWeb3.Eth.call_with(tx)
-        |> Js.Promise.then_ ((numSold) => {
-            Event.numUnSold(state.event)
-            |> BsWeb3.Eth.call_with(tx)
-            |> Js.Promise.then_ ((numUnsold) => {
-                self.send(SoldData({numSold,numUnsold}))
-                |> Js.Promise.resolve 
-            })
-        });
-        Event.numUsed(state.event)
-        |> BsWeb3.Eth.call_with(tx)
-        |> Js.Promise.then_ ((numUsed) => {
-            Event.numToBeUsed(state.event)
-            |> BsWeb3.Eth.call_with(tx)
-            |> Js.Promise.then_ ((numToBeUsed) => {
-                self.send(UsedData({numUsed,numToBeUsed}))
-                |> Js.Promise.resolve 
-            })
+        |> Js.Promise.then_ ((numTotal) => {
+          Event.Info.numSoldUsed(state.event)
+          |> BsWeb3.Eth.call_with(tx)
+          |> Js.Promise.then_ (((numSold,numUsed)) => {
+              let numUnsold = numTotal - numSold;
+              let numToBeUsed = numSold - numUsed;
+              self.send(SoldData({numSold,numUnsold}));
+              self.send(UsedData({numUsed,numToBeUsed}))
+              |> Js.Promise.resolve 
+          })
         });
         ()
       })
@@ -89,7 +82,7 @@ let make = (~web3,~description, ~imgSrc, ~address,~event,_children) => {
     | Img(imgSrc) => ReasonReact.Update({...state,imgSrc})
     | IssuePrice(price_milli) => ReasonReact.Update({...state,issue_data:{...state.issue_data,price_milli}})
     | SetImg => ReasonReact.UpdateWithSideEffects(state,(_) => {
-        Event.setImg(state.event, state.imgSrc)
+        Event.Edit.setImg(state.event, state.imgSrc)
         |> BsWeb3.Eth.send(BsWeb3.Eth.make_transaction(~from=state.web3.account))
         |> Js.Promise.then_ (Js.Promise.resolve);
         ()
@@ -99,16 +92,17 @@ let make = (~web3,~description, ~imgSrc, ~address,~event,_children) => {
         Js.log("SubmitIssue");
         Js.log(state.issue_data.number);
         Js.log(state.issue_data.price_milli);
-        Js.log(BsWeb3.Utils.toWei(state.issue_data.price_milli,"milliether"));
-        Event.issue(state.event,
+        Js.log(BsWeb3.Utils.toWeiBN(BsWeb3.Utils.toBN(state.issue_data.price_milli),"milliether"));
+        Event.Edit.issue(state.event,
                     ~number=state.issue_data.number,
-                    ~price=(BsWeb3.Utils.toWei(state.issue_data.price_milli,"milliether")))
+                    ~price=(BsWeb3.Utils.toWeiBN(
+                       BsWeb3.Utils.toBN(state.issue_data.price_milli),"milliether")))
         |> BsWeb3.Eth.send(BsWeb3.Eth.make_transaction(~from=state.web3.account))
         |> Js.Promise.then_ (_ => self.send(FetchData) |> Js.Promise.resolve);
         ()
       })
     | Withdraw => ReasonReact.UpdateWithSideEffects(state,(self) => {
-        Event.withdraw(state.event)
+        Event.Edit.withdraw(state.event)
         |> BsWeb3.Eth.send(BsWeb3.Eth.make_transaction(~from=state.web3.account))
         |> Js.Promise.then_ (_ => self.send(FetchData) |> Js.Promise.resolve);
         ()
@@ -146,15 +140,15 @@ let make = (~web3,~description, ~imgSrc, ~address,~event,_children) => {
           };
         Js.log(signature);
         Js.log(token);
-        Event.ticketUsed(state.event,int_of_string(token))
+        Event.Info.ticketInfo(state.event,int_of_string(token))
         |> BsWeb3.Eth.call 
-        |> Js.Promise.then_ ((res) => {
-            if (res || Dom.Storage.getItem(code,Dom.Storage.localStorage) != None) { 
+        |> Js.Promise.then_ (((used,_,_,_,_)) => {
+            if (used || Dom.Storage.getItem(code,Dom.Storage.localStorage) != None) { 
               BsUtils.alert("Ticket already used!");
               self.send(ScanTickets)
               |> Js.Promise.resolve
             } else {
-              Event.isOwnerSig(state.event,int_of_string(token),signature)
+              Event.Use.isOwnerSig(state.event,int_of_string(token),signature)
               |> BsWeb3.Eth.call 
               |> Js.Promise.then_ ((res) => {
                 if (!res) {
@@ -163,7 +157,7 @@ let make = (~web3,~description, ~imgSrc, ~address,~event,_children) => {
                   |> Js.Promise.resolve
                 } else {
                   Dom.Storage.setItem(code,code,Dom.Storage.localStorage);
-                  Event.useTicket(state.event,int_of_string(token),signature)
+                  Event.Use.useTicket(state.event,int_of_string(token),signature)
                   |> BsWeb3.Eth.send(BsWeb3.Eth.make_transaction(~from=state.web3.account))
                   |> Js.Promise.then_ ((_) => { 
                       self.send(FetchData) 

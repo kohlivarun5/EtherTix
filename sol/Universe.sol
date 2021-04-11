@@ -1,11 +1,12 @@
-pragma solidity <=0.5.4;
+// SPDX-License-Identifier: UNLICENSED
+pragma solidity >=0.6.0 <0.8.0;
 
 import "./Event.sol";
 
 contract Universe {
   
   address payable private d_owner;
-  uint256 d_commission_percent;
+  uint8 d_commission_percent;
 
   mapping(address => string) d_verified_users;
   
@@ -21,16 +22,12 @@ contract Universe {
         address indexed userAddr,
         bool    indexed active);
   
-  constructor(uint256 commission_percent) public payable {
+  constructor(uint8 commission_percent) public payable {
     d_owner = msg.sender;
     d_commission_percent = commission_percent;
   }
   
-  function() external payable {}
-  
-  function getBalance() public view returns(uint) {
-    return address(this).balance;
-  }
+  receive() external payable {}
 
   function isOwner() public view returns(bool) {
     return msg.sender == d_owner;
@@ -38,13 +35,12 @@ contract Universe {
   
   function withdraw() public {
     require(msg.sender == d_owner);
-    address(d_owner).transfer(getBalance());
+    d_owner.transfer(address(this).balance);
   }
   
-  function createEvent(string memory _description) public payable returns(address) {
-    Event eventAddr = new Event(_description,msg.sender,d_commission_percent);
+  function createEvent(string memory _description,string memory _imgSrc) public payable {
+    Event eventAddr = new Event(msg.sender,d_commission_percent,_description,_imgSrc);
     emit OrganizerEvents(address(eventAddr), msg.sender, true,_description);
-    return address(eventAddr);
   }
   
   function addUserEvent(address _event,address _user) public {
@@ -55,7 +51,7 @@ contract Universe {
       emit UserEvents(_event,_user,false);
   }
 
-  function updateCommission(uint256 commission_percent) public {
+  function updateCommission(uint8 commission_percent) public {
     require(msg.sender == d_owner,"Owner can update commission");
     d_commission_percent=commission_percent;
   }
